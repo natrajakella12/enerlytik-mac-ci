@@ -34,11 +34,14 @@ jobs:
       GROQ_KEY_3: ${{ secrets.GROQ_KEY_3 }}
 
     steps:
+      - name: Setup Git LFS
+        run: git lfs install
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.ref || github.ref }}
-          lfs: false
+          lfs: true
 
       - name: Show host info
         run: |
