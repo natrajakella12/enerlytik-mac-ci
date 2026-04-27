@@ -1,0 +1,27 @@
+{
+  "release": "3.0",
+  "built": "2026-04-26T14:35:18.553276",
+  "git_tag": "release-3.0 (45b5d01)",
+  "source_db": "aws_export/enerlytik_dev_359.db",
+  "db_batteries": 359,
+  "db_bhs_rows": 359,
+  "demo_mode": true,
+  "demo_batteries_in_sidebar": 14,
+  "fleet_batteries_in_charts": 359,
+  "rag_kb_included": true,
+  "duckdb_included": false,
+  "duckdb_note": "Raw telemetry - local only, never bundled",
+  "mac_build": "Phase 2 - deferred",
+  "banned_batteries": [
+    "BAT_LFP_034",
+    "BAT_LFP_202"
+  ],
+  "primary_demo_battery": "BAT_LFP_109",
+  "known_limitations": [
+    "RUL week counts PRELIMINARY - directional only",
+    "14 batteries scored without VWF (fallback path)",
+    "Thermal attribution rerun scheduled June 1",
+    "ICR NULL until NBFC integration",
+    "FGHHL separate OEM track not in this release"
+  ]
+}

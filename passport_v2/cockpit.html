@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik &middot; Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#FAFAF8;color:#111827;font-family:system-ui,-apple-system,sans-serif}
+a{text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+.pill-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all 0.15s}
+.pill-btn:hover{opacity:0.9}
+.pill-primary{background:#F97316;color:#fff}
+.pill-outline{background:transparent;color:#F97316;border:1px solid rgba(249,115,22,0.4)}
+.pill-outline:hover{background:rgba(249,115,22,0.08)}
+.surface-card{background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:24px;cursor:pointer;transition:all 0.15s}
+.surface-card:hover{border-color:#F97316;box-shadow:0 4px 12px rgba(249,115,22,0.1)}
+.chain-tile{background:#fff;border:1px solid #E5E7EB;border-radius:10px;padding:16px 18px;cursor:pointer;transition:all 0.15s}
+.chain-tile:hover{border-color:#F97316;box-shadow:0 2px 8px rgba(249,115,22,0.1)}
+.q-pill{background:#FFF7ED;border:1px solid #FED7AA;border-radius:20px;padding:6px 14px;font-size:12px;color:#C2410C;cursor:pointer;display:inline-block;margin:4px;transition:all 0.12s}
+.q-pill:hover{background:#F97316;color:#fff;border-color:#F97316}
+.stat-pill{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:#F3F4F6;color:#6B7280;margin-right:4px}
+.stakeholder-pill{display:inline-block;padding:2px 8px;border-radius:8px;font-size:9px;font-weight:600;margin-right:3px}
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div style="height:48px;background:#0F172A;border-bottom:2px solid rgba(249,115,22,0.4);display:flex;align-items:center;padding:0 40px;gap:12px">
+  <svg height="28" viewBox="0 0 453 72" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><defs><linearGradient id="ig" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/></linearGradient><linearGradient id="wg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/></linearGradient></defs><rect width="72" height="72" rx="14" fill="rgba(249,115,22,0.08)" stroke="#EA580C" stroke-width="2"/><g transform="translate(14,14) scale(1.375)"><rect x="6" y="6" width="16" height="3" rx="1.5" fill="url(#ig)"/><rect x="6" y="14.5" width="12" height="3" rx="1.5" fill="url(#ig)" opacity=".55"/><rect x="6" y="23" width="16" height="3" rx="1.5" fill="url(#ig)"/><rect x="6" y="6" width="3" height="20" rx="1.5" fill="url(#ig)"/><circle cx="25" cy="8" r="2.5" fill="url(#ig)" opacity=".4"/><circle cx="25" cy="8" r="1.2" fill="url(#ig)"/></g><text x="92" y="36" font-family="'Outfit',sans-serif" font-size="38" font-weight="700" letter-spacing="3.8" dominant-baseline="central" fill="url(#wg)">enerlytik</text><text x="94" y="36" font-family="'DM Sans',sans-serif" font-size="12" font-weight="400" letter-spacing="0.6" dominant-baseline="central" dy="27" fill="rgba(251,146,60,0.7)"><tspan font-weight="800" font-size="14" fill="#FB923C">I</tspan>ntelligence <tspan font-weight="800" font-size="14" fill="#FB923C">A</tspan>pplied</text></svg>
+  <div style="width:1px;height:24px;background:rgba(255,255,255,0.12)"></div>
+  <span style="color:rgba(255,255,255,0.35);font-size:12px">Intelligence Platform</span>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+    <span id="week-badge" style="font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.3)">Week --</span>
+    <a href="/enerlyst-next" style="font-size:11px;color:#F97316;font-weight:600">enerlyst &rarr;</a>
+  </div>
+</div>
+
+<!-- SECTION 2: FLEET PULSE -->
+<div style="background:#0F172A;padding:32px 0">
+  <div class="wrap" style="display:flex;gap:40px;align-items:flex-start">
+    <div style="flex:1">
+      <div style="font-size:9px;font-family:'DM Mono',monospace;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">Fleet Intelligence &middot; Live</div>
+      <div id="pulse-headline" style="font-size:24px;font-weight:700;color:#F8FAFC;line-height:1.3;margin-bottom:8px;font-family:'Outfit',sans-serif">Loading fleet data...</div>
+      <div id="pulse-story" style="font-size:14px;color:rgba(255,255,255,0.5);line-height:1.6;margin-bottom:20px"></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px"><div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Total Fleet</div><div id="m-total" style="font-size:24px;font-weight:700;color:#F8FAFC">--</div><div style="font-size:10px;color:rgba(255,255,255,0.3)">batteries</div></div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px"><div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Avg Range</div><div id="m-range" style="font-size:24px;font-weight:700;color:#F8FAFC">--</div><div style="font-size:10px;color:rgba(255,255,255,0.3)">km</div></div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px"><div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Avg BHS</div><div id="m-bhs" style="font-size:24px;font-weight:700;color:#F8FAFC">--</div><div style="font-size:10px;color:rgba(255,255,255,0.3)">score</div></div>
+        <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px"><div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px">Need Action</div><div id="m-action" style="font-size:24px;font-weight:700;color:#F97316">--</div><div style="font-size:10px;color:rgba(255,255,255,0.3)">batteries</div></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;padding-top:30px">
+      <a href="/fleet-mis" class="pill-btn pill-primary">Go to fleet &rarr;</a>
+      <a href="/enerlyst-next" class="pill-btn pill-outline">Ask enerlyst &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 3: SURFACE CARDS -->
+<div style="padding:40px 0">
+  <div class="wrap">
+    <div style="font-size:9px;font-family:'DM Mono',monospace;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:20px">Your Intelligence Surfaces</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+      <!-- Fleet Intelligence -->
+      <a href="/fleet-mis" class="surface-card" style="display:block">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:40px;height:40px;background:#FFF7ED;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="10" width="3" height="7" rx="1" fill="#F97316"/><rect x="5.5" y="6" width="3" height="11" rx="1" fill="#F97316" opacity=".7"/><rect x="10" y="3" width="3" height="14" rx="1" fill="#F97316" opacity=".5"/><rect x="14.5" y="1" width="3" height="16" rx="1" fill="#F97316" opacity=".3"/></svg></div>
+          <div><div style="font-size:15px;font-weight:700;color:#111827">Fleet Intelligence</div><div style="font-size:11px;color:#9CA3AF">Which vehicles need action today and why?</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="stat-pill" id="fc-action">-- need action</span><span class="stat-pill" id="fc-healthy">-- healthy</span><span class="stat-pill" id="fc-cause">--</span></div>
+        <div style="font-size:11px;color:#F97316;font-weight:600;margin-top:12px">Open &rarr;</div>
+      </a>
+
+      <!-- Lender Intelligence -->
+      <a href="/nbfc" class="surface-card" style="display:block">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:40px;height:40px;background:#F0FDFA;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="3" stroke="#0D9488" stroke-width="1.5" fill="none"/><path d="M6 9h6M9 6v6" stroke="#0D9488" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+          <div><div style="font-size:15px;font-weight:700;color:#111827">Lender Intelligence</div><div style="font-size:11px;color:#9CA3AF">Is my portfolio collateral holding value?</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="stat-pill" id="nc-d">Grade D: --</span><span class="stat-pill" id="nc-val">-- collateral</span></div>
+        <div style="font-size:11px;color:#0D9488;font-weight:600;margin-top:12px">Open &rarr;</div>
+      </a>
+
+      <!-- Product Intelligence -->
+      <a href="/oem" class="surface-card" style="display:block">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:40px;height:40px;background:#F5F3FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.5" stroke="#7C3AED" stroke-width="1.5" fill="none"/><circle cx="9" cy="9" r="2" fill="#7C3AED"/></svg></div>
+          <div><div style="font-size:15px;font-weight:700;color:#111827">Product Intelligence</div><div style="font-size:11px;color:#9CA3AF">Is degradation a design problem or operator problem?</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="stat-pill" id="oc-packs">-- pack families</span><span class="stat-pill" id="oc-rate">Pack3401: --</span></div>
+        <div style="font-size:11px;color:#7C3AED;font-weight:600;margin-top:12px">Open &rarr;</div>
+      </a>
+
+      <!-- Pool Intelligence -->
+      <a href="/swap" class="surface-card" style="display:block">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+          <div style="width:40px;height:40px;background:#EFF6FF;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 9h12M9 3v12" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/><path d="M5 5l8 8M13 5l-8 8" stroke="#3B82F6" stroke-width="1" stroke-linecap="round" opacity=".4"/></svg></div>
+          <div><div style="font-size:15px;font-weight:700;color:#111827">Pool Intelligence</div><div style="font-size:11px;color:#9CA3AF">Which batteries to rotate, retire, or redeploy?</div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="stat-pill" id="pc-remove">-- remove</span><span class="stat-pill" id="pc-rotate">-- rotate</span><span class="stat-pill" id="pc-cont">-- continue</span></div>
+        <div style="font-size:11px;color:#3B82F6;font-weight:600;margin-top:12px">Open &rarr;</div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: INTELLIGENCE CHAINS -->
+<div style="background:#F4F3F0;padding:40px 0">
+  <div class="wrap">
+    <div style="font-size:9px;font-family:'DM Mono',monospace;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">Intelligence in Action &mdash; 22 Chains</div>
+    <div style="font-size:13px;color:#6B7280;margin-bottom:20px;line-height:1.6">The reasoning behind every decision. Click any chain to see how the platform connects signals to outcomes.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <a href="/platform-in-action?chain=1" class="chain-tile">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:#F97316">C1</span><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px">Same symptom, different cause</div>
+        <div style="font-size:11px;color:#6B7280;font-style:italic;margin-bottom:8px;line-height:1.4">Two batteries. Same range loss. Different action. Different cost.</div>
+        <div><span class="stakeholder-pill" style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA">Operator</span><span class="stakeholder-pill" style="background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4">Lender</span><span class="stakeholder-pill" style="background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE">Manufacturer</span></div>
+      </a>
+      <a href="/platform-in-action?chain=2" class="chain-tile">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:#F97316">C2</span><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px">False alarm filtering</div>
+        <div style="font-size:11px;color:#6B7280;font-style:italic;margin-bottom:8px;line-height:1.4">BMS said alarm. Platform said wait. Platform was right.</div>
+        <div><span class="stakeholder-pill" style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA">Operator</span><span class="stakeholder-pill" style="background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4">Lender</span></div>
+      </a>
+      <a href="/platform-in-action?chain=3" class="chain-tile">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:#F97316">C3</span><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px">Pack design gap</div>
+        <div style="font-size:11px;color:#6B7280;font-style:italic;margin-bottom:8px;line-height:1.4">Pack3401 passes lab tests. In field: 6&times; faster degradation.</div>
+        <div><span class="stakeholder-pill" style="background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE">Manufacturer</span><span class="stakeholder-pill" style="background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4">Lender</span></div>
+      </a>
+      <a href="/platform-in-action?chain=7" class="chain-tile">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:#F97316">C7</span><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px">Portfolio heterogeneity</div>
+        <div style="font-size:11px;color:#6B7280;font-style:italic;margin-bottom:8px;line-height:1.4">334 batteries. 4 risk grades. Grade A breach: 5%. Grade D: 67%.</div>
+        <div><span class="stakeholder-pill" style="background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4">Lender</span></div>
+      </a>
+      <a href="/platform-in-action?chain=10" class="chain-tile">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:#F97316">C10</span><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px">Battery dies before loan</div>
+        <div style="font-size:11px;color:#6B7280;font-style:italic;margin-bottom:8px;line-height:1.4">Productive battery life &lt; loan tenure = default on asset.</div>
+        <div><span class="stakeholder-pill" style="background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4">Lender</span><span class="stakeholder-pill" style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA">Operator</span></div>
+      </a>
+      <a href="/platform-in-action?chain=12" class="chain-tile">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:11px;font-family:'DM Mono',monospace;font-weight:700;color:#F97316">C12</span><span style="width:6px;height:6px;border-radius:50%;background:#22C55E"></span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827;margin-bottom:4px">Degradation regime</div>
+        <div style="font-size:11px;color:#6B7280;font-style:italic;margin-bottom:8px;line-height:1.4">Same range. PRE_KNEE vs POST_KNEE. Four different actions.</div>
+        <div><span class="stakeholder-pill" style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA">Operator</span><span class="stakeholder-pill" style="background:#F0FDFA;color:#0F766E;border:1px solid #99F6E4">Lender</span><span class="stakeholder-pill" style="background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE">Manufacturer</span></div>
+      </a>
+    </div>
+    <div style="text-align:center;margin-top:20px"><a href="/platform-in-action" style="font-size:13px;color:#F97316;font-weight:600">Explore all 22 intelligence chains &rarr;</a></div>
+  </div>
+</div>
+
+<div style="background:#fff;padding:40px 0;border-top:1px solid #E5E7EB"><div class="wrap">
+<!-- LOAN AGENT CARD -->
+<div class="loan-agent-card" style="background:#F5F4F0;border:1px solid #E5E4DF;border-radius:12px;overflow:hidden;margin:24px auto;max-width:1100px;font-family:'Outfit',sans-serif">
+  <div style="padding:20px 24px 16px;border-bottom:1px solid #E5E4DF">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;background:rgba(232,80,10,0.15);color:#E8500A;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">// LOAN AGENT</div>
+        <div style="font-size:15px;font-weight:600;color:#1F2937;margin-bottom:4px">EV Battery Loan Intelligence</div>
+        <div style="font-size:12px;color:#6B7280;line-height:1.5">Actuarial origination &middot; warranty-split risk &middot; live portfolio monitoring</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:#9CA3AF">5 profiles assessed</div><div style="font-size:11px;color:#9CA3AF">Last run: today</div></div>
+    </div>
+  </div>
+  <div style="padding:8px 24px 4px;background:rgba(0,0,0,0.02);border-bottom:1px solid #E5E4DF"><div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.1em;text-transform:uppercase;padding:8px 0">How loan decisions are made</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr">
+    <div style="padding:16px 24px;border-right:1px solid #E5E4DF">
+      <div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#D1D5DB;display:inline-block"></span>Without enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Credit score + fleet size + reference. <span style="color:#374151;font-weight:500">Flat 18% rate.</span> 36-month tenure. &#8377;40K collateral.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#6B7280;line-height:1.5">No differentiation by city, pack, or operator behaviour. <span style="color:#374151;font-weight:500">All operators priced identically.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Portfolio reviewed monthly. <span style="color:#374151;font-weight:500">Default discovered at missed EMI</span> &mdash; 6&ndash;8 weeks after intervention was possible.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Collateral by age depreciation. <span style="color:#374151;font-weight:500">Not measured.</span> All degradation risk on borrower.</div></div>
+    </div>
+    <div style="padding:16px 24px">
+      <div style="font-size:10px;font-weight:600;color:#E8500A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#E8500A;display:inline-block"></span>With enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Agent pulls <span style="color:#374151;font-weight:500">operational P50</span> (OEM failures removed), commissioning stress baseline, city thermal multiplier. <span style="color:#374151;font-weight:500">Decision in 4 minutes.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Pack3001/CU: <span style="color:#374151;font-weight:500">14-month tenure</span> viable. Pack1201/CU: <span style="color:#374151;font-weight:500">24-month tenure.</span> Pack3401/SR: warranty claim active.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Portfolio monitored <span style="color:#374151;font-weight:500">weekly.</span> Grade C&rarr;D migration flagged 6 weeks early. Covenant trigger before default.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#6B7280;line-height:1.5"><span style="color:#374151;font-weight:500">44.6% of failures</span> OEM-design defects &mdash; warranty-backstopped. Only operator risk priced to borrower.</div></div>
+    </div>
+  </div>
+  <div style="padding:6px 24px 4px;border-top:1px solid #E5E4DF;background:rgba(0,0,0,0.01)"><div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;padding:8px 0 6px">Last 5 decisions</div></div>
+  <div style="padding:0 24px 16px;display:flex;gap:6px;flex-wrap:wrap">
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.12);color:#16A34A">Meena &middot; APPROVE &middot; 14mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.12);color:#D97706">Ravi &middot; CONDITIONS &middot; 10mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.12);color:#D97706">GreenRide &middot; CONDITIONS</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.12);color:#16A34A">Sharma &middot; CONDITIONS &middot; 24mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:#E5E4DF;color:#6B7280">FastDeliver &middot; REFER</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(220,38,38,0.1);color:#DC2626">&#9888; Pack3401 warranty claim</span>
+  </div>
+  <div style="padding:14px 24px;border-top:1px solid #E5E4DF;background:#EEEDEA;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">&#8377;8.4L</div><div style="font-size:10px;color:#9CA3AF">bad debt prevented</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#1F2937">4 min</div><div style="font-size:10px;color:#9CA3AF">vs 2&ndash;3 days manual</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#1F2937">44.6%</div><div style="font-size:10px;color:#9CA3AF">warranty-backed risk</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">Sharma</div><div style="font-size:10px;color:#9CA3AF">REFER&rarr;APPROVE (split)</div></div>
+    </div>
+    <button onclick="window.location.href='/loan-approval'" style="background:#E8500A;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Outfit',sans-serif">Open loan agent &rarr;</button>
+  </div>
+</div>
+</div></div>
+<!-- SECTION 5: ENERLYST QUICK-ASK -->
+<div style="background:#fff;padding:40px 0;border-top:1px solid #E5E7EB">
+  <div class="wrap" style="display:flex;gap:40px">
+    <div style="width:40%">
+      <div style="font-size:9px;font-family:'DM Mono',monospace;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px">&#9672; Enerlyst</div>
+      <div style="font-size:20px;font-weight:700;color:#111827;margin-bottom:8px;font-family:'Outfit',sans-serif">Ask anything about your fleet.</div>
+      <div style="font-size:13px;color:#6B7280;line-height:1.6;margin-bottom:16px">Natural language queries about any battery, pack, city, driver, or trend.</div>
+      <div>
+        <span class="q-pill" onclick="window.open('/enerlyst-next?q='+encodeURIComponent('Which batteries are declining fastest?'),'_blank')">Which batteries are declining fastest?</span>
+        <span class="q-pill" onclick="window.open('/enerlyst-next?q='+encodeURIComponent('Why is Pack3401 performing worse?'),'_blank')">Why is Pack3401 performing worse?</span>
+        <span class="q-pill" onclick="window.open('/enerlyst-next?q='+encodeURIComponent('What will my Grade D count be in 8 weeks?'),'_blank')">What will my Grade D count be in 8 weeks?</span>
+      </div>
+    </div>
+    <div style="flex:1">
+      <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:16px 20px">
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:12px">Ask about any battery, pack, or trend...</div>
+        <div onclick="window.open('/enerlyst-next?q='+encodeURIComponent('Show me the worst-performing batteries this week'),'_blank')" style="padding:10px 12px;border-bottom:1px solid #F3F4F6;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s" onmouseover="this.style.background='#FFF7ED'" onmouseout="this.style.background='transparent'"><span style="color:#F97316;font-size:12px">&#8250;</span><span style="font-size:12px;color:#374151;flex:1">Show me the worst-performing batteries this week</span><span style="font-size:11px;color:#F97316">&rarr;</span></div>
+        <div onclick="window.open('/enerlyst-next?q='+encodeURIComponent('What is causing range loss in Surat?'),'_blank')" style="padding:10px 12px;border-bottom:1px solid #F3F4F6;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s" onmouseover="this.style.background='#FFF7ED'" onmouseout="this.style.background='transparent'"><span style="color:#F97316;font-size:12px">&#8250;</span><span style="font-size:12px;color:#374151;flex:1">What is causing range loss in Surat?</span><span style="font-size:11px;color:#F97316">&rarr;</span></div>
+        <div onclick="window.open('/enerlyst-next?q='+encodeURIComponent('Compare Pack3401 vs Pack3001 degradation'),'_blank')" style="padding:10px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.1s" onmouseover="this.style.background='#FFF7ED'" onmouseout="this.style.background='transparent'"><span style="color:#F97316;font-size:12px">&#8250;</span><span style="font-size:12px;color:#374151;flex:1">Compare Pack3401 vs Pack3001 degradation</span><span style="font-size:11px;color:#F97316">&rarr;</span></div>
+      </div>
+      <div style="margin-top:12px;text-align:right"><a href="/enerlyst-next" class="pill-btn pill-primary">Open enerlyst &rarr;</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 6: FOOTER -->
+<div style="background:#0F172A;padding:24px 0">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:flex-start">
+    <div>
+      <svg height="24" viewBox="0 0 453 72" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:8px"><defs><linearGradient id="fg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/></linearGradient></defs><rect width="72" height="72" rx="14" fill="rgba(249,115,22,0.08)" stroke="#EA580C" stroke-width="2"/><g transform="translate(14,14) scale(1.375)"><rect x="6" y="6" width="16" height="3" rx="1.5" fill="url(#fg)"/><rect x="6" y="14.5" width="12" height="3" rx="1.5" fill="url(#fg)" opacity=".55"/><rect x="6" y="23" width="16" height="3" rx="1.5" fill="url(#fg)"/><rect x="6" y="6" width="3" height="20" rx="1.5" fill="url(#fg)"/><circle cx="25" cy="8" r="2.5" fill="url(#fg)" opacity=".4"/><circle cx="25" cy="8" r="1.2" fill="url(#fg)"/></g><text x="92" y="36" font-family="'Outfit',sans-serif" font-size="38" font-weight="700" letter-spacing="3.8" dominant-baseline="central" fill="url(#fg)">enerlytik</text></svg>
+      <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px">330 batteries &middot; India</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <a href="/fleet-mis" style="font-size:11px;color:rgba(255,255,255,0.5)">Fleet Intelligence</a>
+      <a href="/nbfc" style="font-size:11px;color:rgba(255,255,255,0.5)">Lender Intelligence</a>
+      <a href="/oem" style="font-size:11px;color:rgba(255,255,255,0.5)">Product Intelligence</a>
+      <a href="/swap" style="font-size:11px;color:rgba(255,255,255,0.5)">Pool Intelligence</a>
+      <a href="/platform-in-action" style="font-size:11px;color:rgba(255,255,255,0.5)">Platform in Action</a>
+      <a href="/passport-next" style="font-size:11px;color:rgba(255,255,255,0.5)">Passport</a>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:11px;color:#F97316;font-weight:600">Intelligence Applied</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:4px">v2.4 &middot; April 2026</div>
+      <div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px">enerlytik_production.db</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API='';
+// AWS-prep: token injected at render time by passport_server
+const TOKEN='{{ api_token }}';
+const H={Authorization:'Bearer '+TOKEN};
+const cache={};
+async function api(url){if(cache[url])return cache[url];try{const r=await fetch(API+url,{headers:H});cache[url]=await r.json();return cache[url];}catch(e){return null;}}
+
+async function loadCockpit(){
+  const [fleet,portfolio,pool]=await Promise.all([
+    api('/api/fleet/intelligence/v2?max_week=90'),
+    api('/api/nbfc/portfolio'),
+    api('/api/swap/pool-intelligence')
+  ]);
+
+  // Fleet pulse
+  if(fleet){
+    const ac={};(fleet.action_counts||[]).forEach(a=>ac[a.rul_action_v2]=a.n);
+    const action_n=(ac.PHYSICS_REPLACE_PLAN||0)+(ac.REPLACE_PLAN||0)+(ac.ACUTE_BREACH_WATCH||0)+(ac.CELL_BALANCE_PRIORITY||0)+(ac.MONITOR_INVESTIGATE||0);
+    const total=fleet.total||330;
+    const pp=fleet.pack_performance||[];
+    const totalN=pp.reduce((s,p)=>s+p.n,0)||total;
+    const avgRange=totalN?Math.round(pp.reduce((s,p)=>s+(p.avg_range||0)*p.n,0)/totalN):'--';
+    const avgBhs=totalN?Math.round(pp.reduce((s,p)=>s+(p.avg_bhs||0)*p.n,0)/totalN):'--';
+    const healthy=(ac.NO_ACTION||0)+(ac.MONITOR_WEEKLY||0);
+
+    document.getElementById('pulse-headline').textContent=action_n+' batteries need action this week.';
+    document.getElementById('pulse-story').textContent=(fleet.narrative?.story||healthy+' batteries healthy. Primary driver: '+(fleet.narrative?.top_cause||'Cell imbalance')+'.');
+    document.getElementById('m-total').textContent=total;
+    document.getElementById('m-range').textContent=avgRange+'km';
+    document.getElementById('m-bhs').textContent=avgBhs;
+    document.getElementById('m-action').textContent=action_n+' ('+Math.round(action_n/total*100)+'%)';
+    document.getElementById('week-badge').textContent='Week '+fleet.week;
+
+    // Fleet card
+    document.getElementById('fc-action').textContent=action_n+' need action';
+    document.getElementById('fc-healthy').textContent=healthy+' healthy';
+    document.getElementById('fc-cause').textContent=fleet.narrative?.top_cause||'Cell imbalance';
+
+    // OEM card
+    const packs=fleet.pack_performance||[];
+    const p3401=packs.find(p=>(p.pack_model||'').includes('3401'));
+    document.getElementById('oc-packs').textContent=packs.length+' pack families';
+    if(p3401){
+      const baseline=packs.find(p=>(p.pack_model||'').includes('3001'));
+      let rate='1.5';
+      if(baseline&&baseline.avg_slope&&baseline.avg_slope!==0&&p3401.avg_slope){const computed=Math.abs(p3401.avg_slope/baseline.avg_slope).toFixed(1);if(parseFloat(computed)>0)rate=computed;}
+      if(p3401.deg_multiplier&&p3401.deg_multiplier>0)rate=p3401.deg_multiplier;
+      document.getElementById('oc-rate').textContent='Pack3401: '+rate+'\u00D7 degradation';
+    }
+  }
+
+  // NBFC card
+  if(portfolio?.grades){
+    const gd=portfolio.grades.find(g=>g.grade==='D');
+    const total=portfolio.total||334;
+    if(gd){document.getElementById('nc-d').textContent='Grade D: '+gd.n+' ('+Math.round(gd.n/total*100)+'%)';}
+    const totalVal=portfolio.grades.reduce((s,g)=>s+(g.avg_resale||0)*g.n,0);
+    document.getElementById('nc-val').textContent='\u20B9'+Math.round(totalVal/100000).toLocaleString('en-IN')+'L collateral';
+  }
+
+  // Pool card
+  if(pool?.pool_batteries){
+    const bats=pool.pool_batteries;
+    document.getElementById('pc-remove').textContent=bats.filter(b=>b.pool_status==='REMOVE_IMMEDIATELY').length+' remove now';
+    document.getElementById('pc-rotate').textContent=bats.filter(b=>b.pool_status==='ROTATE_LIGHTER').length+' rotate routes';
+    document.getElementById('pc-cont').textContent=bats.filter(b=>b.pool_status==='CONTINUE').length+' continue';
+  }
+}
+
+loadCockpit();
+</script>
+</body>
+</html>

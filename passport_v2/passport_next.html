@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik · Unit Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:,">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#fafaf8;--bg-card:#ffffff;--bg-muted:#f4f3f0;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.12);
+  --text:#0d0d0b;--text2:#6b7280;--text3:#9ca3af;
+  --orange:#f97316;--amber:#f59e0b;--red:#ef4444;--green:#22c55e;
+  --cyan:#06b6d4;--teal:#14b8a6;
+  --accent:#f97316;--accent-soft:rgba(249,115,22,0.08);
+  --hdr:#0f172a;--hdr-text:#F1F5F9;--hdr-muted:#94A3B8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+/* Sprint layout-rewrite: body is flex-column container; rows stack vertically and content-layout flexes to fill */
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-height:100vh;height:100vh;overflow:hidden}
+
+/* LEFT SIDEBAR — REMOVED Sprint 3. Battery selection now via filter strip + identity strip. */
+/* Right-panel collapse button (.col-btn) kept below — used by .rp #rp-btn only. */
+.col-btn{position:absolute;top:10px;left:-12px;z-index:10;width:22px;height:22px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text2)}
+.col-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* MAIN — Sprint layout-rewrite: removed .main wrapper. Top-level rows are body-direct children. */
+
+/* VERDICT (dark) */
+.vbar{background:var(--hdr);border-bottom:2px solid var(--accent);padding:14px 24px;flex-shrink:0}
+.vtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:5px}
+.vid{font-family:'DM Mono',monospace;font-size:17px;font-weight:700;color:var(--hdr-text)}
+.badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:11px;font-size:10px;font-weight:600}
+.b-prime{background:rgba(20,184,166,.2);color:#14b8a6}
+.b-stable{background:rgba(34,197,94,.2);color:#22c55e}
+.b-watch{background:rgba(245,158,11,.2);color:#f59e0b}
+.b-stressed{background:rgba(249,115,22,.2);color:#f97316}
+.b-critical{background:rgba(239,68,68,.2);color:#ef4444}
+.b-action{background:rgba(249,115,22,.12);color:var(--accent);border:1px solid rgba(249,115,22,.3)}
+.b-warranty{background:rgba(249,115,22,.2);color:var(--accent)}
+.conf{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:var(--hdr-muted)}
+.conf-track{width:50px;height:5px;background:#334155;border-radius:3px;overflow:hidden}
+.conf-fill{height:100%;background:var(--accent);border-radius:3px}
+.vmeta{font-size:11px;color:var(--hdr-muted);display:flex;gap:14px;flex-wrap:wrap}
+.vcause{font-size:11px;color:var(--hdr-muted);margin-top:3px}
+.vcause strong{color:var(--accent)}
+
+/* 3-row header CSS (.vbar-3row, .vrow*, .vr1-*, .vr2-*, .vr3-*) — REMOVED Sprint 3 (dead). */
+.warranty-banner{background:#FEF3C7;border-left:4px solid #F59E0B;padding:8px 16px;font-size:12px;color:#92400E;font-weight:500}
+.warranty-banner.hidden{display:none}
+
+/* FILTER STRIP (Sprint 3) */
+.filter-strip{background:#fff;border-bottom:1px solid #e5e7eb;padding:6px 16px;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto;flex-shrink:0;min-height:44px}
+.fs-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:#9ca3af;white-space:nowrap}
+.fs-divider{width:1px;height:20px;background:#e5e7eb;margin:0 4px}
+.fs-pills{display:flex;gap:4px}
+.fs-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid #e5e7eb;background:#f9fafb;color:#6b7280;white-space:nowrap;transition:all 0.1s}
+.fs-pill:hover{border-color:#d1d5db;color:#374151}
+.fs-pill.active{background:#0f172a;color:#fff;border-color:#0f172a}
+.fs-search-wrap{position:relative;flex:1;min-width:140px;max-width:220px}
+.fs-search{width:100%;padding:4px 10px 4px 28px;border:1px solid #e5e7eb;border-radius:20px;font-size:11px;color:#374151;background:#f9fafb;outline:none;font-family:inherit}
+.fs-search:focus{border-color:#f97316;background:#fff}
+.fs-search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:12px;height:12px;color:#9ca3af;pointer-events:none}
+.fs-count{margin-left:auto;font-size:11px;color:#9ca3af;white-space:nowrap}
+
+/* IDENTITY STRIP (Sprint 3) */
+.id-strip{background:#fff;border-bottom:1px solid #f3f4f6;flex-shrink:0}
+/* Sprint 4-fix: tighten summary row to ~40px tall */
+.id-strip-summary{display:flex;align-items:center;gap:0;cursor:pointer;user-select:none;flex-wrap:wrap;min-height:34px;max-height:36px}
+.id-strip-summary:hover{background:#fafaf8}
+.id-field{padding:5px 10px;border-right:1px solid #f3f4f6;display:flex;flex-direction:column;gap:0;flex-shrink:0}
+.id-field:last-of-type{border-right:none}
+.id-flabel{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:#9ca3af;line-height:1.2}
+.id-fval{font-size:11px;font-weight:500;color:#111827;white-space:nowrap;line-height:1.2}
+.id-fval-mono{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#111827}
+.id-badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600}
+.id-badge-warn{background:#fef3c7;color:#b45309}
+.id-badge-red{background:#fee2e2;color:#dc2626}
+.id-badge-green{background:#dcfce7;color:#16a34a}
+.id-expand-btn{margin-left:auto;padding:7px 14px;font-size:11px;color:#9ca3af;white-space:nowrap;flex-shrink:0}
+.id-strip-detail{display:none;background:#fafaf9;border-top:1px solid #f3f4f6;padding:12px 16px}
+.id-strip-detail.open{display:block}
+.id-detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 24px;margin-bottom:10px}
+.id-section-title{font-size:9px;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:6px;margin-top:4px}
+.id-df{display:flex;flex-direction:column;gap:2px}
+.id-dlabel{font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:#9ca3af}
+.id-dval{font-size:12px;font-weight:500;color:#111827}
+.id-divider{border:none;border-top:1px solid #e5e7eb;margin:8px 0}
+
+/* INTEL LEAD (Sprint 4) */
+/* Sprint tabs-visible: collapse phantom space when intel children are empty */
+.intel-lead-section{background:#fff;padding:10px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0;min-height:0 !important}
+.intel-narrative{font-size:15px;font-weight:500;color:#111827;line-height:1.5;margin-bottom:6px}
+.intel-driver{font-size:13px;color:#6b7280;margin-bottom:6px;min-height:0}
+.intel-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;min-height:0}
+#intel-pills:empty{display:none !important}
+#intel-driver:empty{display:none !important}
+.intel-narrative:empty{display:none !important}
+.intel-pill{padding:4px 12px;border-radius:12px;font-size:12px;background:#fff7ed;color:#f97316;border:1px solid rgba(249,115,22,0.2)}
+.intel-action-row{display:flex;justify-content:flex-end}
+.intel-action-pill{padding:5px 14px;border-radius:14px;font-size:12px;font-weight:600;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.intel-action-pill.act-replace{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.intel-action-pill.act-cell-balance{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.intel-action-pill.act-monitor{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.intel-action-pill.act-routine{background:#dcfce7;color:#166534;border-color:#86efac}
+
+/* DEVIATION TILES (Sprint 4) */
+.dev-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:8px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+.dev-tile{background:#f9fafb;border:1px solid #f3f4f6;border-radius:8px;padding:12px 14px}
+.dev-tile-label{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:#9ca3af;margin-bottom:4px}
+.dev-tile-val{font-size:22px;font-weight:700;line-height:1;margin-bottom:2px;font-family:'DM Mono',monospace}
+.dev-tile-sub{font-size:11px;color:#6b7280}
+
+/* EVENTS TIMELINE (Sprint 4 — Service tab) */
+.events-timeline{padding:8px 0}
+.event-row{display:flex;gap:12px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.event-row:last-child{border-bottom:none}
+.event-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.event-week{font-size:11px;color:#9ca3af;min-width:48px;flex-shrink:0;margin-top:3px}
+.event-desc{font-size:13px;color:#374151;line-height:1.5}
+.event-score{font-size:11px;color:#9ca3af;margin-top:2px}
+
+/* SCROLLABLE CHART WRAPPER (Sprint 4) */
+.chart-scroll{overflow-x:auto;overflow-y:hidden;width:100%}
+.chart-scroll-inner{height:240px;position:relative}
+.chart-note{font-size:11px;color:#9ca3af;margin-top:6px;font-style:italic}
+
+/* Option B header (Sprint 1b) */
+/* Sprint 5: 4-row header (.hdr) replaces previous 2-col grid (.hdr-b/.hdr-left/.hdr-right) */
+.hdr{background:#0f172a;width:100%;flex-shrink:0;border-bottom:2px solid var(--accent)}
+.hdr-row1{display:grid;grid-template-columns:1fr auto;align-items:center;padding:10px 16px;gap:16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.hdr-pack-note{font-size:11px;color:rgba(249,115,22,0.6);margin-top:1px}
+.hdr-row2{display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:8px 16px;gap:20px}
+.hdr-range-block{display:flex;align-items:baseline;gap:5px;flex-shrink:0}
+.hdr-range-val{font-size:36px;font-weight:700;color:#fff;line-height:1;font-family:'DM Mono',monospace}
+.hdr-range-unit{font-size:14px;color:rgba(255,255,255,0.5)}
+.hdr-mid-stats{display:flex;gap:20px;justify-content:center;flex-wrap:nowrap}
+.hdr-mid-stat{text-align:center;min-width:70px}
+.hdr-ms-label{font-size:9px;text-transform:uppercase;letter-spacing:0.07em;color:rgba(255,255,255,0.35);margin-bottom:2px;white-space:nowrap}
+.hdr-ms-val{font-size:13px;font-weight:600;color:#fff;font-family:'DM Mono',monospace}
+.hdr-ms-sub{font-size:9px;color:rgba(255,255,255,0.3)}
+.hdr-scores{display:flex;gap:12px;align-items:center;flex-shrink:0}
+.hdr-score{text-align:right}
+.hdr-sc-label{font-size:9px;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.35)}
+.hdr-sc-val{font-size:20px;font-weight:700;line-height:1;font-family:'DM Mono',monospace}
+.hdr-sc-sub{font-size:9px;color:rgba(255,255,255,0.3)}
+.hdr-vdiv{width:1px;height:32px;background:rgba(255,255,255,0.12)}
+.hdr-row3{display:flex;align-items:center;justify-content:space-between;padding:6px 16px;background:rgba(255,255,255,0.03);border-top:1px solid rgba(255,255,255,0.06);gap:16px}
+.hdr-quad-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:500}
+.hdr-conf-row{display:flex;align-items:center;gap:8px}
+.hdr-conf-bar-track{width:60px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px}
+.hdr-conf-bar-fill{height:3px;background:#f97316;border-radius:2px}
+.hdr-warranty{background:rgba(245,158,11,0.15);border-left:3px solid #f59e0b;padding:5px 16px;font-size:11px;color:#fcd34d;display:none}
+.hdr-warranty.visible{display:block}
+/* Sprint 5: kept hdr-id/meta/badges/conf-badge/conf-classes; removed old hdr-range/-vs/-score-*/-quadrant/-conf-label/-conf-val/-top-row/duplicate hdr-conf-bar-* */
+.hdr-id{font-family:'DM Mono',monospace;font-size:13px;color:rgba(255,255,255,0.9);font-weight:600}
+.hdr-meta{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px}
+.hdr-badges{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hdr-badges .badge,.hdr-badges .pill{display:inline-flex;align-items:center;padding:2px 9px;border-radius:11px;font-size:10px;font-weight:600}
+.hdr-conf-badge{padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.05em}
+.conf-high{background:#14532d;color:#86efac}
+.conf-medium{background:#78350f;color:#fcd34d}
+.conf-limited{background:#374151;color:#9ca3af}
+
+/* Sprint 5: scroll arrows on tabs row */
+.tab-spacer{flex:1}
+.scroll-arrows{display:flex;gap:4px;align-items:center;padding:0 4px;border-left:1px solid #f3f4f6;margin-left:8px}
+.scroll-arrow{width:22px;height:22px;border:1px solid #e5e7eb;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#9ca3af;cursor:pointer;background:#f9fafb}
+.scroll-arrow:hover{background:#f3f4f6;color:#374151}
+
+/* Sprint 5: intel pills moved to right panel */
+#rp-intel-pills .intel-pill{display:block;padding:5px 10px;border-radius:8px;font-size:11px;background:#fff7ed;color:#f97316;border:1px solid rgba(249,115,22,0.2);margin-bottom:5px;line-height:1.4}
+#rp-intel:empty{display:none}
+
+/* CONTENT */
+/* Sprint layout-rewrite: .content/.story replaced by .content-layout grid */
+.content-layout{display:grid;grid-template-columns:1fr 280px;flex:1;min-height:0;overflow:hidden}
+.tab-content{overflow-y:auto;padding:16px;min-width:0;background:var(--bg)}
+.tcontent{overflow-y:auto;padding:16px;min-width:0;background:var(--bg)}  /* alias kept for JS that may target .tcontent */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 16px;background:var(--bg-card);overflow-x:auto}
+/* Sprint 4-fix: bump tab visibility */
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:'Outfit',sans-serif;white-space:nowrap;transition:all 0.12s}
+.tab:hover:not(.on){color:#374151;border-bottom-color:#e5e7eb}
+.tab.on{color:#f97316;border-bottom-color:#f97316;font-weight:600}
+.tcontent{flex:1;overflow-y:auto;padding:18px 22px;background:var(--bg)}
+.tpane{display:none}.tpane.on{display:block}
+
+/* RIGHT PANEL */
+.rp{width:280px;border-left:1px solid var(--border);background:#fff;overflow-y:auto;padding:14px;position:relative}
+.rp.col{width:0;padding:0;border:none;overflow:hidden}
+.rp .col-btn{top:10px;left:-12px}
+.rp-sec{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+.rp-title{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px}
+.rp-big{font-family:'DM Mono',monospace;font-size:22px;font-weight:700;color:var(--accent)}
+.rp-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.peer{background:var(--bg-muted);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:5px;cursor:pointer;font-size:11px}
+.peer:hover{border-color:var(--accent)}
+.chat-in{width:100%;background:var(--bg-muted);border:1px solid var(--border);border-radius:6px;padding:7px 10px;color:var(--text);font-size:11px;outline:none}
+.chat-in:focus{border-color:var(--accent)}
+.action-txt{font-size:13px;color:var(--accent);font-weight:600;line-height:1.4}
+
+/* SHARED */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+.clbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:6px}
+.cval{font-family:'DM Mono',monospace;font-size:20px;font-weight:600}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sgrid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.slbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.sval{font-family:'DM Mono',monospace;font-size:15px;font-weight:600}
+.hbar{margin-bottom:7px}
+.hbar-lbl{font-size:10px;color:var(--text2);margin-bottom:2px;display:flex;justify-content:space-between}
+.hbar-trk{height:9px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.hbar-fill{height:100%;border-radius:4px;transition:width .5s}
+.attr-bar{display:flex;height:22px;border-radius:5px;overflow:hidden;margin-bottom:3px}
+.attr-seg{display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:#fff;white-space:nowrap}
+.attr-legend{display:flex;gap:8px;flex-wrap:wrap;font-size:9px;color:var(--text2);margin-top:5px}
+.attr-legend .dot{width:7px;height:7px;border-radius:2px;display:inline-block;margin-right:3px}
+.pbadge{padding:3px 9px;border-radius:7px;font-size:10px;font-weight:500;display:inline-block;margin-right:6px;margin-bottom:4px}
+.lead-card{background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:14px 18px;margin-bottom:14px}
+.lead-txt{font-family:'Outfit',sans-serif;font-size:15px;font-weight:500;line-height:1.5;color:var(--text)}
+.verdict-banner{border-radius:8px;padding:10px 14px;font-size:12px;margin-bottom:12px;border-left:4px solid}
+.vb-gray{background:#f3f4f6;border-color:#9ca3af;color:#6b7280}
+.vb-amber{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.vb-orange{background:#fff7ed;border-color:#f97316;color:#9a3412}
+.vb-red{background:#fef2f2;border-color:#ef4444;color:#991b1b}
+.framing-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.framing-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.framing-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:6px}
+.framing-txt{font-size:12px;color:var(--text2);line-height:1.5}
+.stale-banner{background:#f3f4f6;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--text2);margin-bottom:12px}
+.info-i{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--bg-muted);border:1px solid var(--border);font-size:9px;color:var(--text3);cursor:help;margin-left:3px;position:relative;vertical-align:middle;font-style:normal}
+.info-i .tt{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:300px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border2);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:10px;color:var(--text2);line-height:1.5;font-weight:400;text-transform:none;letter-spacing:0;z-index:100;font-family:'DM Sans',system-ui}
+.info-i:hover .tt,.info-i:focus .tt{display:block}
+.cwrap{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;height:260px;position:relative}
+canvas{max-width:100%;max-height:230px}
+.attr-explain{font-size:10px;color:var(--text2);margin-top:2px;margin-bottom:6px;padding-left:4px;border-left:2px solid var(--accent-soft)}
+.tech-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tech-tbl th{text-align:left;padding:5px 8px;color:var(--text3);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--border2)}
+.tech-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:10px}
+.roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.roi-card{background:var(--bg-muted);border-radius:8px;padding:12px;text-align:center}
+.roi-big{font-family:'DM Mono',monospace;font-size:20px;font-weight:700}
+.loading{text-align:center;padding:30px;color:var(--text3);font-size:11px}
+@media(max-width:1100px){.rp{display:none}.lp{width:220px}}
+@media(max-width:800px){.lp{display:none}.framing-grid{grid-template-columns:1fr}.sgrid4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- Sprint layout-rewrite: body is flex-column. Top-level rows are direct children. -->
+  <!-- ZONE 1: VERDICT — Option B 2-col layout (Sprint 1b) -->
+  <!-- Sprint 5: 4-row header — identity / range+mid stats+DRI/AHI / quadrant+conf / warranty -->
+  <div class="hdr" id="battery-header">
+    <!-- Row 1: identity + badges -->
+    <div class="hdr-row1">
+      <div>
+        <div class="hdr-id" id="hdr-id">—</div>
+        <div class="hdr-meta" id="hdr-meta">—</div>
+        <div class="hdr-pack-note" id="pack-note" style="display:none">Pack3401 reaches operational floor earlier than Pack3001 on this fleet (median knee week 18.8 vs 19.4)</div>
+      </div>
+      <div class="hdr-badges">
+        <span class="badge pill" id="hdr-tier-badge">—</span>
+        <span class="badge b-action pill" id="hdr-action-badge">—</span>
+      </div>
+    </div>
+    <!-- Row 2: range + 4 mid stats + DRI/AHI -->
+    <div class="hdr-row2">
+      <div class="hdr-range-block">
+        <span class="hdr-range-val" id="hdr-range">—</span>
+        <span class="hdr-range-unit">km</span>
+      </div>
+      <div class="hdr-mid-stats">
+        <div class="hdr-mid-stat">
+          <div class="hdr-ms-label">vs commissioned</div>
+          <div class="hdr-ms-val" id="hdr-pct-comm">—</div>
+          <div class="hdr-ms-sub" id="hdr-pct-comm-sub">—</div>
+        </div>
+        <div class="hdr-mid-stat">
+          <div class="hdr-ms-label">vs fleet median</div>
+          <div class="hdr-ms-val" id="hdr-vs-fleet">—</div>
+          <div class="hdr-ms-sub" id="hdr-vs-fleet-sub">—</div>
+        </div>
+        <div class="hdr-mid-stat">
+          <div class="hdr-ms-label">Pack cohort</div>
+          <div class="hdr-ms-val" id="hdr-cohort-pct">—</div>
+          <div class="hdr-ms-sub" id="hdr-cohort-sub">—</div>
+        </div>
+        <div class="hdr-mid-stat">
+          <div class="hdr-ms-label">Primary driver</div>
+          <div class="hdr-ms-val" id="hdr-driver" style="font-size:11px;color:#f97316">—</div>
+          <div class="hdr-ms-sub">attribution</div>
+        </div>
+      </div>
+      <div class="hdr-scores">
+        <div class="hdr-score">
+          <div class="hdr-sc-label">DRI</div>
+          <div class="hdr-sc-val" style="color:#f97316" id="hdr-dri">—</div>
+          <div class="hdr-sc-sub">vs own start</div>
+        </div>
+        <div class="hdr-vdiv"></div>
+        <div class="hdr-score">
+          <div class="hdr-sc-label">AHI</div>
+          <div class="hdr-sc-val" style="color:#22c55e" id="hdr-ahi">—</div>
+          <div class="hdr-sc-sub">vs peers</div>
+        </div>
+      </div>
+    </div>
+    <!-- Row 3: quadrant pill + signal confidence -->
+    <div class="hdr-row3">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="hdr-quad-pill" id="hdr-quad-pill">—</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.3)" id="hdr-sig-agree">—</span>
+      </div>
+      <div class="hdr-conf-row">
+        <span class="hdr-conf-badge conf-limited" id="hdr-conf-badge">—</span>
+        <div class="hdr-conf-bar-track"><div class="hdr-conf-bar-fill" id="hdr-conf-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <!-- Warranty bar (conditional) -->
+    <div class="hdr-warranty" id="hdr-warranty">⚠ Warranty claim eligible — OEM-attributable degradation detected</div>
+    <!-- Hidden legacy hooks for any downstream JS still using v-* IDs -->
+    <span id="v-id" style="display:none"></span><span id="v-tier" style="display:none"></span><span id="v-action" style="display:none"></span>
+    <span id="v-range" style="display:none"></span><span id="v-pct" style="display:none"></span><span id="v-wk" style="display:none"></span>
+    <span id="v-pack" style="display:none"></span><span id="v-cf" style="display:none"></span><span id="v-cp" style="display:none"></span>
+    <span id="v-dri" style="display:none"></span><span id="v-ahi" style="display:none"></span>
+    <span id="v-quad" style="display:none"><span id="v-quad-dot"></span><span id="v-quad-txt"></span></span>
+    <span id="v-cause" style="display:none"></span>
+    <!-- hdr-pack-meta legacy alias hook -->
+    <span id="hdr-pack-meta" style="display:none"></span>
+    <!-- hdr-quadrant-pill legacy alias for prior renderVerdict targets -->
+    <span id="hdr-quadrant-pill" style="display:none"></span>
+  </div>
+
+  <!-- FILTER STRIP (Sprint 3) -->
+  <div class="filter-strip" id="filter-strip">
+    <span class="fs-label">Fleet</span>
+    <div class="fs-pills" id="filter-fleet">
+      <span class="fs-pill active" data-val="ALL">All</span>
+      <span class="fs-pill" data-val="GE">GE</span>
+      <span class="fs-pill" data-val="SG">SG</span>
+    </div>
+    <div class="fs-divider"></div>
+    <span class="fs-label">Pack</span>
+    <div class="fs-pills" id="filter-pack">
+      <span class="fs-pill active" data-val="ALL">All</span>
+      <span class="fs-pill" data-val="3001">3001</span>
+      <span class="fs-pill" data-val="3401" style="color:#c2410c">3401 ⚠</span>
+      <span class="fs-pill" data-val="1201">1201</span>
+    </div>
+    <div class="fs-divider"></div>
+    <span class="fs-label">Status</span>
+    <div class="fs-pills" id="filter-status">
+      <span class="fs-pill active" data-val="ALL">All</span>
+      <span class="fs-pill" data-val="CRITICAL" style="color:#dc2626">Critical</span>
+      <span class="fs-pill" data-val="STRESSED" style="color:#f97316">Stressed</span>
+      <span class="fs-pill" data-val="WATCH" style="color:#f59e0b">Watch</span>
+      <span class="fs-pill" data-val="GOOD">Good</span>
+    </div>
+    <div class="fs-divider"></div>
+    <span class="fs-label">City</span>
+    <div class="fs-pills" id="filter-city">
+      <span class="fs-pill active" data-val="ALL">All</span>
+      <span class="fs-pill" data-val="SR">SR</span>
+      <span class="fs-pill" data-val="CU">CU</span>
+    </div>
+    <div class="fs-divider"></div>
+    <div class="fs-search-wrap">
+      <svg class="fs-search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="6.5" cy="6.5" r="4"/><path d="M10 10l3 3"/>
+      </svg>
+      <input class="fs-search" id="fs-search-input" placeholder="Battery ID...">
+    </div>
+    <span class="fs-count" id="fs-count">— batteries</span>
+  </div>
+
+  <!-- IDENTITY STRIP (Sprint 3, Option A — collapsible) -->
+  <div class="id-strip" id="id-strip">
+    <div class="id-strip-summary" id="id-strip-toggle">
+      <div class="id-field"><span class="id-flabel">Pack</span><span class="id-fval id-fval-mono" id="ids-pack">—</span></div>
+      <div class="id-field"><span class="id-flabel">Age</span><span class="id-fval" id="ids-age">—</span></div>
+      <div class="id-field"><span class="id-flabel">Total EFC</span><span class="id-fval" id="ids-efc">—</span></div>
+      <div class="id-field"><span class="id-flabel">Capacity</span><span class="id-fval" id="ids-capacity">—</span></div>
+      <div class="id-field"><span class="id-flabel">Chemistry</span><span class="id-fval" id="ids-chemistry">—</span></div>
+      <div class="id-field"><span class="id-flabel">Warranty</span><span class="id-fval" id="ids-warranty">—</span></div>
+      <div class="id-field"><span class="id-flabel">Charge type</span><span class="id-fval" id="ids-charge">—</span></div>
+      <div class="id-field"><span class="id-flabel">IoT source</span><span class="id-fval" id="ids-iot">—</span></div>
+      <span class="id-expand-btn" id="id-expand-label">Battery details ▾</span>
+    </div>
+    <div class="id-strip-detail" id="id-strip-detail">
+      <div class="id-section-title">Identity</div>
+      <div class="id-detail-grid">
+        <div class="id-df"><span class="id-dlabel">Battery ID</span><span class="id-dval id-fval-mono" id="idd-id">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Fleet segment</span><span class="id-dval" id="idd-segment">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Pack model</span><span class="id-dval" id="idd-pack">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Rated capacity</span><span class="id-dval" id="idd-ah">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Chemistry</span><span class="id-dval" id="idd-chemistry">—</span></div>
+        <div class="id-df"><span class="id-dlabel">BMS OEM</span><span class="id-dval" id="idd-oem">—</span></div>
+        <div class="id-df"><span class="id-dlabel">IoT source</span><span class="id-dval" id="idd-iot">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Commissioned</span><span class="id-dval" id="idd-commissioned">—</span></div>
+      </div>
+      <hr class="id-divider">
+      <div class="id-section-title">Operational</div>
+      <div class="id-detail-grid">
+        <div class="id-df"><span class="id-dlabel">Age</span><span class="id-dval" id="idd-age">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Total km</span><span class="id-dval" id="idd-km">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Total EFC</span><span class="id-dval" id="idd-efc-full">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Std operating range</span><span class="id-dval" id="idd-std-range">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Charge pattern</span><span class="id-dval" id="idd-charge">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Drive profile</span><span class="id-dval" id="idd-drive">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Location</span><span class="id-dval" id="idd-location">—</span></div>
+        <div class="id-df"><span class="id-dlabel">End customer type</span><span class="id-dval">Commercial e-rickshaw</span></div>
+      </div>
+      <hr class="id-divider">
+      <div class="id-section-title">Warranty</div>
+      <div class="id-detail-grid">
+        <div class="id-df"><span class="id-dlabel">Warranty period</span><span class="id-dval" id="idd-warranty-period">36 months</span></div>
+        <div class="id-df"><span class="id-dlabel">Months remaining</span><span class="id-dval" id="idd-warranty-remaining">—</span></div>
+        <div class="id-df"><span class="id-dlabel">EFC limit</span><span class="id-dval">1,200 EFC</span></div>
+        <div class="id-df"><span class="id-dlabel">EFC consumed</span><span class="id-dval" id="idd-efc-warranty">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Claim status</span><span class="id-dval" id="idd-claim">—</span></div>
+        <div class="id-df"><span class="id-dlabel">Transferable</span><span class="id-dval">Yes (GF warranty)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sprint 5: intel-lead and dev-tiles content moved into header (mid stats) and right panel (intel pills). -->
+  <!-- Hidden legacy spans for any JS still targeting old IDs (intel-narrative, intel-driver, intel-pills, dev-vs-*) -->
+  <span id="intel-narrative" style="display:none"></span>
+  <span id="intel-driver" style="display:none"></span>
+  <span id="intel-pills" style="display:none"></span>
+  <span id="intel-action-pill" style="display:none"></span>
+  <span id="dev-vs-oem" style="display:none"></span>
+  <span id="dev-vs-oem-sub" style="display:none"></span>
+  <span id="dev-vs-fleet-sub" style="display:none"></span>
+  <span id="dev-vs-cohort-sub" style="display:none"></span>
+
+  <!-- Sprint layout-rewrite: tabs at body level, then content-layout (grid) -->
+  <div class="tabs">
+        <button class="tab on" data-t="overview">Overview</button>
+        <button class="tab" data-t="perf">Performance</button>
+        <button class="tab" data-t="health">Health</button>
+        <button class="tab" data-t="attr">Attribution</button>
+        <button class="tab" data-t="svc">Service</button>
+        <button class="tab" data-t="analytics">Analytics</button>
+        <button class="tab" data-t="tech" id="tech-tab" style="display:none">Tech Deep Dive</button>
+        <div class="tab-spacer"></div>
+        <div class="scroll-arrows">
+          <div class="scroll-arrow" id="scroll-up" title="Scroll up">↑</div>
+          <div class="scroll-arrow" id="scroll-down" title="Scroll down">↓</div>
+        </div>
+      </div>
+
+  <!-- Sprint layout-rewrite: content-layout wraps tab content + right panel side-by-side -->
+  <div class="content-layout" id="content-layout">
+      <div class="tcontent" id="tab-content">
+        <!-- TAB 1: OVERVIEW -->
+        <div class="tpane on" id="t-overview">
+          <div class="lead-card"><div class="lead-txt" id="lead-txt">Loading intelligence...</div></div>
+          <div id="verdict-banner"></div>
+          <div class="framing-grid" id="framing-grid"></div>
+          <div class="sgrid4" id="subsystem-tiles"></div>
+          <div id="diverge-alert"></div>
+          <div id="stale-banner"></div>
+        </div>
+        <!-- TAB 2: PERFORMANCE -->
+        <div class="tpane" id="t-perf">
+          <div class="cwrap">
+            <div class="clbl">Range Trend &amp; Forecast</div>
+            <div class="chart-scroll">
+              <div class="chart-scroll-inner" id="range-chart-inner" style="min-width:800px">
+                <canvas id="range-chart"></canvas>
+              </div>
+            </div>
+            <div class="chart-note">Blue dashed line = median range forecast. When actual range (orange) falls below forecast for 2+ consecutive weeks, decline is confirmed — not random variation.</div>
+          </div>
+          <div id="rul-band" style="font-size:11px;color:var(--text2);margin-bottom:12px"></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:-8px;margin-bottom:10px">Estimated weeks of useful life remaining before range drops below operational floor. Directional estimate — actual timing depends on usage patterns. ±40% uncertainty.</div>
+          <!-- Sprint 2: Approaching end of useful life block (REPLACE_PLAN / PHYSICS_REPLACE_PLAN only) -->
+          <div id="eol-card" class="card" style="display:none;border-left:3px solid var(--orange)">
+            <div class="clbl">Approaching end of useful life</div>
+            <div id="eol-text" style="font-size:12px;color:var(--text);line-height:1.5"></div>
+          </div>
+          <div class="sgrid">
+            <div class="card"><div class="clbl">DoD Observed vs Optimal</div>
+              <div class="sgrid"><div><div class="slbl">Observed</div><div class="sval" id="dod-obs">--</div></div><div><div class="slbl">Optimal</div><div class="sval" id="dod-opt">--</div></div></div>
+              <div id="dod-flag" style="font-size:10px;color:var(--amber);margin-top:4px"></div>
+            </div>
+            <div class="card"><div class="clbl">Trajectory (8-week slope)</div>
+              <div class="sval" id="kps-arrow" style="font-size:18px">--</div>
+              <div id="kps-txt" style="font-size:10px;color:var(--text2);margin-top:3px"></div>
+            </div>
+          </div>
+          <div class="card"><div class="clbl">Pack Cohort Position <span class="info-i" tabindex="0">i<span class="tt">Reference group used for age-health comparison. Batteries of the same pack model, city, and use case in the same age range.</span></span></div><div id="cohort-txt" style="font-size:12px"></div></div>
+        </div>
+        <!-- TAB 3: HEALTH -->
+        <div class="tpane" id="t-health">
+          <div class="sgrid">
+            <div class="card">
+              <div class="clbl">Battery Health Score (BHS) <span class="info-i" tabindex="0">i<span class="tt">Battery Health Score (BHS v4) — deviation from the operating baseline: the median performance of healthy batteries of this pack model and city during their first 16 weeks of operation. Score 100 = at baseline. Lower = further below baseline. Weights: SOH 42.9%, range 30.8%, cell spread 15.2%, SOH decline rate 6.3%, EFC 4.8%.</span></span></div>
+              <div class="cval" id="bhs-score" style="font-size:34px">--</div>
+              <div style="font-size:10px;color:var(--text2)">/100</div>
+              <div id="bhs-why" style="font-size:11px;color:var(--text2);margin-top:6px"></div>
+              <div id="bhs-v4-preview" style="font-size:10px;color:var(--text3);margin-top:6px;border-top:1px solid var(--border);padding-top:4px;display:none">
+                <span style="opacity:.7">vs operating baseline:</span>
+                <span id="bhs-v4-val" style="font-weight:600"></span>
+                <span id="bhs-v4-cohort" style="opacity:.6"></span>
+              </div>
+              <div id="tier-badge" style="display:none;margin-top:6px;font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;width:fit-content"></div>
+            </div>
+            <div class="card">
+              <div class="clbl">State of Health (SOH) — conservative estimate <span class="info-i" tabindex="0">i<span class="tt">State of Health (SOH) — remaining battery capacity as a percentage of original rated capacity. 83% = battery holds 83% of the energy it held when new. Computed from Coulomb counting and efficiency proxy. Conservative = lower of the two methods. BMS-reported SOH is not used for LFP batteries — unreliable for this chemistry.</span></span></div>
+              <div class="cval" id="soh-val">--</div>
+              <div style="font-size:9px;color:var(--text3);margin-top:2px">Lower of Coulomb counting + efficiency proxy</div>
+            </div>
+          </div>
+          <div class="card"><div class="clbl">Battery Health Score — components</div><div id="bhs-comps"></div><div id="bhs-weight-note" style="font-size:10px;color:var(--text2);margin-top:8px;font-style:italic">5 signals · Weights: SOH 42.9% · Range 30.8% · Cell spread 15.2% · SOH decline rate 6.3% · EFC 4.8%</div></div>
+          <div class="sgrid">
+            <div class="card"><div class="clbl">Degradation Regime</div><div id="regime-txt" style="font-size:13px;font-weight:600"></div></div>
+            <div class="card"><div class="clbl">Signal confidence <span class="info-i" tabindex="0">i<span class="tt">Signal confidence — how many of 7 independent diagnostic signals agree on this battery's condition. 4 of 7 = MEDIUM confidence. Signals: range trend, SOH trend, cell voltage spread, cycle throughput (EFC), SOH decline slope, cohort percentile position, fault history. All 7 agreeing = HIGH confidence.</span></span></div><div id="corr-txt" style="font-size:13px;font-weight:600"></div><div id="corr-detail" style="font-size:10px;color:var(--text2);margin-top:3px"></div></div>
+          </div>
+          <div class="card"><div class="clbl">Risk Signals</div><div class="sgrid" id="risk-sigs"></div></div>
+          <div id="div-quad-card"></div>
+          <div id="health-diverge"></div>
+        </div>
+        <!-- TAB 4: ATTRIBUTION -->
+        <div class="tpane" id="t-attr">
+          <div class="card"><div class="clbl">Degradation Attribution <span class="info-i" tabindex="0">i<span class="tt">Shows the estimated contribution of each factor to this battery's degradation. Primary factor shown in orange. Based on telemetry analysis across charging sessions, usage patterns, and electrochemical signals.</span></span></div><div id="attr-bars"></div><div style="font-size:9px;color:var(--text3);margin-top:6px">Fleet physics model · Validated Q1 2026</div></div>
+          <div class="card"><div class="clbl">Behavior Profiles</div><div id="profiles"></div></div>
+          <div class="card"><div class="clbl">Warranty Status</div><div id="warranty-info"></div></div>
+        </div>
+        <!-- TAB 5: SERVICE -->
+        <div class="tpane" id="t-svc">
+          <div class="card"><div class="clbl">Events Timeline</div><div class="events-timeline" id="events-timeline"><div style="color:#9ca3af;font-size:12px">Loading events...</div></div></div>
+          <div id="svc-content"><div class="loading">Loading service data...</div></div>
+        </div>
+        <!-- TAB 6: ANALYTICS -->
+        <div class="tpane" id="t-analytics">
+          <div class="card">
+            <div class="clbl">Signal Explorer</div>
+            <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+              <label style="font-size:10px;color:var(--text2)">Y axis <select id="ax-y" style="font-size:11px;padding:3px 6px;border-radius:4px;border:1px solid var(--border)">
+                <option value="range">Range (km)</option>
+                <option value="soh">State of Health — SOH (%)</option>
+                <option value="spread">Cell voltage spread (mV)</option>
+                <option value="r0">Internal resistance R0 (mΩ)</option>
+                <option value="efc">Cycle throughput — EFC</option>
+                <option value="dod">Depth of Discharge — DoD (%)</option>
+              </select></label>
+            </div>
+            <div class="chart-scroll">
+              <div class="chart-scroll-inner" id="analytics-chart-inner" style="min-width:800px">
+                <canvas id="analytics-chart"></canvas>
+              </div>
+            </div>
+            <div class="chart-note" id="analytics-source">Source: vehicle telemetry · Updated weekly</div>
+          </div>
+        </div>
+        <!-- TAB 7: TECH DEEP DIVE -->
+        <div class="tpane" id="t-tech">
+          <div class="card"><div class="clbl">Raw Signals</div><table class="tech-tbl" id="tech-raw"></table></div>
+          <div class="card"><div class="clbl">BHS Components</div><table class="tech-tbl" id="tech-bhs"></table></div>
+          <div class="card"><div class="clbl">Attribution Raw</div><table class="tech-tbl" id="tech-attr"></table></div>
+          <div class="card"><div class="clbl">Data Quality</div><table class="tech-tbl" id="tech-dq"></table></div>
+        </div>
+      </div><!-- end .tcontent -->
+
+    <!-- RIGHT PANEL — sibling of .tcontent inside .content-layout -->
+    <div class="rp" id="rp">
+      <button class="col-btn" id="rp-btn" onclick="togRP()">&rsaquo;</button>
+      <!-- Sprint 5: intel pills moved here from below header -->
+      <div class="rp-sec" id="rp-intel"><div class="rp-title">Intelligence</div><div id="rp-intel-pills"></div></div>
+      <div class="rp-sec"><div class="rp-title">Pack Cohort</div><div class="rp-big" id="rp-rank">--</div><div class="rp-sub" id="rp-cohort"></div></div>
+      <div class="rp-sec"><div class="rp-title">Peers — same pack, different cause</div><div id="rp-peers"></div></div>
+      <div class="rp-sec"><div class="rp-title">Ask about this unit</div><input type="text" class="chat-in" id="chat-in" placeholder="e.g. Why is this battery declining?"></div>
+      <div class="rp-sec"><div class="rp-title">Recommended Action</div><div class="action-txt" id="rp-action">--</div></div>
+    </div>
+  </div><!-- end .content-layout -->
+
+<script>
+const API='',TOKEN=localStorage.getItem('enerlyst_token')||'{{ api_token }}',HDR={'Authorization':'Bearer '+TOKEN};
+async function get(ep){try{const r=await fetch(API+ep,{headers:HDR});if(!r.ok)return null;return await r.json()}catch{return null}}
+function esc(s){return s!=null?String(s).replace(/</g,'&lt;'):'--'}
+function fmt(v,d=1){return v!=null?Number(v).toFixed(d):'--'}
+function shortPack(p){return(p||'').replace('GF_LFP_','').replace('_',' ')}
+
+const TIER={PRIME:{l:'Prime',c:'b-prime',k:'#14b8a6'},STABLE:{l:'Stable',c:'b-stable',k:'#22c55e'},WATCH:{l:'Watch',c:'b-watch',k:'#f59e0b'},STRESSED:{l:'Stressed',c:'b-stressed',k:'#f97316'},CRITICAL:{l:'Critical',c:'b-critical',k:'#ef4444'},INSUFFICIENT_DATA:{l:'Insufficient Data',c:'b-watch',k:'#9ca3af'}};
+const REGIME={PRE_KNEE:'Early stage',APPROACHING_KNEE:'Mid degradation',POST_KNEE:'Advanced degradation',RESISTANCE_DOMINATED:'Resistance-limited'};
+const ATTR_C={cycle:'#F97316',dod:'#EF4444',thermal:'#DC2626',imbalance:'#F59E0B',calendar:'#6B7280',physical:'#374151'};
+const ATTR_L={cycle:'Cycle',dod:'DoD',thermal:'Thermal',imbalance:'Cell Imbalance',calendar:'Calendar',physical:'Physical'};
+const ATTR_EX={cycle:'High cycle frequency accelerating cell wear',dod:'Operating deeper than optimal for this pack',thermal:'Heat exposure above optimal range for LFP',imbalance:'Cell voltage spread widening — imbalance signal',calendar:'Time-based aging — independent of use pattern',physical:'Manufacturing or design contribution'};
+// ATTR_PLAIN: maps primary_driver / legacy attr_primary_factor to plain English.
+// New engine vocab: charging, usage, thermal, maintenance, calendar.
+// Legacy vocab retained for peer-display fallback when /api/oem endpoints return attr_primary_factor.
+const ATTR_PLAIN={
+  // new engine vocabulary
+  charging:'Charging pattern', usage:'Usage intensity',
+  thermal:'Temperature exposure', maintenance:'Cell health maintenance',
+  calendar:'Time / calendar aging',
+  // legacy vocabulary (translated on display)
+  cycle_stress:'Usage intensity', cell_imbalance:'Cell health maintenance',
+  thermal_stress:'Temperature exposure', dod_stress:'Usage intensity',
+  calendar_aging:'Time / calendar aging', physical_degradation:'Cell health maintenance',
+  cycle_intensity:'Usage intensity', charging_stress:'Charging pattern'
+};
+const SIG_MAP={S1:'range trend',S2:'cell spread',S3:'SOH trajectory',S4:'fault history',S5:'regime match',S6:'corroboration',S7:'attribution'};
+// COMP_MAP removed Sprint 2 — dead code, never referenced.
+const COMP_SHORT={
+  spread:           "Cell voltage spread <span style='font-size:10px;color:var(--text2)'>(15.2%)</span>",
+  soh_latest:       "SOH contribution <span style='font-size:10px;color:var(--text2)'>(42.9%)</span>",
+  soh_trend:        "SOH decline rate <span style='font-size:10px;color:var(--text2)'>(6.3%)</span>",
+  ah_throughput:    "Cycle throughput (EFC) <span style='font-size:10px;color:var(--text2)'>(4.8%)</span>",
+  pct_commissioned: "Range retention <span style='font-size:10px;color:var(--text2)'>(30.8%)</span>"
+  // operational_score key removed Sprint 2 (Rule 234) — filtered in renderHealth so unused.
+};
+// Plain (no-HTML) component names for "Why this score" sentence
+const COMP_PLAIN={spread:'cell voltage spread',soh_latest:'SOH contribution',soh_trend:'SOH decline rate',ah_throughput:'EFC',pct_commissioned:'range retention'};
+// Per-component tooltips (Sprint 2)
+const COMP_TIP={
+  soh_latest:    'Contribution of State of Health (SOH) to the overall Battery Health Score. Highest weight (42.9%) — SOH is the most important signal in the health score. SOH here = conservative estimate from Coulomb counting and efficiency proxy.',
+  pct_commissioned:'Current weekly range as a percentage of range at commissioning. 70% = battery delivers 30% less range than when new. Second-highest BHS weight (30.8%) — most visible sign of degradation.',
+  spread:        'Spread between highest and lowest cell voltages (mV) during discharge. Increasing spread = cells ageing unevenly. High spread reduces usable capacity and accelerates overall degradation.',
+  soh_trend:     'Rate at which State of Health is declining, in km-per-%-SoC per week. Negative = deteriorating. Steeper negative = faster decline. Measured over the last 8 weeks. Score near zero on this component = declining faster than cohort average.',
+  ah_throughput: 'Equivalent Full Cycles (EFC) — total energy cycled through this battery, normalised to rated capacity. 1 EFC = full charge 0% to 100% SoC. Higher EFC at same age = more cumulative stress on the battery. Current EFC vs warranty limit shown in the Service tab.'
+};
+const ACT_MAP={PHYSICS_REPLACE_PLAN:'Replace — confirmed physics decline',REPLACE_PLAN:'Schedule replacement',ACUTE_BREACH_WATCH:'Breach watch',CELL_BALANCE_PRIORITY:'Cell balance service',MONITOR_INVESTIGATE:'Under investigation',MONITOR_WEEKLY:'Monitor weekly',MONITOR:'Monitor weekly',ROUTINE:'No action needed',NO_ACTION:'No action needed',CAPACITY_STABLE_LOW:'Capacity at steady state'};
+const EVENT_PLAIN={SOH_CAPACITY_DECLINE:'Capacity decline detected',EFFICIENCY_REGIME_CHANGE:'Efficiency regime change',CELL_IMBALANCE_ESCALATION:'Cell imbalance escalation',THERMAL_STRESS_ONSET:'Thermal stress onset',DOD_EXCEEDANCE:'DoD exceedance detected',RESISTANCE_SURGE:'Resistance surge',CUSUM_BREAKPOINT:'Trend breakpoint detected',RANGE_ANOMALY:'Range anomaly',CHARGE_PATTERN_SHIFT:'Charging pattern shift'};
+const CHARGE_MAP={OVERNIGHT_FULL:{t:'Overnight full charge',s:'✓ Full overnight charging — optimal for LFP',c:'var(--green)'},IRREGULAR:{t:'Irregular charging',s:'⚠ Irregular charging is the primary controllable risk factor',c:'var(--amber)'},PARTIAL_TOPUP:{t:'Partial top-up',s:'Partial top-up pattern — increases imbalance over time',c:'var(--text2)'},A:{t:'Good',s:'Good charging discipline',c:'var(--green)'},B:{t:'Moderate',s:'Moderate charging discipline',c:'var(--text2)'},C:{t:'Poor',s:'⚠ Poor charging discipline',c:'var(--amber)'},D:{t:'Very poor',s:'⚠ Very poor charging discipline',c:'var(--red)'}};
+const DRIVE_MAP={AGGRESSIVE:{t:'Aggressive',s:'⚠ Aggressive acceleration increases discharge C-rate stress',c:'var(--red)'},MODERATE:{t:'Moderate',s:'Moderate drive profile — within acceptable range',c:'var(--text2)'},CONSERVATIVE:{t:'Conservative',s:'✓ Conservative drive profile — minimal stress',c:'var(--green)'},HIGH:{t:'Aggressive',s:'⚠ High-stress driving pattern',c:'var(--red)'},MEDIUM:{t:'Moderate',s:'Moderate driving',c:'var(--text2)'},LOW:{t:'Conservative',s:'Conservative driving',c:'var(--green)'}};
+const SVC_MAP={EXEMPLARY:{t:'Exemplary operator',s:'✓ Exemplary service record — warranty position strengthened',c:'var(--green)'},STANDARD:{t:'Standard',s:'Standard service compliance',c:'var(--text2)'},WATCH:{t:'Watch',s:'Service compliance below standard — monitor',c:'var(--amber)'},NEGLIGENT:{t:'Negligent',s:'⚠ Service alerts have not been actioned — compliance gap',c:'var(--orange)'},AT_RISK:{t:'At risk',s:'⚠ At risk — immediate service review required',c:'var(--red)'}};
+const FAULT_MAP={CHRONIC_WORSENING:'Chronic — worsening',ACTIVE_WORSENING:'Active — worsening',ACTIVE_STABLE:'Active — stable',RECOVERING:'Recovering',CLEAN:'Clean'};
+const DIV_MAP={NORMAL:{t:'No divergence detected',c:'var(--text3)'},EARLY_WARNING:{t:'Early warning: internal health declining ahead of range',c:'var(--amber)'},RANGE_CONTEXT:{t:'Range declining but chemistry stable — likely usage pattern',c:'var(--cyan)'},ALIGNED_DECLINE:{t:'Confirmed decline: both tracks deteriorating',c:'var(--red)'},ALIGNED_HEALTHY:{t:'Both DRI and AHI healthy',c:'var(--green)'}};
+
+let allBats=[],curBat=null,rChart=null,aChart=null,vwfData=[];
+
+// ── FILTER STRIP (Sprint 3) ──
+let filterState = {fleet:'ALL', pack:'ALL', status:'ALL', city:'ALL', search:''};
+
+async function loadBatteryList(){
+  const d = await get('/api/oem/unit-list');
+  if(!d) return;
+  allBats = d;
+  updateCount();
+}
+
+function getFiltered(){
+  if(!allBats || allBats.length===0) return [];
+  return allBats.filter(b=>{
+    if(filterState.fleet!=='ALL' && b.segment_prefix!==filterState.fleet) return false;
+    // Sprint 4-fix: pack uses substring match — pill data-val is short ("3401")
+    // and pack_model in API is full ("GF_LFP_Pack3401")
+    if(filterState.pack!=='ALL' && !(b.pack_model||'').includes(filterState.pack)) return false;
+    if(filterState.status!=='ALL'&& b.tier_label_v2!==filterState.status) return false;
+    if(filterState.city!=='ALL'  && b.city!==filterState.city) return false;
+    if(filterState.search){
+      const s = filterState.search.toUpperCase();
+      const segMatch = (b.segment_prefix||'').toUpperCase()===s;
+      const idMatch = b.battery_id.toUpperCase().includes(s);
+      if(!segMatch && !idMatch) return false;
+    }
+    return true;
+  });
+}
+
+function updateCount(){
+  const filtered = getFiltered();
+  // Sprint 4-fix: narrower NON_ACTION set per spec — MONITOR alone now counts as needing action
+  const NON_ACTION = new Set(['NO_ACTION','ROUTINE','STABLE_NO_RUL','MONITOR_WEEKLY']);
+  const actionCount = filtered.filter(b=>!NON_ACTION.has(b.rul_action_v2)).length;
+  document.getElementById('fs-count').textContent = `${filtered.length} batteries · ${actionCount} need action`;
+}
+
+function wirePillGroup(groupId, stateKey){
+  document.querySelectorAll(`#${groupId} .fs-pill`).forEach(p=>{
+    p.addEventListener('click', ()=>{
+      document.querySelectorAll(`#${groupId} .fs-pill`).forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      filterState[stateKey] = p.dataset.val;
+      updateCount();
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  // Wire filter pills
+  wirePillGroup('filter-fleet','fleet');
+  wirePillGroup('filter-pack','pack');
+  wirePillGroup('filter-status','status');
+  wirePillGroup('filter-city','city');
+
+  // Wire search — auto-loads if exactly 1 match
+  document.getElementById('fs-search-input').addEventListener('input', e=>{
+    filterState.search = e.target.value.trim();
+    updateCount();
+    const matches = getFiltered();
+    if(matches.length===1) selectBat(matches[0].battery_id);
+  });
+
+  // Wire identity-strip toggle
+  document.getElementById('id-strip-toggle').onclick = ()=>{
+    const detail = document.getElementById('id-strip-detail');
+    const label = document.getElementById('id-expand-label');
+    const isOpen = detail.classList.toggle('open');
+    label.textContent = isOpen ? 'Battery details ▴' : 'Battery details ▾';
+  };
+
+  if(new URLSearchParams(location.search).get('internal')==='true')document.getElementById('tech-tab').style.display='';
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tpane').forEach(p=>p.classList.remove('on'));
+    t.classList.add('on');
+    const p=document.getElementById('t-'+t.dataset.t);if(p)p.classList.add('on');
+    if(t.dataset.t==='perf'&&rChart)rChart.resize();
+    if(t.dataset.t==='analytics'&&aChart)aChart.resize();
+  }));
+
+  // Sprint 5: tab content scroll arrows
+  const su = document.getElementById('scroll-up');
+  const sd = document.getElementById('scroll-down');
+  const getScrollEl = ()=> document.querySelector('.tcontent') || document.getElementById('tab-content');
+  if(su) su.onclick = ()=> getScrollEl()?.scrollBy({top:-200, behavior:'smooth'});
+  if(sd) sd.onclick = ()=> getScrollEl()?.scrollBy({top:200, behavior:'smooth'});
+
+  // Sprint 5: search Enter key — load first match if any
+  const searchInput = document.getElementById('fs-search-input');
+  if(searchInput){
+    searchInput.addEventListener('keydown', e=>{
+      if(e.key==='Enter'){
+        const matches = getFiltered();
+        if(matches.length>=1) selectBat(matches[0].battery_id);
+      }
+    });
+  }
+
+  // Initial load: fetch fleet for filter counts, then load default battery
+  loadBatteryList().then(()=>{
+    const id = new URLSearchParams(location.search).get('id') || 'BAT_LFP_109';
+    selectBat(id);
+  });
+});
+
+// ── IDENTITY STRIP populate (Sprint 3) — called from selectBat after data fetch
+function populateIdentityStrip(d, v){
+  // d = /api/battery/{id} response, v = unit.verdict (from /api/oem/unit/{id})
+  const pack = shortPack(d.pack_model || v.pack_model);
+  const ageWk = d.age_weeks!=null ? d.age_weeks + ' weeks' : '—';
+  const efc = d.efc_cumulative!=null ? Math.round(d.efc_cumulative) + ' EFC' : '—';
+  const cap = d.capacity_ah!=null ? d.capacity_ah + ' Ah' : '—';
+  const wmoR = d.warranty_months_remaining;
+
+  // Summary row
+  document.getElementById('ids-pack').textContent = pack || '—';
+  document.getElementById('ids-age').textContent = ageWk;
+  document.getElementById('ids-efc').textContent = efc;
+  document.getElementById('ids-capacity').textContent = cap;
+  document.getElementById('ids-chemistry').textContent = (d.chemistry || 'LFP');
+  const wEl = document.getElementById('ids-warranty');
+  if(wmoR!=null){
+    const cls = wmoR<6 ? 'id-badge-red' : (wmoR<12 ? 'id-badge-warn' : 'id-badge-green');
+    wEl.innerHTML = `<span class="id-badge ${cls}">${Math.round(wmoR)} mo left</span>`;
+  } else {
+    wEl.textContent = '—';
+  }
+  const chargeMap = {OVERNIGHT_FULL:'Overnight full', IRREGULAR:'Irregular', PARTIAL_TOPUP:'Partial top-up'};
+  document.getElementById('ids-charge').textContent = chargeMap[d.personal_charge_profile] || d.personal_charge_profile || '—';
+  document.getElementById('ids-iot').textContent = d.iot_provider || 'Intellicar';
+
+  // Detail rows — Identity
+  document.getElementById('idd-id').textContent = d.battery_id;
+  const segLabels = {GE:'GE Erickshaw', SG:'SG Erickshaw', FL:'Fleet'};
+  document.getElementById('idd-segment').textContent = segLabels[d.segment_prefix] || '—';
+  document.getElementById('idd-pack').textContent = shortPack(d.pack_model || v.pack_model) || '—';
+  document.getElementById('idd-ah').textContent = cap;
+  document.getElementById('idd-chemistry').textContent = (d.chemistry==='LFP') ? 'LFP (lithium iron phosphate)' : (d.chemistry || 'LFP (lithium iron phosphate)');
+  document.getElementById('idd-oem').textContent = d.bms_oem || (d.segment_prefix==='GE'?'Greenfuel':d.segment_prefix==='SG'?'Super Green':'—');
+  document.getElementById('idd-iot').textContent = d.iot_provider || 'Intellicar';
+  document.getElementById('idd-commissioned').textContent = d.commissioning_date || '—';
+
+  // Detail rows — Operational
+  const ageMonths = d.age_weeks!=null ? (d.age_weeks/4.33).toFixed(1) : null;
+  document.getElementById('idd-age').textContent = d.age_weeks!=null ? `${d.age_weeks} weeks · ${ageMonths} months` : '—';
+  document.getElementById('idd-km').textContent = d.cumulative_km!=null ? Math.round(d.cumulative_km).toLocaleString() + ' km' : '—';
+  document.getElementById('idd-efc-full').textContent = d.efc_cumulative!=null ? Math.round(d.efc_cumulative) + ' equivalent full cycles' : '—';
+  document.getElementById('idd-std-range').textContent = d.commissioned_range_km!=null ? Math.round(d.commissioned_range_km) + ' km (at commissioning)' : '—';
+  document.getElementById('idd-charge').textContent = chargeMap[d.personal_charge_profile] || '—';
+  const driveMap = {AGGRESSIVE:'Aggressive', MODERATE:'Moderate', CONSERVATIVE:'Conservative', HIGH:'Aggressive', LOW:'Conservative'};
+  document.getElementById('idd-drive').textContent = driveMap[d.personal_drive_profile] || d.personal_drive_profile || '—';
+  document.getElementById('idd-location').textContent = `${d.city||'—'} · ${segLabels[d.segment_prefix]||'—'}`;
+
+  // Detail rows — Warranty
+  document.getElementById('idd-warranty-remaining').textContent = wmoR!=null ? Math.round(wmoR) + ' months' : '—';
+  const efcLimit = 1200;
+  document.getElementById('idd-efc-warranty').textContent = d.efc_cumulative!=null
+    ? `${Math.round(d.efc_cumulative)} / ${efcLimit.toLocaleString()} (${Math.round(d.efc_cumulative/efcLimit*100)}%)`
+    : '—';
+  if(d.warranty_claim_eligible){
+    document.getElementById('idd-claim').innerHTML = '<span class="id-badge id-badge-warn">Claim eligible</span>';
+  } else {
+    document.getElementById('idd-claim').innerHTML = '<span class="id-badge id-badge-green">No claim</span>';
+  }
+}
+
+// ── BATTERY SELECT ──
+async function selectBat(id){
+  curBat=id;
+  const [unit,rangeD,bat,cc,pass,cohort,rangeRich]=await Promise.all([
+    get(`/api/oem/unit/${id}`),get(`/api/oem/range-history/${id}`),
+    get(`/api/battery/${id}`),get(`/api/battery/${id}/consequence-chain`),
+    get(`/api/battery/${id}/passport`),get(`/api/battery/${id}/cohort-position`),
+    get(`/api/battery/${id}/range-history?weeks=52`)
+  ]);
+  if(!unit){document.getElementById('hdr-id').textContent='Not found';return;}
+  renderVerdict(unit.verdict, bat);
+  populateIdentityStrip(bat||{}, unit.verdict);
+  renderIntelLead(pass||{}, bat||{}, unit.verdict, id);
+  renderDeviationTiles(rangeRich||{}, bat||{}, unit.verdict, cohort||{});
+  renderOverview(unit,bat,cc);
+  renderPerf(unit.performance,rangeD,unit.verdict,bat);
+  renderHealth(unit.health,unit.tech,bat);
+  renderAttr(unit.evidence, bat);
+  loadService(id);
+  renderEvents(id);
+  loadAnalytics(id);
+  renderTech(unit.tech,unit.health,unit.evidence);
+  renderRP(unit.cohort,unit.verdict);
+  showTab('overview');
+}
+
+// ── INTEL LEAD (Sprint 4) ──
+function renderIntelLead(pass, bat, v, id){
+  // Sprint 5: narrative + action pill no longer shown (header carries action; intel pills moved to right panel)
+  // Audience pills written to #rp-intel-pills; if no pills, the rp-intel section auto-hides via :empty pattern.
+  const pillsEl = document.getElementById('rp-intel-pills');
+  if(!pillsEl) return;
+  pillsEl.innerHTML = '<span style="font-size:11px;color:#9ca3af">Loading...</span>';
+  const rpIntel = document.getElementById('rp-intel');
+  get(`/api/battery/${id}/dss?audience=oem`).then(dss=>{
+    if(!dss){ pillsEl.innerHTML=''; if(rpIntel) rpIntel.style.display='none'; return; }
+    const cap = (s,n=90)=> s && s.length>n ? s.slice(0,n-3)+'...' : s;
+    const pills = [
+      dss.recommendation && dss.recommendation.action_sentence ? 'Fleet: ' + cap(dss.recommendation.action_sentence) : null,
+      dss.attribution && dss.attribution.audience_sentence ? 'OEM: ' + cap(dss.attribution.audience_sentence) : null,
+      dss.finding && dss.finding.plain_english ? 'Service: ' + cap(dss.finding.plain_english) : null
+    ].filter(Boolean);
+    if(pills.length){
+      pillsEl.innerHTML = pills.map(p=>`<span class="intel-pill">${esc(p)}</span>`).join('');
+      if(rpIntel) rpIntel.style.display = '';
+    } else {
+      pillsEl.innerHTML = '';
+      if(rpIntel) rpIntel.style.display = 'none';
+    }
+  }).catch(()=>{
+    pillsEl.innerHTML = '';
+    if(rpIntel) rpIntel.style.display = 'none';
+  });
+}
+
+// ── DEVIATION TILES (Sprint 4) ──
+function renderDeviationTiles(rangeD, bat, v, cohort){
+  // Sprint 5: writes mid-stats inside header (was 3 tiles below header)
+  const rd = rangeD.range_deviation || {};
+  const refs = rangeD.reference_lines || rangeD.references || {};
+  const cur = v.range_corrected_km!=null ? v.range_corrected_km.toFixed(1) : '—';
+
+  // Mid stat 2: vs fleet median
+  const fleetPct = rd.vs_fleet_norm_pct;
+  const fleetMed = refs.fleet_expected_km ?? null;
+  const fv = document.getElementById('hdr-vs-fleet');
+  if(fleetPct!=null){
+    // Show as signed delta vs 100 — easier read
+    const delta = fleetPct - 100;
+    fv.textContent = (delta>=0?'+':'') + delta.toFixed(1) + '%';
+    fv.style.color = fleetPct < 80 ? '#ef4444' : fleetPct < 95 ? '#f59e0b' : '#22c55e';
+  } else { fv.textContent = '—'; fv.style.color = '#fff'; }
+  document.getElementById('hdr-vs-fleet-sub').textContent = (fleetMed!=null) ? `vs ${Math.round(fleetMed)}km median` : '';
+
+  // Mid stat 3: cohort percentile (use range_pctile from cohort)
+  const pctile = cohort.range_pctile;
+  const cv = document.getElementById('hdr-cohort-pct');
+  if(pctile!=null){
+    cv.textContent = 'P' + Math.round(pctile);
+    cv.style.color = pctile < 25 ? '#ef4444' : pctile < 50 ? '#f59e0b' : '#22c55e';
+  } else { cv.textContent = '—'; cv.style.color = '#fff'; }
+  // Sub-text: short cohort label (pack short + city)
+  const ck = (cohort.cohort_key || '').split('|');
+  const ckShort = ck.length>=2 ? `of ${cohort.cohort_n||'?'} ${shortPack(ck[0])}` : (bat.pack_model ? `of ? ${shortPack(bat.pack_model)}` : '');
+  document.getElementById('hdr-cohort-sub').textContent = ckShort;
+}
+
+// ── EVENTS TIMELINE (Sprint 4 — Service tab) ──
+const EVENT_DOT = {
+  COMMISSIONED:'#16a34a', NO_ACTION:'#d1d5db', STABLE:'#d1d5db', ROUTINE:'#d1d5db',
+  MONITOR:'#3b82f6', MONITOR_WEEKLY:'#3b82f6', MONITOR_INVESTIGATE:'#3b82f6',
+  CELL_BALANCE_PRIORITY:'#f59e0b',
+  REPLACE_PLAN:'#ef4444', PHYSICS_REPLACE_PLAN:'#ef4444',
+  ACUTE_BREACH_WATCH:'#f97316'
+};
+function eventDotColor(type){
+  if(EVENT_DOT[type]) return EVENT_DOT[type];
+  // Fallback by event-code prefix
+  return '#9ca3af';
+}
+async function renderEvents(id){
+  const el = document.getElementById('events-timeline');
+  if(!el) return;
+  el.innerHTML = '<div style="color:#9ca3af;font-size:12px">Loading events...</div>';
+  const resp = await get(`/api/battery/${id}/events`);
+  const events = (resp && resp.events) ? resp.events : [];
+  if(events.length === 0){
+    el.innerHTML = '<div style="color:#9ca3af;font-size:12px">No service events recorded yet.</div>';
+    return;
+  }
+  // Newest first, top 20
+  const sorted = [...events].sort((a,b)=>(b.week_number||0)-(a.week_number||0)).slice(0,20);
+  el.innerHTML = sorted.map(ev=>{
+    const desc = ev.description || ev.action_recommended || (ev.signal_name ? `${ev.event_type} · ${ev.signal_name}` : (ev.event_type || 'Event'));
+    const wkLine = (ev.score_at_week!=null) ? `<div class="event-score">BHS ${ev.score_at_week.toFixed(1)} at this week</div>` : '';
+    return `<div class="event-row">
+      <div class="event-dot" style="background:${eventDotColor(ev.event_type||ev.action_recommended)}"></div>
+      <div class="event-week">Wk ${ev.week_number ?? '—'}</div>
+      <div><div class="event-desc">${esc(desc)}</div>${wkLine}</div>
+    </div>`;
+  }).join('');
+}
+function showTab(n){
+  document.querySelectorAll('.tab').forEach(b=>{b.classList.toggle('on',b.dataset.t===n)});
+  document.querySelectorAll('.tpane').forEach(p=>{p.classList.toggle('on',p.id==='t-'+n)});
+  if(n==='perf'&&rChart)setTimeout(()=>rChart.resize(),100);
+  if(n==='analytics'&&aChart)setTimeout(()=>aChart.resize(),100);
+}
+
+// ── ZONE 1: VERDICT ──
+const TIER_TOOLTIP={
+  GOOD:'Performing well — no action needed',
+  STABLE:'Performing well — no action needed',
+  PRIME:'Performing well — no action needed',
+  WATCH:'Monitor — showing early signs of change',
+  STRESSED:'Attention needed — performance declining',
+  CRITICAL:'Urgent — significant performance loss',
+  INSUFFICIENT_DATA:'Not enough data to classify yet'
+};
+const QUAD_DISPLAY={
+  Q1_HEALTHY:             {bg:'#0f766e', color:'#99f6e4', label:'Both metrics healthy'},
+  Q2_AGE_UNDERPERFORMING: {bg:'#78350f', color:'#fcd34d', label:'Healthy start, age gap'},
+  Q3_NORMAL_AGING:        {bg:'#1e3a5f', color:'#93c5fd', label:'Normal aging for cohort'},
+  Q4_DETERIORATING:       {bg:'#7f1d1d', color:'#fca5a5', label:'Decline confirmed'}
+};
+const QUAD_NULL = {bg:'#374151', color:'#9ca3af', label:'Quadrant computing...'};
+
+function renderVerdict(v, bat){
+  // Sprint 5: 4-row .hdr structure — repointed all writes to new IDs
+  const seg = (bat && bat.segment_prefix) || 'FL';
+  const pack = shortPack(v.pack_model);
+  const ageWk = (bat && bat.age_weeks!=null) ? bat.age_weeks : (v.weeks_in_service || '--');
+
+  // Row 1: identity
+  document.getElementById('hdr-id').textContent = `${seg} · ${v.battery_id}`;
+  document.getElementById('hdr-meta').textContent = `${pack} · ${v.city||'--'} · Week ${ageWk} in service`;
+  document.getElementById('pack-note').style.display = (v.pack_model||'').includes('Pack3401') ? 'block' : 'none';
+
+  // Tier + action badges (preserve color logic)
+  const t=TIER[v.tier_label_v2]||TIER.WATCH;
+  const te=document.getElementById('hdr-tier-badge');
+  te.textContent = t.l;
+  te.className = 'badge pill '+t.c;
+  document.getElementById('hdr-action-badge').textContent = ACT_MAP[v.rul_action_v2]||v.rul_action_v2||'--';
+
+  // Row 2: range
+  document.getElementById('hdr-range').textContent = fmt(v.range_corrected_km);
+
+  // Row 2 mid stat 1: vs commissioned (pct_of_commissioned)
+  const pct = (v.pct_of_commissioned!=null) ? v.pct_of_commissioned : (bat && bat.pct_of_commissioned);
+  const pctEl = document.getElementById('hdr-pct-comm');
+  pctEl.textContent = pct!=null ? pct.toFixed(1)+'%' : '—';
+  pctEl.style.color = pct==null ? '#fff' : pct<50 ? '#ef4444' : pct<80 ? '#f59e0b' : '#22c55e';
+  const commRange = (bat && bat.commissioned_range_km!=null) ? Math.round(bat.commissioned_range_km) : null;
+  document.getElementById('hdr-pct-comm-sub').textContent = commRange ? `vs ${commRange}km rated` : '';
+
+  // Row 2 mid stat 4: primary driver (mid stats 2 + 3 populated by renderDeviationTiles + cohort callback)
+  const drvRaw = (bat && bat.attribution && bat.attribution.primary_driver) || v.primary_attribution;
+  const drvPlain = ATTR_PLAIN[drvRaw] || (drvRaw||'').replace(/_/g,' ');
+  const drvEl = document.getElementById('hdr-driver');
+  drvEl.textContent = drvPlain || '—';
+
+  // Row 2: DRI + AHI
+  const dri = (bat && bat.dri_score!=null) ? bat.dri_score : (bat && bat.bhs_score_v2);
+  const ahi = bat && bat.ahi_score;
+  document.getElementById('hdr-dri').textContent = (dri!=null) ? fmt(dri,1) : '—';
+  document.getElementById('hdr-ahi').textContent = (ahi!=null) ? fmt(ahi,1) : '—';
+
+  // Row 3: quadrant pill
+  const quad = bat && bat.nbfc_quadrant;
+  const qd = QUAD_DISPLAY[quad] || QUAD_NULL;
+  const qPill = document.getElementById('hdr-quad-pill');
+  qPill.textContent = qd.label;
+  qPill.style.background = qd.bg;
+  qPill.style.color = qd.color;
+
+  // Row 3: signals agree text
+  const corr = (bat && bat.corroboration_score!=null) ? bat.corroboration_score : null;
+  document.getElementById('hdr-sig-agree').textContent = corr!=null ? `${corr}/7 signals agree` : '';
+
+  // Row 3: confidence badge + bar
+  document.getElementById('hdr-conf-bar').style.width = (corr!=null ? Math.min(100,(corr/7)*100) : 0) + '%';
+  let confLvl = bat && bat.confidence_level;
+  if(!confLvl && corr!=null) confLvl = corr>=5 ? 'HIGH' : corr>=3 ? 'MEDIUM' : 'DATA_LIMITED';
+  if(!confLvl) confLvl = 'DATA_LIMITED';
+  const confMap = {HIGH:{cls:'conf-high',txt:'HIGH CONFIDENCE'},MEDIUM:{cls:'conf-medium',txt:'MEDIUM CONFIDENCE'},DATA_LIMITED:{cls:'conf-limited',txt:'DATA LIMITED'}};
+  const cm = confMap[confLvl] || confMap.DATA_LIMITED;
+  const cb = document.getElementById('hdr-conf-badge');
+  cb.className = 'hdr-conf-badge ' + cm.cls;
+  cb.textContent = cm.txt;
+
+  // Warranty bar (row 4)
+  const eligible = (bat && bat.warranty_claim_eligible) || v.warranty_claim_eligible;
+  const wb = document.getElementById('hdr-warranty');
+  if(eligible) wb.classList.add('visible'); else wb.classList.remove('visible');
+
+  // Sprint 2: Approaching end of useful life block (REPLACE_PLAN / PHYSICS_REPLACE_PLAN only)
+  const eolCard = document.getElementById('eol-card');
+  if(eolCard){
+    const isEol = (v.rul_action_v2==='REPLACE_PLAN' || v.rul_action_v2==='PHYSICS_REPLACE_PLAN');
+    if(isEol){
+      const commKm = (bat && bat.commissioned_range_km!=null) ? bat.commissioned_range_km : null;
+      const curKm = v.range_corrected_km;
+      const pct = (commKm && curKm) ? Math.round((1 - curKm/commKm)*100) : null;
+      const wks = (bat && bat.rul_weeks_v2!=null && bat.rul_weeks_v2>0) ? Math.round(bat.rul_weeks_v2) : 'a few';
+      const cKmTxt = commKm!=null ? Math.round(commKm)+'km' : '—';
+      const curKmTxt = curKm!=null ? curKm.toFixed(1)+'km' : '—';
+      const pctTxt = pct!=null ? pct+'%' : '—';
+      document.getElementById('eol-text').textContent = `Range has dropped from ${cKmTxt} at delivery to ${curKmTxt} now — a ${pctTxt} decline. At current rate, estimated ${wks} weeks to minimum operating floor (55km).`;
+      eolCard.style.display = 'block';
+    }else{
+      eolCard.style.display = 'none';
+    }
+  }
+
+  // Hidden legacy hooks (kept for any JS still targeting old IDs elsewhere)
+  document.getElementById('v-id').textContent = v.battery_id;
+  document.getElementById('v-tier').textContent = t.l;
+  document.getElementById('v-action').textContent = ACT_MAP[v.rul_action_v2]||v.rul_action_v2||'--';
+  document.getElementById('v-range').textContent = fmt(v.range_corrected_km);
+  document.getElementById('v-pct').textContent = pctRet;
+  document.getElementById('v-wk').textContent = ageWk;
+  document.getElementById('v-pack').textContent = pack + ' · ' + (v.city||'');
+  document.getElementById('v-cf').style.width = (v.confidence_pct||0)+'%';
+  document.getElementById('v-cp').textContent = fmt(v.confidence_pct,0)+'%';
+  document.getElementById('v-dri').textContent = (dri!=null)?fmt(dri,1):'--';
+  document.getElementById('v-ahi').textContent = (ahi!=null)?fmt(ahi,1):'--';
+  document.getElementById('v-cause').textContent = drvPlain || '';
+}
+
+// ── TAB 1: OVERVIEW ──
+function renderOverview(unit,bat,cc){
+  // A. Lead sentence
+  const lead=(cc&&cc.integrated_chain_sentence)||
+    ((bat&&bat.operator_capacity_sentence)?bat.operator_capacity_sentence+'. '+(bat.operator_cause_sentence||''):'Loading intelligence...');
+  document.getElementById('lead-txt').textContent=lead;
+
+  // B. Verdict banner
+  const cs=(cc&&cc.capacity_state)||(bat&&bat.capacity_state)||'UNKNOWN';
+  const csMap={STABLE:['vb-gray','Stable trajectory'],DECLINING_SLOW:['vb-amber','Slowly declining — monitor'],
+    DECLINING_FAST:['vb-orange','Active decline — action window open'],NEAR_FLOOR:['vb-red','At or near operational floor'],
+    CRITICAL:['vb-red','Critical — immediate action required'],EARLY_WARNING:['vb-amber','Early warning pattern detected'],
+    PRE_KNEE:['vb-gray','Early stage degradation'],APPROACHING_KNEE:['vb-amber','Mid degradation — approaching knee'],
+    POST_KNEE:['vb-orange','Advanced degradation — post knee'],RESISTANCE_DOMINATED:['vb-red','Resistance-limited degradation']};
+  const [cls,txt]=csMap[cs]||['vb-gray',cs.replace(/_/g,' ')];
+  let vb=`<div class="verdict-banner ${cls}">${txt}</div>`;
+  if(bat&&bat.operator_capacity_sentence)vb+=`<div style="font-size:12px;color:var(--text2);margin-bottom:12px">${esc(bat.operator_capacity_sentence)}</div>`;
+  document.getElementById('verdict-banner').innerHTML=vb;
+
+  // C. Two framing cards
+  const opText=(cc&&cc.asset_recovery_note)||(bat&&bat.operator_action_sentence)||'No operator framing available';
+  const oemText=(cc&&cc.battery_oem_sentence)||(cc&&cc.operator_attribution_sentence)||'No OEM framing available';
+  document.getElementById('framing-grid').innerHTML=`
+    <div class="framing-card"><div class="framing-lbl" style="color:var(--green)">Operator View</div><div class="framing-txt">${esc(opText)}</div></div>
+    <div class="framing-card"><div class="framing-lbl" style="color:var(--accent)">OEM Intelligence</div><div class="framing-txt">${esc(oemText)}</div></div>`;
+
+  // D. Subsystem tiles
+  const v=unit.verdict,h=unit.health,t=unit.tech;
+  const commSpread=(bat&&bat.commissioning_spread_mv!=null)?fmt(bat.commissioning_spread_mv,0):'-';
+  const curSpread=(t&&t.cell_spread_mv!=null)?fmt(t.cell_spread_mv,0):'-';
+  const delta=(bat&&bat.commissioning_spread_mv!=null&&t&&t.cell_spread_mv!=null)?
+    Math.round(t.cell_spread_mv-bat.commissioning_spread_mv):'--';
+  const deltaAbs=typeof delta==='number'?Math.abs(delta):999;
+  const statusTxt=deltaAbs<50?'STABLE':deltaAbs<150?'WIDENING':'CRITICAL';
+  const statusClr=deltaAbs<50?'var(--green)':deltaAbs<150?'var(--amber)':'var(--red)';
+  document.getElementById('subsystem-tiles').innerHTML=`
+    <div class="card" style="text-align:center"><div class="slbl">At Commissioning</div><div class="sval">${commSpread}</div><div class="slbl">mV</div></div>
+    <div class="card" style="text-align:center"><div class="slbl">Current Spread</div><div class="sval">${curSpread}</div><div class="slbl">mV</div></div>
+    <div class="card" style="text-align:center"><div class="slbl">Delta</div><div class="sval">${typeof delta==='number'?(delta>0?'+':'')+delta:'--'}</div><div class="slbl">mV</div></div>
+    <div class="card" style="text-align:center"><div class="slbl">Status</div><div class="sval" style="color:${statusClr}">${statusTxt}</div></div>`;
+
+  // E. Divergence alert
+  const dq=h.divergence_quadrant;
+  if(dq==='EARLY_WARNING'||dq==='RANGE_CONTEXT'){
+    const dm=DIV_MAP[dq]||{t:'',c:''};
+    document.getElementById('diverge-alert').innerHTML=`<div class="verdict-banner vb-amber" style="margin-top:12px">⚠ ${dm.t}</div>`;
+  }else{document.getElementById('diverge-alert').innerHTML='';}
+
+  // F. Stale data
+  const wk=v.weeks_in_service||0;
+  document.getElementById('stale-banner').innerHTML=(wk>0&&wk<10)?
+    `<div class="stale-banner">⏱ Data last updated Week ${wk}. Limited history available.</div>`:'';
+}
+
+// ── TAB 2: PERFORMANCE ──
+function renderPerf(perf,rangeD,verdict,bat){
+  if(rChart){rChart.destroy();rChart=null}
+  let actual=rangeD&&rangeD.data?rangeD.data.filter(d=>d.type==='actual'):perf.range_history||[];
+  const forecast=rangeD&&rangeD.data?rangeD.data.filter(d=>d.type==='forecast_p50'):[];
+  const floor=rangeD?rangeD.floor_km:56;
+  // IQR outlier filter
+  if(actual.length>=4){
+    const s=[...actual].map(d=>d.range_km).filter(v=>v!=null).sort((a,b)=>a-b);
+    const q1=s[Math.floor(s.length*.25)],q3=s[Math.floor(s.length*.75)],iqr=q3-q1;
+    actual=actual.filter(d=>d.range_km>=q1-1.5*iqr&&d.range_km<=q3+1.5*iqr);
+  }
+  actual.sort((a,b)=>a.week_number-b.week_number);
+  forecast.sort((a,b)=>a.week_number-b.week_number);
+  const weeks=[...actual.map(d=>d.week_number),...forecast.map(d=>d.week_number)].sort((a,b)=>a-b);
+  const labels=weeks,aD=labels.map(w=>{const d=actual.find(a=>a.week_number===w);return d?d.range_km:null});
+  const fD=labels.map(w=>{const d=forecast.find(f=>f.week_number===w);return d?d.range_km:null});
+  if(forecast.length>0&&actual.length>0){const li=labels.indexOf(actual[actual.length-1].week_number);if(li>=0)fD[li]=actual[actual.length-1].range_km;}
+  const flD=labels.map(()=>floor);
+  // Sprint 4: scrollable wrapper — size inner div dynamically (~18px per label, min 800)
+  const inner = document.getElementById('range-chart-inner');
+  if(inner) inner.style.minWidth = Math.max(800, labels.length*18) + 'px';
+  const ctx=document.getElementById('range-chart').getContext('2d');
+  rChart=new Chart(ctx,{type:'line',data:{labels:labels.map(w=>'W'+w),datasets:[
+    {label:'Actual Range',data:aD,borderColor:'#F97316',backgroundColor:'rgba(249,115,22,0.08)',fill:true,tension:.3,pointRadius:3,pointBackgroundColor:'#F97316',spanGaps:true},
+    {label:'Forecast P50',data:fD,borderColor:'#06B6D4',borderDash:[6,4],pointRadius:2,tension:.3,spanGaps:true},
+    {label:'Floor ('+floor+'km)',data:flD,borderColor:'rgba(239,68,68,.4)',borderDash:[4,4],pointRadius:0,borderWidth:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#6b7280',font:{size:9}}}},
+    scales:{x:{ticks:{color:'#9ca3af',font:{size:8}},grid:{color:'rgba(0,0,0,.04)'}},y:{ticks:{color:'#9ca3af',font:{size:8},callback:v=>v+'km'},grid:{color:'rgba(0,0,0,.04)'},min:0}}}});
+
+  // RUL band
+  const rul=bat&&bat.rul_weeks_v2,rLo=bat&&bat.rul_lower_v2,rHi=bat&&bat.rul_upper_v2;
+  document.getElementById('rul-band').innerHTML=rul!=null?
+    `Estimated useful life: <strong>${fmt(rLo||rul,0)}–${fmt(rHi||rul,0)} weeks</strong>`:'Useful life estimate: directional only — calibration in progress';
+
+  // DoD
+  document.getElementById('dod-obs').textContent=perf.dod_mean!=null?fmt(perf.dod_mean)+'%':'--';
+  document.getElementById('dod-opt').textContent=fmt(perf.dod_optimal)+'%';
+  document.getElementById('dod-flag').textContent=(perf.dod_mean&&perf.dod_optimal&&perf.dod_mean>perf.dod_optimal)?
+    `Operating ${fmt(perf.dod_mean-perf.dod_optimal,0)}% deeper than optimal for this pack model`:'';
+
+  // KPS
+  const sl=perf.kps_slope_8wk;let ar='--',tx='';
+  if(sl!=null){
+    if(sl>.005){ar='↑';tx='Improving';document.getElementById('kps-arrow').style.color='var(--green)'}
+    else if(sl<-.005){ar='↓';tx='Declining';document.getElementById('kps-arrow').style.color='var(--red)'}
+    else{ar='→';tx='Flat';document.getElementById('kps-arrow').style.color='var(--text2)'}
+    tx+=` ${sl>0?'+':''}${(sl*100).toFixed(2)}%/wk`;
+  }
+  document.getElementById('kps-arrow').textContent=ar;
+  document.getElementById('kps-txt').textContent=tx;
+  document.getElementById('cohort-txt').textContent=`This unit is at the ${fmt(perf.cohort_percentile,0)}th percentile of its pack cohort`;
+}
+
+// ── TAB 3: HEALTH ──
+function renderHealth(h,tech,bat){
+  const bhs=h.bhs_score_v2||0;
+  const bhsEl=document.getElementById('bhs-score');bhsEl.textContent=fmt(h.bhs_score_v2);
+  bhsEl.style.color=bhs>=80?'var(--teal)':bhs>=60?'var(--green)':bhs>=40?'var(--amber)':bhs>=20?'var(--orange)':'var(--red)';
+  document.getElementById('soh-val').textContent=h.soh_conservative!=null?fmt(h.soh_conservative)+'%':'--';
+
+  // BHS v4 shadow + cohort context
+  if(h.bhs_score_v4_shadow!=null){
+    const pv=document.getElementById('bhs-v4-preview');
+    document.getElementById('bhs-v4-val').textContent=fmt(h.bhs_score_v4_shadow);
+    if(h.cohort_key){document.getElementById('bhs-v4-cohort').textContent=' · '+h.cohort_key;}
+    pv.style.display='block';
+  }
+  // Tier badge with colour
+  const tb=document.getElementById('tier-badge');
+  if(h.tier_label_v2){
+    const TCOL={GOOD:'#16a34a',STABLE:'#16a34a',PRIME:'#0891b2',WATCH:'#d97706',STRESSED:'#ea580c',CRITICAL:'#dc2626',INSUFFICIENT_DATA:'#6b7280'};
+    const c=TCOL[h.tier_label_v2]||'#6b7280';
+    tb.textContent=h.tier_label_v2;
+    tb.style.background=c;
+    tb.style.color='#fff';
+    tb.style.display='inline-block';
+  }
+
+  // Why this score (filter operational_score per Rule 234; use plain names for sentence)
+  if(h.bhs_components){
+    const entries=Object.entries(h.bhs_components).filter(([k,v])=>v!=null && k!=='operational_score').sort((a,b)=>a[1]-b[1]);
+    if(entries.length>=2){
+      const f1=COMP_PLAIN[entries[0][0]]||entries[0][0],f2=COMP_PLAIN[entries[1][0]]||entries[1][0];
+      document.getElementById('bhs-why').textContent=`${f1} and ${f2} are the primary drags on this score.`;
+    }
+  }
+
+  // Components — Sprint 2: drop operational_score row (Rule 234), show weight % on label, add tooltips
+  let ch='';
+  if(h.bhs_components){
+    Object.entries(h.bhs_components).forEach(([k,v])=>{
+      if(v==null||k==='operational_score')return;
+      const pct=Math.min(Math.max(v,0),100);
+      const color=v>=70?'#16a34a':v>=40?'#d97706':'#dc2626';
+      const lbl=COMP_SHORT[k]||k;
+      const tip=COMP_TIP[k];
+      const tipHtml=tip?` <span class="info-i" tabindex="0">i<span class="tt">${esc(tip)}</span></span>`:'';
+      ch+=`<div class="hbar"><div class="hbar-lbl"><span>${lbl}${tipHtml}</span><span style="font-family:'DM Mono';font-size:9px">${fmt(v)}</span></div><div class="hbar-trk"><div class="hbar-fill" style="width:${pct}%;background:${color}"></div></div></div>`;
+    });
+  }
+  document.getElementById('bhs-comps').innerHTML=ch||'<div style="color:var(--text3);font-size:11px">No component data</div>';
+
+  // Regime
+  const re=document.getElementById('regime-txt');
+  re.textContent=REGIME[h.degradation_regime]||h.degradation_regime||'Not classified';
+  re.style.color=(h.degradation_regime==='POST_KNEE'||h.degradation_regime==='RESISTANCE_DOMINATED')?'var(--red)':(h.degradation_regime==='APPROACHING_KNEE')?'var(--amber)':'var(--green)';
+
+  // Corroboration expanded
+  const corr=h.corroboration_score;
+  document.getElementById('corr-txt').textContent=corr!=null?corr+'/7 signals':'--';
+  const sigList=(bat&&bat.corroboration_signals_list)?bat.corroboration_signals_list.split(',').map(s=>SIG_MAP[s.trim()]||s.trim()).join(', '):'';
+  const verdict=corr>=5?'Strong agreement':corr>=3?'Moderate agreement':'Limited evidence';
+  document.getElementById('corr-detail').textContent=sigList?`${verdict}: ${sigList}`:verdict;
+
+  // Risk signals — Sprint 2: rename breach label + tooltip + 55km reference + change note
+  let rs='';
+  if(tech.breach_probability_8wk!=null){const bp=tech.breach_probability_8wk*100;const bc=bp>30?'var(--red)':bp>15?'var(--amber)':'var(--green)';
+    const breachTip='Probability this battery&#39;s range falls below the minimum operating floor (55km) within the stated number of weeks, given current decline trajectory. Based on range ensemble model (SG: 9.1% error, GE: 14.1% error). Changes if maintenance is performed or usage pattern changes.';
+    rs+=`<div><div class="slbl">Range floor breach probability <span style="font-size:11px;color:var(--text2);font-weight:400">(minimum operating threshold: 55km)</span> <span class="info-i" tabindex="0">i<span class="tt">${breachTip}</span></span></div><div class="sval" style="color:${bc}">${bp.toFixed(0)}%</div><div style="font-size:10px;color:var(--text2);margin-top:6px;font-style:italic">Probability changes if maintenance is performed or route intensity changes.</div></div>`;}
+  if(tech.cell_spread_mv!=null)rs+=`<div><div class="slbl">Cell spread</div><div class="sval">${fmt(tech.cell_spread_mv,0)} mV</div></div>`;
+  if(tech.stress_index!=null)rs+=`<div><div class="slbl">Stress index</div><div class="sval">${fmt(tech.stress_index,2)}</div></div>`;
+  document.getElementById('risk-sigs').innerHTML=rs||'';
+
+  // Divergence quadrant
+  const dq=h.divergence_quadrant;const dm=DIV_MAP[dq]||DIV_MAP.NORMAL||{t:'Unknown',c:'var(--text3)'};
+  document.getElementById('div-quad-card').innerHTML=`<div class="card"><div class="clbl">Divergence Quadrant</div><div style="font-size:12px;font-weight:600;color:${dm.c}">${dm.t}</div></div>`;
+
+  // Resistance banner
+  let hd='';
+  if(h.degradation_regime==='RESISTANCE_DOMINATED')hd='<div class="verdict-banner vb-red" style="margin-top:0">Resistance-limited degradation — internal resistance is the primary constraint</div>';
+  document.getElementById('health-diverge').innerHTML=hd;
+}
+
+// ── TAB 4: ATTRIBUTION ──
+// New engine (Rule 242+): 5 factors from battery_degradation_attribution
+const ATTR_V2_LABEL={
+  charging:'Charging pattern',
+  usage:'Usage intensity',
+  thermal:'Temperature exposure',
+  maintenance:'Cell health maintenance',
+  calendar:'Time / calendar aging'
+};
+const ATTR_V2_COLOR={
+  charging:'#F97316', usage:'#EF4444', thermal:'#DC2626',
+  maintenance:'#F59E0B', calendar:'#6B7280'
+};
+const ATTR_V2_PRIMARY_SENTENCE={
+  charging:'Charging behaviour is the primary driver of degradation for this battery.',
+  usage:'High usage intensity is the primary driver of degradation for this battery.',
+  thermal:'Temperature exposure is the primary driver of degradation for this battery.',
+  maintenance:'Cell imbalance is the primary driver of degradation for this battery.',
+  calendar:'Normal aging over time is the primary pattern for this battery.'
+};
+
+function renderAttr(ev, bat){
+  // B1: use new engine attribution from /api/battery/{id}
+  const a = bat && bat.attribution;
+  const container = document.getElementById('attr-bars');
+
+  // B5: NULL / uniform-20 handling
+  if(!a || (a.charging_pct==null && a.usage_pct==null && a.thermal_pct==null && a.maintenance_pct==null && a.calendar_pct==null)){
+    container.innerHTML = '<div style="font-size:11px;color:var(--text2);padding:12px;background:var(--bg-muted);border-radius:8px">Attribution analysis in progress — insufficient data for this battery.</div>';
+  } else {
+    const isUniform20 = [a.charging_pct, a.usage_pct, a.thermal_pct, a.maintenance_pct, a.calendar_pct].every(v => v!=null && Math.abs(v-20) < 0.5);
+    if(isUniform20){
+      container.innerHTML = '<div style="font-size:11px;color:var(--text2);padding:12px;background:var(--bg-muted);border-radius:8px">Attribution analysis in progress — insufficient data for this battery.</div>';
+    } else {
+      const factors=[
+        {k:'charging',    v:a.charging_pct},
+        {k:'usage',       v:a.usage_pct},
+        {k:'thermal',     v:a.thermal_pct},
+        {k:'maintenance', v:a.maintenance_pct},
+        {k:'calendar',    v:a.calendar_pct}
+      ];
+      // B3: primary driver context sentence (above bars)
+      const primary = a.primary_driver;
+      const primarySent = ATTR_V2_PRIMARY_SENTENCE[primary] || '';
+      let ab = '';
+      if(primarySent){
+        ab += '<div style="font-size:12px;color:var(--text);margin-bottom:10px;padding:8px 12px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 6px 6px 0"><strong style="color:var(--accent)">'+esc(primarySent)+'</strong></div>';
+      }
+      const tot=factors.reduce((s,f)=>s+(f.v||0),0)||1;
+      ab += '<div class="attr-bar">';
+      factors.forEach(f=>{
+        const pct=((f.v||0)/tot)*100; if(pct<1) return;
+        ab += '<div class="attr-seg" style="width:'+pct.toFixed(1)+'%;background:'+ATTR_V2_COLOR[f.k]+'">'+(pct>6?fmt(f.v,0)+'%':'')+'</div>';
+      });
+      ab += '</div><div class="attr-legend">';
+      factors.forEach(f=>{
+        const isPrimary = (f.k === primary);
+        ab += '<span style="'+(isPrimary?'font-weight:600':'')+'"><span class="dot" style="background:'+ATTR_V2_COLOR[f.k]+'"></span>'+ATTR_V2_LABEL[f.k]+' '+fmt(f.v,0)+'%'+(isPrimary?' (primary)':'')+'</span>';
+      });
+      ab += '</div>';
+      container.innerHTML = ab;
+    }
+  }
+
+  // Profiles
+  let pr='';
+  if(ev.charging_profile){const m=CHARGE_MAP[ev.charging_profile]||{t:ev.charging_profile,s:'',c:'var(--text2)'};
+    pr+=`<div class="pbadge" style="background:var(--bg-muted);border:1px solid var(--border);color:${m.c}">Charging: ${m.t}</div><div style="font-size:10px;color:var(--text2);margin-bottom:8px">${m.s}</div>`;}
+  if(ev.drive_profile){const m=DRIVE_MAP[ev.drive_profile]||{t:ev.drive_profile,s:'',c:'var(--text2)'};
+    pr+=`<div class="pbadge" style="background:var(--bg-muted);border:1px solid var(--border);color:${m.c}">Driving: ${m.t}</div><div style="font-size:10px;color:var(--text2);margin-bottom:8px">${m.s}</div>`;}
+  if(ev.service_profile){const m=SVC_MAP[ev.service_profile]||{t:ev.service_profile,s:'',c:'var(--text2)'};
+    pr+=`<div class="pbadge" style="background:var(--bg-muted);border:1px solid var(--border);color:${m.c}">${m.t}</div><div style="font-size:10px;color:var(--text2);margin-bottom:8px">${m.s}</div>`;}
+  document.getElementById('profiles').innerHTML=pr||'<div style="font-size:10px;color:var(--text3)">No profile data</div>';
+
+  // Warranty
+  let w='';
+  if(ev.warranty_claim_eligible)w='<span class="badge b-warranty" style="font-size:12px;padding:5px 12px">⚠ Claim eligible</span>';
+  else w='<span style="font-size:12px;color:var(--green)">Within warranty band</span>';
+  if(ev.efc_pct_of_warranty!=null)w+=`<div style="font-size:10px;color:var(--text2);margin-top:5px">Warranty consumed: ${fmt(ev.efc_pct_of_warranty)}%</div>`;
+  document.getElementById('warranty-info').innerHTML=w;
+}
+
+// ── TAB 5: SERVICE ──
+async function loadService(id){
+  const d=await get(`/api/battery/${id}/service-intelligence`);
+  if(!d||d.error){document.getElementById('svc-content').innerHTML='<div class="loading">No service data available</div>';return;}
+  let h='';
+  // A. Profile
+  const sp=SVC_MAP[d.service_profile]||{t:d.service_profile||'Unknown',c:'var(--text2)'};
+  h+=`<div class="card"><div class="clbl">Service Profile</div>
+    <div class="pbadge" style="background:var(--bg-muted);border:1px solid var(--border);color:${sp.c};font-size:14px;padding:6px 16px">${sp.t}</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text2)">Alert burden: ${esc(d.alert_burden_tier)} · Compliance: ${d.service_compliance_score!=null?(d.service_compliance_score*100).toFixed(0)+'%':'--'} · Adherence: ${esc(d.policy_adherence)}</div></div>`;
+  // B. Fault
+  if(d.fault_severity&&d.fault_severity!=='NONE'&&d.fault_severity!=='CLEAN'){
+    const fs=FAULT_MAP[d.fault_severity]||d.fault_severity;
+    const ft=REGIME[d.fault_trajectory]||'--';
+    h+=`<div class="card"><div class="clbl">Current Fault</div>
+      <div style="font-size:13px;font-weight:600;color:var(--text)">${fs}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:3px">Active for ${d.fault_duration_weeks||0} weeks · Recurred ${d.fault_recurrence_count||0} times</div></div>`;
+  }
+  // C. ROI
+  if(d.intervention_roi){
+    const roi=d.intervention_roi;
+    h+=`<div class="card"><div class="clbl">Intervention ROI</div><div style="font-size:12px;margin-bottom:8px">Recommended: Cell balance service</div>
+      <div class="roi-grid">
+        <div class="roi-card"><div class="roi-big" style="color:var(--green)">₹${roi.service_cost_inr.toLocaleString()}</div><div style="font-size:10px;color:var(--text2);margin-top:3px">Service cost · ${(roi.recovery_probability*100).toFixed(0)}% recovery</div></div>
+        <div class="roi-card"><div class="roi-big" style="color:var(--red)">₹${roi.replacement_cost_inr.toLocaleString()}</div><div style="font-size:10px;color:var(--text2);margin-top:3px">Replacement cost</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--accent);margin-top:8px;font-weight:600">Expected value: ₹${roi.expected_value_inr.toLocaleString()} · ROI: ${roi.roi_ratio}×</div></div>`;
+  }
+  // D. Action
+  h+=`<div class="card"><div class="clbl">Next Action</div><div class="action-txt">${esc(d.action_plain||d.rul_action_v2)}</div>`;
+  if(d.action_remark)h+=`<div style="font-size:11px;color:var(--text2);margin-top:6px">${esc(d.action_remark)}</div>`;
+  h+='</div>';
+  document.getElementById('svc-content').innerHTML=h;
+}
+
+// ── TAB 6: ANALYTICS ──
+const AX_OPTS=[
+  {k:'range_km',l:'Range (km)',f:d=>(d.km_per_soc_pct||0)*80},
+  {k:'cell_spread_max',l:'Cell Spread (mV)'},
+  {k:'soh_cap_weekly',l:'SOH Conservative'},
+  {k:'dod_mean',l:'Depth of Discharge'},
+  {k:'kps_slope_8wk',l:'KPS Slope'},
+  {k:'temp_max',l:'Temperature Max (°C)'},
+  {k:'trips_per_week',l:'Trips/Week'},
+];
+// Sprint 4: use /api/battery/{id}/signal-history (replaces vwf-history aggregator)
+const SIG_LABEL = {
+  range:'Range (km)', soh:'State of Health — SOH (%)', spread:'Cell voltage spread (mV)',
+  r0:'Internal resistance R0 (mΩ)', efc:'Cycle throughput — EFC', dod:'Depth of Discharge — DoD (%)'
+};
+async function loadAnalytics(id){
+  const sel=document.getElementById('ax-y');
+  if(!sel) return;
+  sel.onchange=()=>drawAnalytics(id);
+  drawAnalytics(id);
+}
+async function drawAnalytics(id){
+  if(aChart){aChart.destroy();aChart=null;}
+  const sig = document.getElementById('ax-y').value || 'range';
+  const resp = await get(`/api/battery/${id}/signal-history?signal=${sig}&weeks=52`);
+  const data = (resp && resp.data) ? resp.data : [];
+  const labels = data.map(d=>'W'+d.week_number);
+  const vals = data.map(d=>d.value);
+  // Dynamic min-width: ~18px per data point, min 800
+  const inner = document.getElementById('analytics-chart-inner');
+  if(inner) inner.style.minWidth = Math.max(800, labels.length*18) + 'px';
+  document.getElementById('analytics-source').textContent = `Source: vehicle telemetry · ${labels.length} weeks · Updated weekly`;
+  const ctx = document.getElementById('analytics-chart').getContext('2d');
+  aChart = new Chart(ctx, {
+    type:'line',
+    data:{labels, datasets:[{label:SIG_LABEL[sig]||sig, data:vals, borderColor:'#F97316',
+      backgroundColor:'rgba(249,115,22,0.1)', fill:true, tension:0.3, pointRadius:2, pointBackgroundColor:'#F97316', spanGaps:true}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#6b7280',font:{size:10}}}},
+      scales:{x:{ticks:{color:'#9ca3af',font:{size:9},autoSkip:true,maxTicksLimit:14},grid:{color:'rgba(0,0,0,.04)'}},
+              y:{ticks:{color:'#9ca3af',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}}}}});
+}
+
+// ── TAB 7: TECH ──
+function renderTech(tech,health,ev){
+  const row=(l,v)=>`<tr><td style="color:var(--text2)">${l}</td><td>${v}</td></tr>`;
+  document.getElementById('tech-raw').innerHTML='<thead><tr><th>Signal</th><th>Value</th></tr></thead><tbody>'+
+    row('KPS Slope (8wk)',tech.kps_slope_8wk!=null?(tech.kps_slope_8wk*100).toFixed(3)+'%/wk':'--')+
+    row('Cell Spread',tech.cell_spread_mv!=null?fmt(tech.cell_spread_mv,0)+' mV':'--')+
+    row('SOH Coulomb',tech.soh_coulomb_actual!=null?fmt(tech.soh_coulomb_actual)+'%':'--')+
+    row('EFC Cumulative',tech.efc_cumulative!=null?fmt(tech.efc_cumulative,0):'--')+
+    row('Breach Prob (8wk)',tech.breach_probability_8wk!=null?fmt(tech.breach_probability_8wk*100)+'%':'--')+
+    row('Stress Index',tech.stress_index!=null?fmt(tech.stress_index,3):'--')+
+    row('Divergence',tech.divergence_quadrant||'--')+
+    row('Scoring Mode',tech.scoring_mode||'--')+
+    row('Range Floor',tech.range_floor_km!=null?fmt(tech.range_floor_km)+' km':'--')+
+    '</tbody>';
+  // BHS components
+  if(health.bhs_components){
+    document.getElementById('tech-bhs').innerHTML='<thead><tr><th>Component</th><th>Value</th></tr></thead><tbody>'+
+      Object.entries(health.bhs_components).map(([k,v])=>row(COMP_SHORT[k]||k,v!=null?fmt(v):'--')).join('')+'</tbody>';
+  }
+  // Attribution raw
+  document.getElementById('tech-attr').innerHTML='<thead><tr><th>Factor</th><th>%</th></tr></thead><tbody>'+
+    ['cycle','dod','thermal','imbalance','calendar','physical'].map(f=>row(ATTR_L[f],fmt(ev[f+'_attribution_pct']))).join('')+'</tbody>';
+}
+
+// ── ZONE 3: RIGHT PANEL ──
+function renderRP(cohort,verdict){
+  document.getElementById('rp-rank').textContent=fmt(cohort.cohort_rank_pct,0)+'th';
+  document.getElementById('rp-cohort').textContent=`percentile of ${cohort.cohort_size} ${shortPack(cohort.pack_model)} units (avg ${fmt(cohort.cohort_avg_range)}km)`;
+  const peers=cohort.peer_batteries||[];
+  document.getElementById('rp-peers').innerHTML=peers.length?peers.map(p=>{
+    const ap=ATTR_PLAIN[p.attr_primary_factor]||(p.attr_primary_factor||'').replace(/_/g,' ');
+    return`<div class="peer" onclick="selectBat('${p.battery_id}')"><strong style="font-family:'DM Mono'">${p.battery_id.replace('BAT_LFP_','')}</strong> · BHS ${p.bhs_score_v2} · ${fmt(p.range_km)}km · ${ap}</div>`;
+  }).join(''):'<div style="font-size:10px;color:var(--text3)">No peers</div>';
+  // Action
+  if(verdict.warranty_claim_eligible){
+    document.getElementById('rp-action').innerHTML='<div>Warranty claim eligible — review attribution evidence</div><div style="font-size:10px;color:var(--text2);font-weight:400;margin-top:4px">'+(ACT_MAP[verdict.rul_action_v2]||verdict.rul_action_v2||'')+'</div>';
+  }else{document.getElementById('rp-action').textContent=ACT_MAP[verdict.rul_action_v2]||verdict.rul_action_v2||'No action needed';}
+}
+
+// ── COLLAPSE ──
+// togLP function removed Sprint 3 — left sidebar deleted; toggle no longer exists.
+function togRP(){const p=document.getElementById('rp'),b=document.getElementById('rp-btn');p.classList.toggle('col');b.innerHTML=p.classList.contains('col')?'‹':'›';localStorage.setItem('en_rp_col',p.classList.contains('col')?'1':'0');if(rChart)setTimeout(()=>rChart.resize(),300);}
+(function(){
+  // Sprint 1b-fix: do not auto-restore collapsed state on load (default expanded).
+  // Old behavior persisted .col across reloads via localStorage('en_lp_col') — removed.
+  if(localStorage.getItem('en_rp_col')==='1'){document.getElementById('rp').classList.add('col');document.getElementById('rp-btn').innerHTML='‹';}
+})();
+
+// ── CHAT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('chat-in').addEventListener('keypress',async e=>{
+    if(e.key!=='Enter'||!curBat)return;const q=e.target.value.trim();if(!q)return;
+    e.target.value='Thinking...';e.target.disabled=true;
+    try{const r=await fetch(API+'/api/enerlyst/query',{method:'POST',headers:{...HDR,'Content-Type':'application/json'},body:JSON.stringify({query:q,battery_id:curBat})});
+      const d=await r.json();if(d&&d.response){e.target.value='';document.getElementById('rp-action').textContent=d.response.substring(0,300);}else{e.target.value=q;}
+    }catch{e.target.value=q}e.target.disabled=false;
+  });
+});
+
+// ── INIT ──
+// Sprint 3: replaced loadList() with loadBatteryList() inside DOMContentLoaded above.
+</script>
+</body>
+</html>

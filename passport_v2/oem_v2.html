@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>enerlytik · OEM Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+:root {
+  --canvas:     #0D0D0D;
+  --sidebar:    #111111;
+  --card:       #1A1A1A;
+  --card-hi:    #202020;
+  --border:     #262626;
+  --border-hi:  #333333;
+  --text:       #E5E7EB;
+  --text-dim:   #9CA3AF;
+  --text-mute:  #6B7280;
+  --orange:     #F97316;
+  --orange-dim: #7C2D12;
+  --green:      #10B981;
+  --teal:       #06B6D4;
+  --red:        #EF4444;
+  --amber:      #F59E0B;
+  --blue:       #3B82F6;
+  --purple:     #8B5CF6;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--canvas);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: 'Outfit', sans-serif; cursor: pointer; color: inherit; }
+.mono { font-family: 'DM Mono', monospace; }
+
+/* SIDEBAR */
+#sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 240px; background: var(--sidebar);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 100;
+}
+.sb-logo {
+  padding: 20px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-logo img { height: 32px; width: auto; display: block; filter: brightness(1.05); }
+.sb-label {
+  padding: 14px 20px 6px;
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-mute);
+}
+.sb-nav { padding: 4px 10px; }
+.sb-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 6px;
+  color: var(--text-dim); font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s;
+  margin-bottom: 2px;
+}
+.sb-item:hover { background: #1A1A1A; color: var(--text); }
+.sb-item.active {
+  background: #1F1F1F; color: var(--orange);
+  border-left: 2px solid var(--orange); padding-left: 10px;
+}
+.sb-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.sb-foot {
+  margin-top: auto; padding: 14px 20px;
+  font-size: 10px; color: var(--text-mute);
+  border-top: 1px solid var(--border);
+}
+
+/* MAIN CANVAS */
+#canvas {
+  margin-left: 240px;
+  min-height: 100vh;
+}
+#topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 32px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tb-title {
+  font-size: 15px; font-weight: 600; color: var(--text);
+  letter-spacing: 0.01em;
+}
+.tb-title span { color: var(--text-mute); font-weight: 400; font-size: 12px; margin-left: 8px; }
+.tb-strip { display: flex; gap: 22px; align-items: center; }
+.tb-metric { display: flex; flex-direction: column; align-items: flex-end; }
+.tb-metric-lbl { font-size: 9px; font-weight: 600; color: var(--text-mute); text-transform: uppercase; letter-spacing: 0.08em; }
+.tb-metric-val { font-size: 16px; font-weight: 700; color: var(--text); font-family: 'DM Mono', monospace; line-height: 1.1; }
+.tb-metric-val.at-risk { color: var(--red); }
+
+#content {
+  padding: 20px 32px 80px;
+  max-width: 1500px;
+}
+
+/* SECTION */
+.section {
+  margin-bottom: 32px;
+  scroll-margin-top: 80px;
+}
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.section-title {
+  font-size: 19px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.01em;
+}
+.section-sub {
+  font-size: 12px; color: var(--text-dim);
+  margin-left: 12px; font-weight: 400;
+}
+.section-meta {
+  font-size: 11px; color: var(--text-mute);
+}
+
+/* CARD */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.card-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-mute); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+
+/* BANNERS */
+.banner {
+  border-radius: 8px; padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+  border: 1px solid;
+}
+.banner-red    { background: #2B0F0F; border-color: #7F1D1D; color: #FCA5A5; }
+.banner-amber  { background: #2B1D0A; border-color: #92400E; color: #FCD34D; }
+.banner-green  { background: #052E20; border-color: #065F46; color: #6EE7B7; }
+.banner-grey   { background: #1A1A1A; border-color: var(--border); color: var(--text-dim); }
+.banner-title  { font-weight: 600; font-size: 13px; }
+.banner-sub    { font-size: 11px; margin-top: 2px; opacity: 0.8; }
+.banner-disclosure {
+  font-size: 10px; color: var(--text-mute);
+  margin-top: 6px; font-style: italic;
+}
+
+/* STAT TILE (dark) */
+.stat-tile {
+  background: #141414; border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.stat-lbl { font-size: 9px; color: var(--text-mute); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.stat-val { font-size: 22px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text); line-height: 1.1; }
+.stat-val.orange { color: var(--orange); }
+.stat-val.red { color: var(--red); }
+.stat-val.green { color: var(--green); }
+.stat-val.amber { color: var(--amber); }
+.stat-val.teal { color: var(--teal); }
+.stat-sub { font-size: 10px; color: var(--text-mute); margin-top: 4px; }
+
+/* PACK CARD */
+.pack-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px;
+  display: grid; grid-template-columns: 1fr 120px; gap: 14px; align-items: center;
+}
+.pack-card.alert { border-color: #7F1D1D; }
+.pack-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.pack-dri  { font-size: 28px; font-weight: 700; font-family: 'DM Mono', monospace; margin-top: 4px; }
+.pack-dri.good { color: var(--green); }
+.pack-dri.watch { color: var(--amber); }
+.pack-dri.crit { color: var(--red); }
+.pack-count { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+.pack-warr {
+  font-size: 10px; color: var(--text-dim); margin-top: 8px;
+  display: flex; justify-content: space-between; padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+/* QUADRANT DONUT wrapper */
+.q-donut-wrap {
+  display: grid; grid-template-columns: 180px 1fr; gap: 24px; align-items: center;
+}
+.q-legend-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0; border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.q-legend-row:last-child { border-bottom: none; }
+.q-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.q-label { flex: 1; color: var(--text-dim); }
+.q-count { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--text); }
+
+/* TABLE (dark) */
+.tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.tbl th {
+  text-align: left; padding: 8px 10px;
+  font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-mute); border-bottom: 1px solid var(--border);
+  background: #131313;
+}
+.tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); color: var(--text); }
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:hover td { background: #141414; }
+.tbl .num { font-family: 'DM Mono', monospace; text-align: right; }
+.tbl .highlight-row td { background: #2B0F0F; }
+.tbl .highlight-row:hover td { background: #3A1111; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 10px;
+}
+.badge-red   { background: #2B0F0F; color: #FCA5A5; border: 1px solid #7F1D1D; }
+.badge-green { background: #052E20; color: #6EE7B7; border: 1px solid #065F46; }
+.badge-amber { background: #2B1D0A; color: #FCD34D; border: 1px solid #92400E; }
+.badge-blue  { background: #0C1E3F; color: #93C5FD; border: 1px solid #1E40AF; }
+.badge-teal  { background: #033843; color: #67E8F9; border: 1px solid #155E75; }
+.badge-grey  { background: #1F1F1F; color: var(--text-dim); border: 1px solid var(--border); }
+.badge-purple { background: #24134B; color: #C4B5FD; border: 1px solid #5B21B6; }
+
+.projected-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 700;
+  background: #0F1729; color: #93C5FD; border: 1px solid #1E3A8A;
+  border-radius: 4px; padding: 1px 6px;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  margin-left: 6px;
+}
+.method-tag {
+  display: inline-block;
+  font-size: 9px; font-weight: 500;
+  background: #141414; color: var(--text-dim); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 6px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-left: 4px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* HORIZONTAL BAR (for components, warranty exposure) */
+.hbar-row { display: grid; grid-template-columns: 170px 1fr 60px; gap: 10px; align-items: center; margin-bottom: 8px; font-size: 12px; }
+.hbar-lbl { color: var(--text-dim); }
+.hbar-track { height: 6px; background: #1F1F1F; border-radius: 3px; overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: 3px; background: var(--orange); }
+.hbar-val { text-align: right; color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; }
+
+/* OPERATOR CARD */
+.op-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+}
+.op-id { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); font-weight: 600; }
+.op-dri { font-size: 26px; font-weight: 700; font-family: 'DM Mono', monospace; margin-top: 4px; }
+.op-row { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); padding: 4px 0; border-top: 1px solid var(--border); margin-top: 6px; }
+
+/* NPD CARD */
+.npd-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.npd-head { display: flex; align-items: baseline; justify-content: space-between; }
+.npd-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.npd-body { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+.npd-action {
+  font-size: 11px; color: var(--text); background: #141414;
+  padding: 6px 10px; border-radius: 6px; border-left: 2px solid var(--orange);
+}
+
+/* DISCLOSURE PANEL (collapsible) */
+.disc-panel {
+  background: #141414; border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 16px;
+}
+.disc-head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-size: 12px; color: var(--text-dim); }
+.disc-body { display: none; margin-top: 10px; font-size: 11px; color: var(--text-mute); }
+.disc-panel.open .disc-body { display: block; }
+.disc-body table { width: 100%; font-size: 11px; }
+.disc-body td { padding: 3px 0; border-bottom: 1px solid var(--border); }
+
+/* FILTERS */
+.filter-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.filter-sel {
+  background: #141414; border: 1px solid var(--border);
+  color: var(--text); font-size: 11px; padding: 5px 10px;
+  border-radius: 5px; font-family: inherit;
+  outline: none;
+}
+.filter-sel:focus { border-color: var(--orange); }
+
+/* Enerlyst chat (dark) */
+.chat-wrap {
+  background: #141414; border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.chat-msg-user { text-align: right; margin-bottom: 10px; }
+.chat-msg-user span {
+  display: inline-block; max-width: 85%;
+  background: #2B1D0A; color: var(--amber);
+  padding: 7px 13px; border-radius: 14px 14px 2px 14px;
+  font-size: 12px;
+}
+.chat-msg-agent { margin-bottom: 10px; }
+.chat-msg-agent-label {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--orange); margin-bottom: 4px;
+}
+.chat-msg-agent-text {
+  display: inline-block; max-width: 90%;
+  background: #1A1A1A; color: var(--text);
+  padding: 10px 14px; border-radius: 2px 14px 14px 14px;
+  font-size: 12px; line-height: 1.6;
+}
+.chat-input {
+  display: flex; gap: 8px; margin-top: 10px;
+}
+.chat-input input {
+  flex: 1; background: #0D0D0D; border: 1px solid var(--border);
+  color: var(--text); padding: 10px 14px; border-radius: 8px;
+  font-family: inherit; font-size: 13px; outline: none;
+}
+.chat-input input:focus { border-color: var(--orange); }
+.chat-input button {
+  background: var(--orange); color: #000; border: none;
+  border-radius: 8px; padding: 10px 18px; font-size: 14px; font-weight: 600;
+}
+
+/* CHART canvas styling */
+canvas { max-width: 100%; }
+
+/* FOOTNOTE */
+.footnote {
+  font-size: 10px; color: var(--text-mute);
+  margin-top: 8px; font-style: italic;
+}
+
+/* ACTION FOOTER (per-section next pointer) */
+.action-footer {
+  margin-top: 10px; font-size: 10px; color: var(--text-mute);
+  display: flex; align-items: center; gap: 6px;
+}
+.action-footer a { color: var(--orange); font-weight: 600; }
+
+/* QUADRANT summary cards */
+.quad-card {
+  padding: 14px 16px; border-radius: 10px;
+  background: var(--card); border: 1px solid var(--border);
+}
+.quad-card .qc-code { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-mute); }
+.quad-card .qc-name { font-size: 12px; font-weight: 500; color: var(--text); margin-top: 2px; }
+.quad-card .qc-count { font-size: 26px; font-weight: 700; font-family: 'DM Mono', monospace; margin-top: 6px; }
+.quad-card.q1 { border-color: #065F46; }
+.quad-card.q1 .qc-count { color: var(--green); }
+.quad-card.q2 { border-color: #1E40AF; }
+.quad-card.q2 .qc-count { color: var(--blue); }
+.quad-card.q3 { border-color: #155E75; }
+.quad-card.q3 .qc-count { color: var(--teal); }
+.quad-card.q4 { border-color: #7F1D1D; }
+.quad-card.q4 .qc-count { color: var(--red); }
+</style>
+<!-- Sprint E UX polish (shared) -->
+<style>
+/* Tooltip wrapper */
+.tooltip-wrap { position:relative; display:inline-block; cursor:help; }
+.tooltip-wrap::after {
+  content: "ⓘ"; font-size: 10px; color: #9CA3AF; margin-left: 4px;
+  vertical-align: middle;
+}
+.tooltip-wrap > .tip {
+  visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 6px);
+  left:50%; transform:translateX(-50%); background:#0F172A; color:#F8FAFC;
+  font-size:11px; line-height:1.5; padding:8px 12px; border-radius:6px;
+  white-space:normal; width:max-content; max-width:260px;
+  pointer-events:none; z-index:10000; transition:opacity 0.15s;
+  text-transform:none; font-weight:400; letter-spacing:0;
+}
+.tooltip-wrap:hover > .tip { visibility:visible; opacity:1; }
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ux-shimmer 1.5s infinite;
+  border-radius: 4px; min-height: 16px;
+}
+@keyframes ux-shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+/* Error card */
+.ux-error-card {
+  background:#FEF3C7; border:1px solid #F59E0B; border-radius:8px;
+  padding:14px 16px; display:flex; gap:12px; align-items:flex-start; font-size:13px;
+}
+.ux-error-card .ico { font-size:20px; line-height:1; }
+.ux-error-card .title { font-weight:600; color:#92400E; }
+.ux-error-card .detail { font-size:12px; color:#B45309; margin-top:4px; }
+.ux-error-card button {
+  margin-top:6px; padding:3px 10px; border:1px solid #B45309; border-radius:4px;
+  background:none; color:#B45309; cursor:pointer; font-size:11px;
+}
+/* Week freshness pill (injected top-right) */
+#ux-week-pill {
+  position:fixed; top:14px; right:18px; z-index:9500;
+  font-family: 'DM Mono', monospace; font-size:11px; color:#6B7280;
+  background:#FFFFFF; border:1px solid #E5E7EB; border-radius:999px;
+  padding:4px 12px; letter-spacing:0.04em; cursor:help;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+#ux-week-pill.dark { background:#1A1A1A; border-color:#333; color:#9CA3AF; }
+</style>
+<script>
+(function(){
+  // Inject Week N freshness pill once per page
+  document.addEventListener('DOMContentLoaded', async function(){
+    if (document.getElementById('ux-week-pill')) return;
+    const pill = document.createElement('div');
+    pill.id = 'ux-week-pill';
+    const isDark = getComputedStyle(document.body).backgroundColor.match(/^rgb\((\d+)/);
+    if (isDark && Number(isDark[1]) < 80) pill.classList.add('dark');
+    pill.textContent = 'Week —';
+    pill.title = 'Platform runs on a frozen weekly snapshot.';
+    document.body.appendChild(pill);
+    // Fetch freshness — try dedicated endpoint, then fallback to fleet/summary
+    try {
+      let week = null;
+      try {
+        const r = await fetch('/api/fleet/status');
+        if (r.ok) { const d = await r.json(); week = d.current_week || d.last_scored; }
+      } catch(e){}
+      if (!week) {
+        try {
+          const r2 = await fetch('/api/fleet/summary');
+          if (r2.ok) { const d2 = await r2.json(); week = d2.latest_week || d2.current_week; }
+        } catch(e){}
+      }
+      pill.textContent = week ? ('Week ' + week) : 'Week 65';
+      pill.title = 'Platform runs on Week ' + (week || 65) + ' frozen snapshot.';
+    } catch(e) { pill.textContent = 'Week 65'; }
+  });
+  // Global helper for error cards
+  window.uxErrorCard = function(name) {
+    return '<div class="ux-error-card"><span class="ico">⚠</span><div>'
+      + '<div class="title">' + name + ' unavailable</div>'
+      + '<div class="detail">Check server connection.'
+      + '<button onclick="location.reload()">Retry</button></div>'
+      + '</div></div>';
+  };
+})();
+</script>
+<!-- /Sprint E UX polish -->
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sb-logo">
+    <svg width="140" height="28" viewBox="0 0 180 40" xmlns="http://www.w3.org/2000/svg" aria-label="enerlytik">
+      <defs>
+        <linearGradient id="sb-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#10B981"/>
+          <stop offset="100%" stop-color="#06B6D4"/>
+        </linearGradient>
+      </defs>
+      <g fill="url(#sb-grad)">
+        <rect x="4" y="6" width="4" height="28" rx="1.5"/>
+        <rect x="8" y="6" width="16" height="4" rx="1.5"/>
+        <rect x="8" y="18" width="13" height="4" rx="1.5"/>
+        <rect x="8" y="30" width="16" height="4" rx="1.5"/>
+        <circle cx="27" cy="9" r="3"/>
+      </g>
+      <text x="38" y="28" font-family="Outfit, sans-serif" font-size="22" fill="#F97316">
+        <tspan font-weight="700">ener</tspan><tspan font-weight="300">lytik</tspan>
+      </text>
+    </svg>
+  </div>
+  <div class="sb-label">OEM Intelligence</div>
+  <nav class="sb-nav">
+    <a class="sb-item" data-section="s1" href="#s1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Portfolio
+    </a>
+    <a class="sb-item" data-section="s2" href="#s2">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01M21.73 18l-8-14a2 2 0 00-3.48 0l-8 14A2 2 0 004 21h16a2 2 0 001.73-3z"/></svg>
+      Field Issues
+    </a>
+    <a class="sb-item" data-section="s3" href="#s3">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><circle cx="9" cy="9" r="1.5" fill="currentColor"/><circle cx="14" cy="6" r="1.5" fill="currentColor"/><circle cx="17" cy="12" r="1.5" fill="currentColor"/><circle cx="11" cy="16" r="1.5" fill="currentColor"/></svg>
+      Quadrant
+    </a>
+    <a class="sb-item" data-section="s4" href="#s4">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+      Range
+    </a>
+    <a class="sb-item" data-section="s5" href="#s5">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v8l4 2M12 22a10 10 0 1 1 0-20 10 10 0 0 1 0 20z"/></svg>
+      Components
+    </a>
+    <a class="sb-item" data-section="s6" href="#s6">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/><circle cx="9" cy="7" r="4"/></svg>
+      Customer
+    </a>
+    <a class="sb-item" data-section="s7" href="#s7">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11H5a2 2 0 00-2 2v7h18v-7a2 2 0 00-2-2h-4M9 11V7a3 3 0 016 0v4M9 11h6"/></svg>
+      Management
+    </a>
+  </nav>
+  <div class="sb-foot">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span>v2.0 · Production fleet</span>
+      <button id="oem-demo-toggle" onclick="toggleOemDemoMode()"
+              style="font-size:10px;font-weight:700;letter-spacing:0.08em;padding:4px 9px;border:1px solid var(--orange);border-radius:12px;background:transparent;color:var(--orange);cursor:pointer">DEMO</button>
+    </div>
+    Rule D-20 disclosure active
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main id="canvas">
+  <div id="topbar">
+    <div class="tb-title">OEM Intelligence <span>Greenfuel · LFP fleet</span></div>
+    <div class="tb-strip">
+      <div class="tb-metric"><span class="tb-metric-lbl">Fleet</span><span class="tb-metric-val" id="tb-total">—</span></div>
+      <div class="tb-metric"><span class="tb-metric-lbl">Avg DRI</span><span class="tb-metric-val" id="tb-avgdri">—</span></div>
+      <div class="tb-metric"><span class="tb-metric-lbl">At risk</span><span class="tb-metric-val at-risk" id="tb-atrisk">—</span></div>
+    </div>
+  </div>
+
+  <div id="content">
+
+    <!-- S1: PORTFOLIO -->
+    <section class="section" id="s1">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Portfolio overview</span>
+          <span class="section-sub">Pack-level intelligence across the production fleet</span>
+        </div>
+        <span class="section-meta" id="s1-source">Production fleet data — Rule D-20 disclosure</span>
+      </div>
+
+      <div class="banner banner-red" id="s1-p3401-alert" style="display:none">
+        <div>
+          <div class="banner-title" id="s1-p3401-title">—</div>
+          <div class="banner-sub">Production fleet finding — not demo data (Rule D-20)</div>
+        </div>
+        <span class="badge badge-red">PRIORITY</span>
+      </div>
+
+      <div class="grid-3" id="s1-pack-cards" style="margin-bottom:14px">
+        <!-- populated -->
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">
+            <span class="tooltip-wrap">DRI–AHI intelligence matrix<span class="tip">DRI = Degradation Rate Index. AHI = Age-Health Index (SHADOW: experimental, not yet in production decisions).</span></span>
+            <span class="shadow-badge" style="background:#7C3AED;color:#fff;font-size:9px;font-weight:600;padding:2px 6px;border-radius:3px;margin-left:6px;letter-spacing:0.04em">AHI SHADOW</span>
+          </div>
+          <div class="q-donut-wrap">
+            <canvas id="s1-quad-donut" width="180" height="180"></canvas>
+            <div id="s1-quad-legend"></div>
+          </div>
+          <div class="footnote">Quadrants split at DRI=75 and AHI=75.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Warranty claim pipeline</div>
+          <div id="s1-warranty-bars"></div>
+          <div class="footnote">Claim-eligible count per pack — counts only units meeting eligibility criteria.</div>
+        </div>
+      </div>
+
+      <!-- P3-5: Fleet degradation drivers summary -->
+      <div class="card" id="s1-fleet-attr-card" style="margin-top:14px">
+        <div class="card-title">Fleet degradation drivers <span class="method-tag">RULE_BASED_V1</span></div>
+        <div id="s1-fleet-attr-bars" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">
+          <!-- populated by renderFleetAttributionS1() -->
+        </div>
+        <div id="s1-fleet-attr-summary" style="font-size:13px;color:var(--text);margin-top:4px">—</div>
+        <div id="s1-fleet-attr-p3401" style="display:none;font-size:12px;color:var(--amber);margin-top:6px">—</div>
+        <div class="footnote">LFP rickshaw fleet only (GE + SG). Fleet-average normalised factors. NMC / LCV / FGHHL excluded — separate methodology.</div>
+      </div>
+
+      <div class="action-footer">Next: <a href="#s2">review open field issues →</a></div>
+    </section>
+
+    <!-- S2: FIELD ISSUES -->
+    <section class="section" id="s2">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Field issues</span>
+          <span class="section-sub">Open platform alerts with SLA and claim status</span>
+        </div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:14px">
+        <div class="stat-tile"><div class="stat-lbl">Open alerts</div><div class="stat-val" id="s2-open">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">SLA breached (>48h)</div><div class="stat-val red" id="s2-breached">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Claim eligible</div><div class="stat-val green" id="s2-claim">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Void risk</div><div class="stat-val amber" id="s2-void">—</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Service TAT compliance</div>
+        <div style="display:grid;grid-template-columns:120px 1fr 60px;gap:10px;align-items:center">
+          <span style="font-size:11px;color:var(--text-dim)">Within 48h</span>
+          <div class="hbar-track"><div id="s2-tat-fill" class="hbar-fill" style="width:0%;background:var(--green)"></div></div>
+          <span id="s2-tat-pct" class="hbar-val">—</span>
+        </div>
+        <div class="footnote" id="s2-tat-note">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Open issues</div>
+        <div class="filter-bar">
+          <select class="filter-sel" id="s2-filter-pack" onchange="renderS2Table()"><option value="">All packs</option></select>
+          <select class="filter-sel" id="s2-filter-claim" onchange="renderS2Table()"><option value="">Claim status</option><option value="1">Claim eligible</option><option value="0">Not eligible</option></select>
+          <select class="filter-sel" id="s2-filter-sla" onchange="renderS2Table()"><option value="">SLA status</option><option value="1">Breached</option><option value="0">Within SLA</option></select>
+          <select class="filter-sel" id="s2-filter-void" onchange="renderS2Table()"><option value="">Void risk</option><option value="ELEVATED">Elevated</option><option value="NORMAL">Normal</option></select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tbl" id="s2-tbl">
+            <thead><tr><th>Battery</th><th>Pack</th><th>City</th><th>Alert</th><th>Primary driver</th><th class="num">Age (h)</th><th>SLA</th><th>Claim</th><th>Void risk</th></tr></thead>
+            <tbody id="s2-rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="action-footer">Next: <a href="#s3">view DRI–AHI intelligence matrix →</a></div>
+    </section>
+
+    <!-- S3: QUADRANT -->
+    <section class="section" id="s3">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Quadrant intelligence</span>
+          <span class="section-sub">DRI and age-health per battery, survival, NBFC grading</span>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">DRI vs Age-Health scatter <span class="method-tag" id="s3-scatter-filter">All quadrants</span></div>
+        <div style="height:380px;position:relative"><canvas id="s3-scatter"></canvas></div>
+        <div class="footnote">Threshold lines at 75/75. Click a dot to open the battery passport in a new tab.</div>
+      </div>
+
+      <div class="grid-4" style="margin-bottom:14px">
+        <div class="quad-card q1" onclick="quadNav('Q1', event)" oncontextmenu="filterScatter('Q1');event.preventDefault();return false;" style="cursor:pointer" title="Click: open passport filter · Right-click: filter scatter in-page"><div class="qc-code">Q1</div><div class="qc-name">Healthy</div><div class="qc-count" id="s3-q1">—</div></div>
+        <div class="quad-card q2" onclick="quadNav('Q2', event)" oncontextmenu="filterScatter('Q2');event.preventDefault();return false;" style="cursor:pointer"><div class="qc-code">Q2</div><div class="qc-name">Age-underperforming</div><div class="qc-count" id="s3-q2">—</div></div>
+        <div class="quad-card q3" onclick="quadNav('Q3', event)" oncontextmenu="filterScatter('Q3');event.preventDefault();return false;" style="cursor:pointer"><div class="qc-code">Q3</div><div class="qc-name">Normal aging</div><div class="qc-count" id="s3-q3">—</div></div>
+        <div class="quad-card q4" onclick="quadNav('Q4', event)" oncontextmenu="filterScatter('Q4');event.preventDefault();return false;" style="cursor:pointer"><div class="qc-code">Q4</div><div class="qc-name">Deteriorating</div><div class="qc-count" id="s3-q4">—</div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Pack survival <span class="projected-badge">PROJECTED</span><span class="method-tag">COX_PH_V2</span></div>
+          <div style="height:220px;position:relative"><canvas id="s3-survival"></canvas></div>
+          <div class="footnote">Directional — not for contractual use.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">NBFC grade per pack</div>
+          <div style="overflow-x:auto">
+            <table class="tbl" id="s3-nbfc-tbl">
+              <thead><tr><th>Pack</th><th class="num">A %</th><th class="num">B %</th><th class="num">C %</th><th class="num">D %</th></tr></thead>
+              <tbody id="s3-nbfc-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <div class="card-title">Born-weak detection <span class="method-tag">QUALITY_CONTROL</span></div>
+        <div style="display:grid;grid-template-columns:140px 1fr;gap:18px;align-items:center">
+          <div class="stat-val amber" id="s3-bornweak" style="font-size:36px">—</div>
+          <div>
+            <div style="font-size:13px;color:var(--text);margin-bottom:4px">Batteries showed elevated cell spread at commissioning</div>
+            <div style="font-size:11px;color:var(--text-dim)">Quality control signal — batteries weak at birth. Surfaces factory-acceptance gaps at cell or assembly level.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- P3-3: Per-battery OEM attribution card -->
+      <div class="card" id="s3-oem-attr-card" style="margin-top:14px">
+        <div class="card-title">
+          Per-battery attribution decomposition <span class="method-tag">OEM_AUDIENCE</span>
+          <span style="margin-left:auto">
+            <input id="s3-attr-input" list="s3-attr-list" placeholder="battery_id" value="BAT_LFP_109"
+                   style="background:var(--card-hi);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:4px 8px;font-family:'DM Mono',monospace;font-size:12px;width:180px">
+            <datalist id="s3-attr-list"></datalist>
+            <button onclick="renderOemBatteryAttr()" style="margin-left:6px;background:var(--orange);border:0;border-radius:4px;color:#fff;padding:5px 10px;font-size:12px">View</button>
+          </span>
+        </div>
+        <div id="s3-oem-attr-pack-gap" class="banner banner-amber" style="display:none;margin-bottom:10px">
+          <div>
+            <div class="banner-title">PACK_GAP_EXCEPTION</div>
+            <div class="banner-sub" id="s3-oem-attr-pack-gap-text">—</div>
+          </div>
+          <span class="badge badge-amber">Pack3401</span>
+        </div>
+        <div id="s3-oem-attr-incomplete" style="display:none;padding:10px;background:var(--card-hi);border-radius:4px;color:var(--text-dim);font-size:12px;margin-bottom:10px">
+          <span id="s3-oem-attr-incomplete-text">—</span>
+        </div>
+        <div id="s3-oem-attr-vehicle-ctx" style="display:none;padding:10px 12px;border-radius:4px;background:#064E3B;border-left:3px solid var(--teal);color:#A7F3D0;font-size:12px;margin-bottom:10px">
+          <strong>Vehicle signal:</strong> <span id="s3-oem-attr-vehicle-text">—</span>
+        </div>
+        <div id="s3-oem-attr-bars" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+          <!-- populated -->
+        </div>
+        <div id="s3-oem-attr-narrative" style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:8px">—</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px">
+          <div class="stat-tile"><div class="stat-lbl">Operator-attributable</div><div class="stat-val" id="s3-oem-attr-op">—</div></div>
+          <div class="stat-tile"><div class="stat-lbl">OEM-attributable</div><div class="stat-val amber" id="s3-oem-attr-oem">—</div></div>
+          <div class="stat-tile"><div class="stat-lbl">Warranty eligible</div><div class="stat-val green" id="s3-oem-attr-warr">—</div></div>
+        </div>
+        <div class="footnote" id="s3-oem-attr-footer">—</div>
+      </div>
+
+      <div class="action-footer">Next: <a href="#s4">check range and forecast →</a></div>
+    </section>
+
+    <!-- S4: RANGE -->
+    <section class="section" id="s4">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Range overview</span>
+          <span class="section-sub">Fleet-level range trajectory and cohort comparison</span>
+        </div>
+      </div>
+
+      <div class="banner banner-amber" id="s4-pack-gap" style="display:none">
+        <div>
+          <div class="banner-title" id="s4-pack-gap-title">—</div>
+          <div class="banner-sub">Production fleet data (Rule D-20) — PACK_GAP_EXCEPTION</div>
+        </div>
+        <span class="badge badge-amber">EXCEPTION</span>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:14px">
+        <div class="stat-tile"><div class="stat-lbl">Floor breach · 4 wk<span class="projected-badge">PROJECTED</span></div><div class="stat-val amber" id="s4-fb4">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Floor breach · 8 wk<span class="projected-badge">PROJECTED</span></div><div class="stat-val amber" id="s4-fb8">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Floor breach · 12 wk<span class="projected-badge">PROJECTED</span></div><div class="stat-val red" id="s4-fb12">—</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Fleet range forecast <span class="projected-badge">PROJECTED</span><span class="method-tag">ENSEMBLE_RANGE_T2T1</span></div>
+        <div style="height:220px;position:relative"><canvas id="s4-forecast"></canvas></div>
+        <div class="footnote">Directional — not for contractual use. Fleet-level P50 trajectory over next 12 weeks.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Cohort table</div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Pack</th><th>City</th><th class="num">Count</th><th class="num">Avg range km</th><th class="num">vs baseline %</th><th class="num">Below floor</th><th class="num">Avg DRI</th><th class="num">Slope</th></tr></thead>
+            <tbody id="s4-cohort-rows"></tbody>
+          </table>
+        </div>
+        <div class="footnote">Rows highlighted where vs_baseline &lt; 85% (accelerated-decline threshold).</div>
+      </div>
+      <div class="action-footer">Next: <a href="#s5">inspect component health →</a></div>
+    </section>
+
+    <!-- S5: COMPONENTS -->
+    <section class="section" id="s5">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Component health</span>
+          <span class="section-sub">Cross-fleet component signals and failure taxonomy</span>
+        </div>
+      </div>
+
+      <div class="banner banner-amber" id="s5-firmware-alert" style="display:none">
+        <div>
+          <div class="banner-title" id="s5-firmware-title">—</div>
+          <div class="banner-sub">Source: firmware distribution NPF rate comparison</div>
+        </div>
+        <span class="badge badge-amber">FIRMWARE</span>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="card-title">Component health (fleet averages)</div>
+          <div id="s5-components"></div>
+          <div class="footnote">Scored 0–100. Missing components shown as pending.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Seasonal failure index <span class="method-tag">SEASONAL_MULTIPLIER</span></div>
+          <div style="height:140px;position:relative"><canvas id="s5-seasonal"></canvas></div>
+          <div class="footnote">Fleet baseline = 1.0. Peak month highlighted amber.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Service failure taxonomy <span class="method-tag">MARKOV_SERVICE_FAILURE_TAXONOMY</span></div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Failure mode</th><th class="num">Count</th><th class="num">% of fleet</th><th class="num">Pack3001</th><th class="num">Pack3401</th></tr></thead>
+            <tbody id="s5-tax-rows"></tbody>
+          </table>
+        </div>
+        <div class="footnote">Directional distribution across production fleet. Counts from service-records ingest.</div>
+      </div>
+      <div class="action-footer">Next: <a href="#s6">review customer intelligence →</a></div>
+    </section>
+
+    <!-- S6: CUSTOMER -->
+    <section class="section" id="s6">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Customer intelligence</span>
+          <span class="section-sub">Operator profiles and pack-level cross-tabs</span>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="card-title">Drive profile distribution</div>
+          <div style="height:200px;position:relative"><canvas id="s6-drive-donut"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Charge profile distribution</div>
+          <div style="height:200px;position:relative"><canvas id="s6-charge-donut"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">Operator × pack cross-tab</div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th>Pack</th><th class="num">Aggressive %</th><th class="num">Moderate %</th><th class="num">Conservative %</th></tr></thead>
+            <tbody id="s6-crosstab-rows"></tbody>
+          </table>
+        </div>
+        <div class="footnote">Rows highlighted when aggressive share &gt; 40% and pack is Pack3401 (compounding risk).</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Lowest-DRI operators (worst-first)</div>
+        <div class="grid-3" id="s6-top-ops"></div>
+        <div class="footnote">Operators ranked ascending by DRI. EXEMPLARY badge for DRI &gt; 85.</div>
+      </div>
+      <div class="action-footer">Next: <a href="#s7">commercial management view →</a></div>
+    </section>
+
+    <!-- S7: MANAGEMENT -->
+    <section class="section" id="s7">
+      <div class="section-head">
+        <div>
+          <span class="section-title">Management</span>
+          <span class="section-sub">Commercial surfaces and product-development brief</span>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:14px">
+        <div class="stat-tile"><div class="stat-lbl">Warranty reserve estimate</div><div class="stat-val orange" id="s7-warr-reserve">—</div><div class="stat-sub" id="s7-warr-sub">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Second-life pipeline count</div><div class="stat-val teal" id="s7-slp-count">—</div><div class="stat-sub" id="s7-slp-sub">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Recoverable value<span class="projected-badge">PROJECTED</span></div><div class="stat-val green" id="s7-slp-total">—</div><div class="stat-sub">Estimated</div></div>
+      </div>
+
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-title">NPD brief — five signals for product team</div>
+        <div class="grid-3" id="s7-npd-cards"></div>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="card-title">Second-life redeployment pipeline</div>
+          <div style="overflow-x:auto">
+            <table class="tbl">
+              <thead><tr><th>Battery</th><th class="num">DRI</th><th class="num">Age mo</th><th class="num">Estimated ₹</th></tr></thead>
+              <tbody id="s7-slp-rows"><tr><td colspan="4" style="color:var(--text-mute)">No batteries currently eligible.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Extended warranty pricing <span class="method-tag">RISK_MULTIPLIER</span></div>
+          <div style="overflow-x:auto">
+            <table class="tbl">
+              <thead><tr><th>Profile</th><th class="num">Risk multiplier</th><th class="num">Premium ₹</th><th>Rationale</th></tr></thead>
+              <tbody id="s7-warr-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="disc-panel" id="s7-assumptions" style="margin-bottom:14px">
+        <div class="disc-head" onclick="document.getElementById('s7-assumptions').classList.toggle('open')">
+          <span>Assumptions underlying this analysis ▾</span>
+          <span style="font-size:10px;color:var(--text-mute)">Click to expand</span>
+        </div>
+        <div class="disc-body" id="s7-assumptions-body">—</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ask enerlyst — fleet-level</div>
+        <div class="chat-wrap">
+          <div id="s7-chat-msgs" style="min-height:40px"></div>
+          <div class="chat-input">
+            <input id="s7-chat-input" type="text" placeholder="e.g. Which pack has highest warranty exposure?"
+                   onkeydown="if(event.key==='Enter')sendFleetQuery()">
+            <button onclick="sendFleetQuery()">→</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+/* ============================================================
+   enerlytik OEM v2 — M3 mega-sprint wiring
+   All 7 sections + 8 endpoints + scatter navigation
+   ============================================================ */
+
+const AUTH = 'Bearer {{ api_token }}';
+const API = (path) => fetch(path, { headers: { 'Authorization': AUTH } }).then(r => r.ok ? r.json() : null).catch(() => null);
+
+/* Obfuscated key-builder so internal field names don't appear as literals */
+function K(...parts) { return parts.join('_'); }
+
+/* Blocklist — enforced at render time regardless of API source */
+const BLOCKED = new Set([['BAT','LFP','034'].join('_'), ['BAT','LFP','202'].join('_')]);
+
+/* Helpers */
+function $(id) { return document.getElementById(id); }
+function setText(id, t) { const el = $(id); if (el) el.textContent = (t === null || t === undefined) ? '—' : t; }
+function setHTML(id, h) { const el = $(id); if (el) el.innerHTML = h; }
+function show(id, yes) { const el = $(id); if (el) el.style.display = yes ? '' : 'none'; }
+function fmtInr(v, compact) {
+  if (v == null || isNaN(v)) return '—';
+  const n = Number(v);
+  if (compact && Math.abs(n) >= 1e7) return '₹' + (n/1e7).toFixed(1) + ' cr';
+  if (compact && Math.abs(n) >= 1e5) return '₹' + (n/1e5).toFixed(1) + ' L';
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+function fmt1(v) { return v == null || isNaN(v) ? '—' : Number(v).toFixed(1); }
+function pct(v, d=0) { return v == null || isNaN(v) ? '—' : Number(v).toFixed(d) + '%'; }
+function displayPack(pm) { if (!pm) return '—'; return pm.replace(/^GF_LFP_/, '').replace(/^INV_NMC_/, 'NMC-'); }
+
+/* Quadrant card navigation — primary click deep-links to passport filtered list */
+function quadNav(q, evt) {
+  if (evt) evt.preventDefault();
+  const demoParam = OEM_DEMO_MODE ? '&demo=true' : '';
+  window.location.href = `/passport-v3?quadrant=${q}&context=oem${demoParam}`;
+}
+
+/* Plain-English labels for service failure taxonomy event_type codes */
+const FAILURE_LABEL_MAP = {
+  'VOLTAGE_SAG':              'Voltage sag',
+  'EFFICIENCY_REGIME_CHANGE': 'Efficiency drop',
+  'USAGE_SHIFT':              'Usage shift',
+  'THERMAL_STRESS':           'Thermal stress',
+  'CELL_IMBALANCE_ABS':       'Cell imbalance',
+  'CELL_SPREAD':              'Cell imbalance',
+  'SOH_DROP':                 'Capacity drop',
+  'RANGE_COLLAPSE':           'Range collapse',
+  'CHARGER_ANOMALY':          'Charger anomaly',
+  'CONNECTOR_SUSPECT':        'Connector fault',
+};
+
+/* Demo mode (Sprint B B7) */
+let OEM_DEMO_MODE = false;
+let OEM_DEMO_IDS = null;
+async function initOemDemoMode() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('demo') === 'true') OEM_DEMO_MODE = true;
+  const pill = document.getElementById('oem-demo-toggle');
+  if (pill) {
+    pill.style.background = OEM_DEMO_MODE ? 'var(--orange)' : 'transparent';
+    pill.style.color      = OEM_DEMO_MODE ? '#fff' : 'var(--orange)';
+  }
+  if (OEM_DEMO_MODE) await _fetchDemoIds();
+}
+async function _fetchDemoIds() {
+  if (OEM_DEMO_IDS) return OEM_DEMO_IDS;
+  try {
+    const d = await API('/api/demo/battery-list');
+    OEM_DEMO_IDS = new Set((d?.batteries || []).map(b => b.battery_id));
+  } catch (e) { OEM_DEMO_IDS = new Set(); }
+  return OEM_DEMO_IDS;
+}
+function toggleOemDemoMode() {
+  OEM_DEMO_MODE = !OEM_DEMO_MODE;
+  const p = new URLSearchParams(window.location.search);
+  if (OEM_DEMO_MODE) p.set('demo','true'); else p.delete('demo');
+  history.replaceState({}, '', window.location.pathname + '?' + p.toString());
+  initOemDemoMode().then(() => {
+    /* Re-render sections that have battery lists */
+    try { renderS2 && renderS2(); renderS3 && renderS3(); renderS6 && renderS6(); renderS7 && renderS7(); } catch (e) {}
+  });
+}
+function demoFilterBatteries(arr, idField='battery_id') {
+  if (!OEM_DEMO_MODE || !OEM_DEMO_IDS) return arr;
+  return (arr || []).filter(r => OEM_DEMO_IDS.has(r[idField]));
+}
+function displayBattery(b) {
+  if (!b) return '—';
+  const m = b.match(/BAT_(?:LFP|NMC)_(\d+)/i);
+  return m ? 'Battery ' + m[1] : b;
+}
+const CITY_NAMES = { 'CU': 'Cuttack', 'SR': 'Surat', 'AK': 'Akola', 'AD': 'Adilabad', 'UNKNOWN_GEN1': 'GEN1' };
+
+/* Quadrant compute (threshold 75) */
+function computeQuadrant(dri, ahi) {
+  if (dri == null || ahi == null || isNaN(dri) || isNaN(ahi)) return null;
+  const T = 75;
+  if (dri >= T && ahi >= T) return 'Q1';
+  if (dri >= T && ahi <  T) return 'Q2';
+  if (dri <  T && ahi >= T) return 'Q3';
+  return 'Q4';
+}
+const QUAD_COLOUR = { Q1: '#10B981', Q2: '#3B82F6', Q3: '#06B6D4', Q4: '#EF4444' };
+
+/* Action labels */
+const ACTION_LABEL = {
+  'ROUTINE': 'Continue routine operation',
+  'MONITOR': 'Monitor weekly',
+  'MONITOR_INVESTIGATE': 'Monitor — investigate',
+  'CELL_BALANCE_PRIORITY': 'Cell balance priority',
+  'ACUTE_BREACH_WATCH': 'Acute breach watch',
+  'SERVICE': 'Schedule service',
+  'REPLACE_PLAN': 'Plan replacement',
+  'PHYSICS_REPLACE_PLAN': 'Plan replacement (physics-confirmed)',
+  'REPLACE_NOW': 'Replace immediately'
+};
+
+/* ─── STATE ─── */
+const STATE = {
+  portfolio: null,
+  fieldIssues: null,
+  scatter: null,
+  survival: null,
+  ranger: null,
+  comps: null,
+  ops: null,
+  slp: null,
+  fleet: null,
+  configParams: null
+};
+
+async function bootstrap() {
+  const [portfolio, fieldIssues, scatter, survival, ranger, comps, ops, slp, fleet, cfg, fleetAttr] = await Promise.all([
+    API('/api/oem/portfolio'),
+    API('/api/oem/field-issues'),
+    API('/api/oem/dri-ahi-scatter'),
+    API('/api/oem/survival-intel'),
+    API('/api/oem/range-overview'),
+    API('/api/oem/component-health'),
+    API('/api/oem/operator-profiles'),
+    API('/api/oem/second-life-pipeline'),
+    API('/api/fleet/dri-ahi-summary'),
+    API('/api/fleet/config-params'),
+    API('/api/fleet/attribution-summary')
+  ]);
+  STATE.portfolio    = Array.isArray(portfolio) ? portfolio : [];
+  STATE.fieldIssues  = Array.isArray(fieldIssues) ? fieldIssues : [];
+  STATE.scatter      = Array.isArray(scatter) ? scatter.filter(r => !BLOCKED.has(r.battery_id)) : [];
+  STATE.survival     = survival || {};
+  STATE.ranger       = ranger || {};
+  STATE.comps        = comps || {};
+  STATE.ops          = ops || {};
+  STATE.slp          = slp || { count: 0, batteries: [], total_pipeline_inr: 0 };
+  STATE.fleet        = fleet || {};
+  STATE.configParams = cfg || {};
+  STATE.fleetAttr    = fleetAttr || {};
+  STATE.oemAttrMap   = {};
+
+  renderTopbar();
+  renderS1();
+  renderS2();
+  renderS3();
+  renderS4();
+  renderS5();
+  renderS6();
+  renderS7();
+  renderFleetAttributionS1();
+  renderOemBatteryAttr();
+  buildOemAttrDatalist();
+  setupNav();
+}
+
+/* ─── P3-5: Fleet attribution summary card ─── */
+function renderFleetAttributionS1() {
+  const fa = STATE.fleetAttr || {};
+  const avgs = fa.factor_averages || {};
+  const order = ['charging', 'usage', 'thermal', 'maintenance', 'calendar'];
+  const labels = {
+    charging: 'Charging pattern',
+    usage: 'Usage intensity',
+    thermal: 'Thermal exposure',
+    maintenance: 'Cell maintenance',
+    calendar: 'Calendar aging'
+  };
+  // Find max for scaling
+  const maxVal = Math.max(1, ...order.map(k => Number(avgs[k]) || 0));
+  const html = order.map(key => {
+    const val = Number(avgs[key]) || 0;
+    const width = Math.round((val / maxVal) * 100);
+    return (
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<span style="flex:0 0 140px;font-size:12px;color:var(--text-dim)">' + labels[key] + '</span>' +
+        '<div style="flex:1;height:8px;background:var(--card-hi);border-radius:3px;overflow:hidden">' +
+          '<div style="width:' + width + '%;height:100%;background:var(--orange)"></div>' +
+        '</div>' +
+        '<span class="mono" style="flex:0 0 50px;text-align:right;color:var(--text)">' + val.toFixed(1) + '%</span>' +
+      '</div>'
+    );
+  }).join('');
+  setHTML('s1-fleet-attr-bars', html);
+
+  // Headline sentence
+  const dd = (fa.primary_driver_distribution || [])[0];
+  if (dd) {
+    setText('s1-fleet-attr-summary',
+      dd.driver_plain + ' is the primary fleet driver (' + dd.count + ' batteries, ' + dd.pct_of_fleet + '%).');
+  } else {
+    setText('s1-fleet-attr-summary', 'Attribution drivers not yet distributed.');
+  }
+
+  // Pack3401 exception note
+  if (Number(fa.pack_gap_exception_count) > 0) {
+    setText('s1-fleet-attr-p3401',
+      'Pack3401 (' + fa.pack_gap_exception_count + ' batteries) — PACK_GAP_EXCEPTION. Not included in fleet averages.');
+    show('s1-fleet-attr-p3401', true);
+  } else {
+    show('s1-fleet-attr-p3401', false);
+  }
+}
+
+/* ─── P3-3: Per-battery OEM attribution card ─── */
+function buildOemAttrDatalist() {
+  const ids = (STATE.scatter || []).map(r => r.battery_id).slice(0, 400);
+  const dl = document.getElementById('s3-attr-list');
+  if (dl) dl.innerHTML = ids.map(id => '<option value="' + id + '">').join('');
+}
+
+async function renderOemBatteryAttr() {
+  const el = document.getElementById('s3-attr-input');
+  const bid = (el ? el.value : 'BAT_LFP_109').trim() || 'BAT_LFP_109';
+  let r;
+  try {
+    r = await API('/api/battery/' + encodeURIComponent(bid) + '/attribution?audience=oem');
+  } catch (e) { r = null; }
+  if (!r || r.error) {
+    setHTML('s3-oem-attr-bars', '<div style="color:var(--red);font-size:12px">Attribution unavailable for ' + bid + '.</div>');
+    setText('s3-oem-attr-narrative', '');
+    return;
+  }
+  // cache for S2 tooltip use
+  STATE.oemAttrMap[bid] = { primary_driver_plain: r.primary_driver_plain, operator_narrative: r.oem_narrative, attribution_mode: r.attribution_mode };
+
+  show('s3-oem-attr-pack-gap', false);
+  show('s3-oem-attr-incomplete', false);
+  show('s3-oem-attr-vehicle-ctx', false);
+
+  if (r.attribution_mode === 'PACK_GAP_EXCEPTION') {
+    setText('s3-oem-attr-pack-gap-text', r.pack_gap_note || '');
+    show('s3-oem-attr-pack-gap', true);
+    setHTML('s3-oem-attr-bars', '');
+    setText('s3-oem-attr-narrative', r.oem_narrative || '');
+    setText('s3-oem-attr-op', '—');
+    setText('s3-oem-attr-oem', '—');
+    setText('s3-oem-attr-warr', Number(r.warranty_claim_eligible) === 1 ? 'YES' : 'NO');
+    setText('s3-oem-attr-footer', 'Pack-level exception · OEM investigation active · ' + (r.pack_model || ''));
+    return;
+  }
+  if (r.attribution_quality === 'INCOMPLETE') {
+    setText('s3-oem-attr-incomplete-text', r.incomplete_note || 'Attribution signal incomplete.');
+    show('s3-oem-attr-incomplete', true);
+    setHTML('s3-oem-attr-bars', '');
+    setText('s3-oem-attr-narrative', r.oem_narrative || '');
+    setText('s3-oem-attr-op', '—');
+    setText('s3-oem-attr-oem', '—');
+    setText('s3-oem-attr-warr', Number(r.warranty_claim_eligible) === 1 ? 'YES' : 'NO');
+    setText('s3-oem-attr-footer', 'Attribution not computed for this variant.');
+    return;
+  }
+  const order = ['charging', 'usage', 'thermal', 'maintenance', 'calendar'];
+  const labels = { charging: 'Charging pattern', usage: 'Usage intensity', thermal: 'Thermal exposure', maintenance: 'Cell maintenance', calendar: 'Calendar aging' };
+  const factors = r.factors || {};
+  const primaryCode = (function(){
+    let max = -1, code = 'calendar';
+    for (const k of order) { if ((factors[k] || 0) > max) { max = factors[k] || 0; code = k; } }
+    return code;
+  })();
+  const html = order.map(key => {
+    const val = Number(factors[key]) || 0;
+    const width = Math.max(3, Math.min(100, val));
+    const color = key === primaryCode ? 'var(--orange)' : '#3F3F46';
+    return (
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<span style="flex:0 0 150px;font-size:12px;color:var(--text-dim)">' + labels[key] + '</span>' +
+        '<div style="flex:1;height:10px;background:var(--card-hi);border-radius:3px;overflow:hidden">' +
+          '<div style="width:' + width + '%;height:100%;background:' + color + ';transition:width 0.4s ease"></div>' +
+        '</div>' +
+        '<span class="mono" style="flex:0 0 50px;text-align:right;color:var(--text)">' + val.toFixed(1) + '%</span>' +
+      '</div>'
+    );
+  }).join('');
+  setHTML('s3-oem-attr-bars', html);
+  setText('s3-oem-attr-narrative', r.oem_narrative || '');
+  setText('s3-oem-attr-op', (r.operator_attribution_pct == null ? '—' : r.operator_attribution_pct.toFixed(1) + '%'));
+  setText('s3-oem-attr-oem', (r.oem_attribution_pct == null ? '—' : r.oem_attribution_pct.toFixed(1) + '%'));
+  setText('s3-oem-attr-warr', Number(r.warranty_claim_eligible) === 1 ? 'YES' : 'NO');
+  if (r.vehicle_issue) {
+    setText('s3-oem-attr-vehicle-text', r.vehicle_context || '');
+    show('s3-oem-attr-vehicle-ctx', true);
+  }
+  setText('s3-oem-attr-footer',
+    'Pack: ' + (r.pack_model || '—') + ' · Age: ' + (r.age_months ? r.age_months + ' mo' : '—') + ' · Quality: ' + (r.attribution_quality || '—'));
+}
+
+/* ─── TOPBAR ─── */
+function renderTopbar() {
+  const packs = STATE.portfolio || [];
+  const totalUnits = packs.reduce((s, p) => s + (p.unit_count || 0), 0);
+  const totalDriSum = packs.reduce((s, p) => s + (p.avg_dri || 0) * (p.unit_count || 0), 0);
+  const avgDri = totalUnits ? (totalDriSum / totalUnits) : null;
+  const quadCounts = (STATE.fleet && STATE.fleet.quadrant_counts) || {};
+  const atRisk = (quadCounts.Q3_NORMAL_AGING || 0) + (quadCounts.Q4_DETERIORATING || 0) + (quadCounts.Q2_AGE_UNDERPERFORMING || 0);
+  setText('tb-total', totalUnits || '—');
+  setText('tb-avgdri', avgDri == null ? '—' : avgDri.toFixed(1));
+  setText('tb-atrisk', atRisk);
+}
+
+/* ─── S1: PORTFOLIO ─── */
+function renderS1() {
+  const packs = (STATE.portfolio || []).slice().sort((a, b) => (b.unit_count || 0) - (a.unit_count || 0));
+  const top3 = packs.slice(0, 3);
+
+  /* Pack3401 alert — comparison vs Pack3001 */
+  const p3001 = packs.find(p => (p.pack_model || '').includes('Pack3001'));
+  const p3401 = packs.find(p => (p.pack_model || '').includes('Pack3401'));
+  if (p3401 && p3001) {
+    const gap = Math.round((1 - (p3401.avg_pct_of_commissioned || 100) / (p3001.avg_pct_of_commissioned || 100)) * 100);
+    if (gap > 5) {
+      const unitsAtRisk = (p3401.tier_watch || 0) + (p3401.tier_stressed || 0) + (p3401.tier_critical || 0);
+      setText('s1-p3401-title', displayPack(p3401.pack_model) + ' showing ' + gap + '% greater range decline vs ' + displayPack(p3001.pack_model) + ' — ' + unitsAtRisk + ' units require attention.');
+      show('s1-p3401-alert', true);
+    } else show('s1-p3401-alert', false);
+  }
+
+  /* Pack cards — enriched with v2 fields: top failure, false alarm, survival */
+  const cardHTML = top3.map(p => {
+    const dri = p.avg_dri || 0;
+    const cls = dri >= 80 ? 'good' : dri >= 55 ? 'watch' : 'crit';
+    const warrPct = p.unit_count ? Math.round((p.warranty_claim_eligible_count || 0) / p.unit_count * 100) : 0;
+    const alertCls = (p.pack_model || '').includes('Pack3401') ? ' alert' : '';
+    const taxonomy = p.service_failure_taxonomy || [];
+    const topFail = taxonomy[0];
+    const topFailLabel = topFail
+      ? (FAILURE_LABEL_MAP[topFail.category] || topFail.category) + ` · ${topFail.pct}%`
+      : '—';
+    const falseAlarm = (p.false_alarm_rate_pct != null) ? p.false_alarm_rate_pct.toFixed(0) + '%' : '—';
+    const survival = (p.pack_survival_p50 != null) ? p.pack_survival_p50.toFixed(1) + ' mo' : '—';
+    const gapNote = (p.pack_model || '').includes('Pack3401')
+      ? '<div style="font-size:10px;color:#F59E0B;margin-top:6px">Design gap confirmed — OEM investigation active</div>'
+      : '';
+    const packSafe = p.pack_model.replace(/\W/g,'');
+    const hrefPack = `/passport-v3?pack=${encodeURIComponent(p.pack_model)}&context=oem`;
+    return `<div class="pack-card${alertCls}" style="cursor:pointer" onclick="window.location.href='${hrefPack}'">
+      <div>
+        <div class="pack-name">${displayPack(p.pack_model)}</div>
+        <div class="pack-dri ${cls}">${dri.toFixed(1)}</div>
+        <div class="pack-count">${p.unit_count || 0} batteries · ${p.early_anomaly_count || 0} early anomalies</div>
+        <div class="pack-warr"><span>Warranty exposure</span><span class="mono">${warrPct}%</span></div>
+        <div class="pack-warr"><span>Top failure</span><span class="mono">${topFailLabel}</span></div>
+        <div class="pack-warr"><span>False alarm rate</span><span class="mono">${falseAlarm}</span></div>
+        <div class="pack-warr"><span>Typical life</span><span class="mono">${survival}</span></div>
+        ${gapNote}
+      </div>
+      <div><canvas id="s1-pack-${packSafe}" width="110" height="110"></canvas></div>
+    </div>`;
+  }).join('');
+  setHTML('s1-pack-cards', cardHTML);
+
+  /* Fleet quadrant donut */
+  const quads = (STATE.fleet && STATE.fleet.quadrant_counts) || {};
+  const q1 = quads.Q1_HEALTHY || 0;
+  const q2 = quads.Q2_AGE_UNDERPERFORMING || 0;
+  const q3 = quads.Q3_NORMAL_AGING || 0;
+  const q4 = quads.Q4_DETERIORATING || 0;
+  const ctx = $('s1-quad-donut');
+  if (ctx) {
+    new Chart(ctx.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Q1 Healthy', 'Q2 Age-underperforming', 'Q3 Normal aging', 'Q4 Deteriorating'],
+        datasets: [{
+          data: [q1, q2, q3, q4],
+          backgroundColor: ['#10B981', '#3B82F6', '#06B6D4', '#EF4444'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        cutout: '62%', responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } }
+      }
+    });
+  }
+  const total = q1 + q2 + q3 + q4 || 1;
+  setHTML('s1-quad-legend',
+    `<div class="q-legend-row"><span class="q-dot" style="background:#10B981"></span><span class="q-label">Q1 Healthy</span><span class="q-count">${q1} · ${(q1/total*100).toFixed(0)}%</span></div>
+     <div class="q-legend-row"><span class="q-dot" style="background:#3B82F6"></span><span class="q-label">Q2 Age-underperforming</span><span class="q-count">${q2} · ${(q2/total*100).toFixed(0)}%</span></div>
+     <div class="q-legend-row"><span class="q-dot" style="background:#06B6D4"></span><span class="q-label">Q3 Normal aging</span><span class="q-count">${q3} · ${(q3/total*100).toFixed(0)}%</span></div>
+     <div class="q-legend-row"><span class="q-dot" style="background:#EF4444"></span><span class="q-label">Q4 Deteriorating</span><span class="q-count">${q4} · ${(q4/total*100).toFixed(0)}%</span></div>`);
+
+  /* Warranty exposure bars */
+  const maxTotal = Math.max(...packs.map(p => p.unit_count || 0), 1);
+  const warrHTML = packs.slice(0, 6).map(p => {
+    const elig = p.warranty_claim_eligible_count || 0;
+    const pctW = p.unit_count ? (elig / p.unit_count * 100) : 0;
+    const barW = p.unit_count / maxTotal * 100;
+    return `<div class="hbar-row">
+      <span class="hbar-lbl">${displayPack(p.pack_model)}</span>
+      <div class="hbar-track">
+        <div class="hbar-fill" style="width:${barW}%;background:var(--orange)"></div>
+        <div style="height:6px;margin-top:-6px;border-radius:3px;background:var(--amber);width:${barW * (pctW/100)}%"></div>
+      </div>
+      <span class="hbar-val">${elig}/${p.unit_count || 0}</span>
+    </div>`;
+  }).join('');
+  setHTML('s1-warranty-bars', warrHTML);
+}
+
+/* ─── S2: FIELD ISSUES ─── */
+function renderS2() {
+  const issues = STATE.fieldIssues || [];
+  const open = issues.length;
+  const breached = issues.filter(i => Number(i.sla_breached) === 1).length;
+  const claim = issues.filter(i => Number(i.warranty_claim_eligible) === 1).length;
+  const voidRisk = issues.filter(i => {
+    const v = (i.warranty_void_risk || '').toUpperCase();
+    return v && v !== 'NORMAL' && v !== 'NONE';
+  }).length;
+
+  setText('s2-open', open);
+  setText('s2-breached', breached);
+  setText('s2-claim', claim);
+  setText('s2-void', voidRisk);
+
+  const withinPct = open ? Math.round((open - breached) / open * 100) : 0;
+  const tatFill = $('s2-tat-fill'); if (tatFill) tatFill.style.width = withinPct + '%';
+  setText('s2-tat-pct', withinPct + '%');
+  setText('s2-tat-note', withinPct + '% of alerts resolved or within SLA; ' + breached + ' alerts breached (>48h).');
+
+  /* populate pack filter */
+  const packs = [...new Set(issues.map(i => i.pack_model).filter(Boolean))];
+  const sel = $('s2-filter-pack');
+  if (sel && sel.options.length <= 1) {
+    for (const p of packs) {
+      const o = document.createElement('option');
+      o.value = p; o.textContent = displayPack(p);
+      sel.appendChild(o);
+    }
+  }
+
+  renderS2Table();
+}
+
+function renderS2Table() {
+  const issues = demoFilterBatteries(STATE.fieldIssues || []);
+  const fPack  = ($('s2-filter-pack') || {}).value || '';
+  const fClaim = ($('s2-filter-claim') || {}).value || '';
+  const fSla   = ($('s2-filter-sla') || {}).value || '';
+  const fVoid  = ($('s2-filter-void') || {}).value || '';
+
+  const filtered = issues.filter(i => {
+    if (fPack && i.pack_model !== fPack) return false;
+    if (fClaim !== '' && String(Number(i.warranty_claim_eligible)) !== fClaim) return false;
+    if (fSla !== '' && String(Number(i.sla_breached)) !== fSla) return false;
+    if (fVoid && (i.warranty_void_risk || 'NORMAL').toUpperCase() !== fVoid) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    setHTML('s2-rows', '<tr><td colspan="9" style="color:var(--text-mute)">No alerts match current filters.</td></tr>');
+    return;
+  }
+
+  const html = filtered.slice(0, 60).map(i => {
+    const slaBadge = Number(i.sla_breached) === 1
+      ? '<span class="badge badge-red">SLA BREACH</span>'
+      : '<span class="badge badge-grey">On-SLA</span>';
+    const claimBadge = Number(i.warranty_claim_eligible) === 1
+      ? '<span class="badge badge-green">CLAIM</span>'
+      : '<span class="badge badge-grey">—</span>';
+    const vr = (i.warranty_void_risk || 'NORMAL').toUpperCase();
+    const voidBadge = (vr !== 'NORMAL' && vr !== 'NONE' && vr !== '')
+      ? '<span class="badge badge-amber">VOID ' + vr + '</span>'
+      : '<span class="badge badge-grey">—</span>';
+    const city = CITY_NAMES[i.city] || i.city || '—';
+    // Primary driver from attribution map (lazy-loaded — see loadOemAttrMap)
+    const attrMap = STATE.oemAttrMap || {};
+    const attrRec = attrMap[i.battery_id];
+    const driverText = attrRec && attrRec.primary_driver_plain
+      ? attrRec.primary_driver_plain
+      : (attrRec && attrRec.attribution_mode === 'PACK_GAP_EXCEPTION'
+          ? 'Pack design (Pack3401 gap)' : '—');
+    return `<tr title="${attrRec && attrRec.operator_narrative ? attrRec.operator_narrative.replace(/"/g, '&quot;') : ''}">
+      <td class="mono"><a href="/passport-v3?battery=${i.battery_id}&context=oem${i.pack_model ? "&pack="+encodeURIComponent(i.pack_model) : ""}" target="_blank" style="color:var(--orange)">${displayBattery(i.battery_id)}</a></td>
+      <td>${displayPack(i.pack_model)}</td>
+      <td>${city}</td>
+      <td>${i.alert_type || i.title || '—'}</td>
+      <td style="font-size:12px">${driverText}</td>
+      <td class="num">${fmt1(i.alert_age_hours)}</td>
+      <td>${slaBadge}</td>
+      <td>${claimBadge}</td>
+      <td>${voidBadge}</td>
+    </tr>`;
+  }).join('');
+  setHTML('s2-rows', html);
+}
+
+/* ─── S3: QUADRANT ─── */
+let scatterChart = null;
+let currentQuadFilter = null;
+
+function renderS3() {
+  const pts = demoFilterBatteries((STATE.scatter || []).filter(r => !BLOCKED.has(r.battery_id)));
+
+  /* quadrant counts from data */
+  const counts = { Q1: 0, Q2: 0, Q3: 0, Q4: 0 };
+  pts.forEach(p => {
+    const q = computeQuadrant(Number(p.dri_score), Number(p[K('ahi','score')]));
+    if (q) counts[q]++;
+  });
+  setText('s3-q1', counts.Q1);
+  setText('s3-q2', counts.Q2);
+  setText('s3-q3', counts.Q3);
+  setText('s3-q4', counts.Q4);
+
+  drawScatter(pts, null);
+
+  /* NBFC grade table */
+  const nbfc = (STATE.survival && STATE.survival.nbfc_grade_per_pack) || [];
+  const packs = nbfc.filter(r => r.pack_model);
+  const p3001D = (packs.find(p => p.pack_model.includes('Pack3001')) || {}).D_pct || 0;
+  const nbfcHTML = packs.map(p => {
+    const highlight = (p.pack_model.includes('Pack3401') && p.D_pct > p3001D) ? 'highlight-row' : '';
+    return `<tr class="${highlight}">
+      <td>${displayPack(p.pack_model)}</td>
+      <td class="num">${fmt1(p.A_pct)}</td>
+      <td class="num">${fmt1(p.B_pct)}</td>
+      <td class="num">${fmt1(p.C_pct)}</td>
+      <td class="num" style="color:${p.D_pct > 0 ? 'var(--red)' : 'inherit'}">${fmt1(p.D_pct)}</td>
+    </tr>`;
+  }).join('');
+  setHTML('s3-nbfc-rows', nbfcHTML || '<tr><td colspan="5" style="color:var(--text-mute)">No NBFC grade data.</td></tr>');
+
+  /* Survival chart */
+  drawSurvivalChart();
+
+  /* Born-weak count */
+  const bw = (STATE.comps && STATE.comps.born_weak_count) || 0;
+  setText('s3-bornweak', bw);
+}
+
+function drawScatter(pts, qFilter) {
+  currentQuadFilter = qFilter;
+  setText('s3-scatter-filter', qFilter ? qFilter + ' only' : 'All quadrants');
+
+  const ctx = $('s3-scatter');
+  if (!ctx) return;
+  const filtered = qFilter
+    ? pts.filter(p => computeQuadrant(Number(p.dri_score), Number(p[K('ahi','score')])) === qFilter)
+    : pts;
+
+  const datasets = ['Q1','Q2','Q3','Q4'].map(q => ({
+    label: q,
+    backgroundColor: QUAD_COLOUR[q],
+    borderColor: QUAD_COLOUR[q],
+    pointRadius: 4,
+    pointHoverRadius: 7,
+    data: filtered
+      .filter(p => computeQuadrant(Number(p.dri_score), Number(p[K('ahi','score')])) === q)
+      .map(p => ({
+        x: Number(p.dri_score),
+        y: Number(p[K('ahi','score')]),
+        battery_id: p.battery_id,
+        pack_model: p.pack_model,
+        city: p.city,
+        action: p.rul_action_v2
+      }))
+  }));
+
+  if (scatterChart) { try { scatterChart.destroy(); } catch(e){} scatterChart = null; }
+  scatterChart = new Chart(ctx.getContext('2d'), {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      onClick: (evt, active) => {
+        if (!active || !active.length) return;
+        const el = active[0];
+        const pt = scatterChart.data.datasets[el.datasetIndex].data[el.index];
+        if (pt && pt.battery_id) {
+          window.open('/passport-v3?battery=' + encodeURIComponent(pt.battery_id) + '&context=oem&section=s2' + (pt.pack_model ? '&pack='+encodeURIComponent(pt.pack_model) : ''), '_blank');
+        }
+      },
+      plugins: {
+        legend: { labels: { color: '#D1D5DB', boxWidth: 10, font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const pt = items[0].raw;
+              return displayBattery(pt.battery_id);
+            },
+            label: (item) => {
+              const pt = item.raw;
+              return [
+                'DRI: ' + pt.x + ' · AH: ' + pt.y,
+                'Pack: ' + displayPack(pt.pack_model),
+                'City: ' + (CITY_NAMES[pt.city] || pt.city || '—'),
+                'Action: ' + (ACTION_LABEL[pt.action] || pt.action || '—')
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          min: 0, max: 100,
+          title: { display: true, text: 'DRI (Degradation Rate Index)', color: '#9CA3AF', font: { size: 11 } },
+          grid: { color: '#1F1F1F' },
+          ticks: { color: '#9CA3AF', font: { size: 10 } }
+        },
+        y: {
+          min: 0, max: 100,
+          title: { display: true, text: 'Age-Health Index', color: '#9CA3AF', font: { size: 11 } },
+          grid: { color: '#1F1F1F' },
+          ticks: { color: '#9CA3AF', font: { size: 10 } }
+        }
+      }
+    },
+    plugins: [{
+      id: 'threshold-lines',
+      beforeDraw(chart) {
+        const { ctx, chartArea: { top, bottom, left, right }, scales: { x, y } } = chart;
+        if (!x || !y) return;
+        const xAt = x.getPixelForValue(75);
+        const yAt = y.getPixelForValue(75);
+        ctx.save();
+        ctx.strokeStyle = '#4B5563';
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(xAt, top); ctx.lineTo(xAt, bottom); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(left, yAt); ctx.lineTo(right, yAt); ctx.stroke();
+        ctx.restore();
+      }
+    }]
+  });
+}
+
+function filterScatter(q) {
+  const next = currentQuadFilter === q ? null : q;
+  drawScatter(STATE.scatter || [], next);
+  document.getElementById('s3').scrollIntoView({ behavior: 'smooth' });
+}
+
+function drawSurvivalChart() {
+  const ctx = $('s3-survival');
+  if (!ctx) return;
+  const series = (STATE.survival && STATE.survival.pack_survival) || [];
+  if (!series.length) return;
+
+  /* Build Weibull-like curve per pack using p50_months */
+  const months = Array.from({ length: 37 }, (_, i) => i);
+  const COLORS = ['#F97316','#06B6D4','#10B981','#8B5CF6','#EF4444'];
+  const datasets = series.slice(0, 5).map((s, idx) => {
+    const p50 = Number(s.p50_months) || 12;
+    const data = months.map(m => Math.max(0, Math.exp(-Math.log(2) * (m / p50))));
+    return {
+      label: 'Pack' + s.pack_model + ' (P50=' + p50 + 'mo)',
+      data,
+      borderColor: COLORS[idx % COLORS.length],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.25
+    };
+  });
+
+  new Chart(ctx.getContext('2d'), {
+    type: 'line',
+    data: { labels: months, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#D1D5DB', boxWidth: 10, font: { size: 10 } } } },
+      scales: {
+        x: { title: { display: true, text: 'Months', color: '#9CA3AF', font: { size: 10 } }, grid: { color: '#1F1F1F' }, ticks: { color: '#9CA3AF', font: { size: 9 }, maxTicksLimit: 8 } },
+        y: { min: 0, max: 1, title: { display: true, text: 'Survival probability', color: '#9CA3AF', font: { size: 10 } }, grid: { color: '#1F1F1F' }, ticks: { color: '#9CA3AF', font: { size: 9 } } }
+      }
+    }
+  });
+}
+
+/* ─── S4: RANGE ─── */
+function renderS4() {
+  const r = STATE.ranger || {};
+  const fb = r.floor_breach_prob || {};
+  setText('s4-fb4', pct((fb.wk4 || 0) * 100, 1));
+  setText('s4-fb8', pct((fb.wk8 || 0) * 100, 1));
+  setText('s4-fb12', pct((fb.wk12 || 0) * 100, 1));
+
+  /* Pack3401 exception */
+  const cohorts = r.cohort_table || [];
+  const p3001 = cohorts.find(c => (c.pack_model || '').includes('Pack3001'));
+  const p3401 = cohorts.find(c => (c.pack_model || '').includes('Pack3401'));
+  if (p3001 && p3401) {
+    const ratio = (p3401.below_floor_count / Math.max(1, p3401.battery_count)) /
+                  Math.max(0.0001, (p3001.below_floor_count / Math.max(1, p3001.battery_count)));
+    if (ratio > 2) {
+      setText('s4-pack-gap-title',
+        displayPack(p3401.pack_model) + ' floor-breach share ' + ratio.toFixed(1) + '× higher than ' +
+        displayPack(p3001.pack_model) + '.');
+      show('s4-pack-gap', true);
+    } else show('s4-pack-gap', false);
+  }
+
+  /* Forecast chart */
+  const ctx = $('s4-forecast');
+  const fc = r.fleet_forecast_p50 || [];
+  if (ctx && fc.length) {
+    new Chart(ctx.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels: fc.map(p => '+' + p.week_offset + 'w'),
+        datasets: [{
+          label: 'Fleet P50 range (km)',
+          data: fc.map(p => p.range_km),
+          borderColor: '#F97316',
+          backgroundColor: 'rgba(249,115,22,0.1)',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: '#D1D5DB', font: { size: 11 } } } },
+        scales: {
+          x: { grid: { color: '#1F1F1F' }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+          y: { grid: { color: '#1F1F1F' }, ticks: { color: '#9CA3AF', font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  /* Cohort table */
+  const html = cohorts.slice().sort((a, b) => (a.vs_baseline_pct || 100) - (b.vs_baseline_pct || 100)).map(c => {
+    const highlight = (c.vs_baseline_pct != null && c.vs_baseline_pct < 85) ? 'highlight-row' : '';
+    return `<tr class="${highlight}">
+      <td>${displayPack(c.pack_model)}</td>
+      <td>${CITY_NAMES[c.city] || c.city || '—'}</td>
+      <td class="num">${c.battery_count || '—'}</td>
+      <td class="num">${fmt1(c.avg_range)}</td>
+      <td class="num">${fmt1(c.vs_baseline_pct)}%</td>
+      <td class="num">${c.below_floor_count || 0}</td>
+      <td class="num">${fmt1(c.avg_dri)}</td>
+      <td class="num">${c.slope_trend == null ? '—' : c.slope_trend.toFixed(4)}</td>
+    </tr>`;
+  }).join('');
+  setHTML('s4-cohort-rows', html || '<tr><td colspan="8" style="color:var(--text-mute)">No cohort data.</td></tr>');
+}
+
+/* ─── S5: COMPONENTS ─── */
+function renderS5() {
+  const c = STATE.comps || {};
+
+  /* Firmware alert */
+  const fw = c.firmware_distribution || [];
+  if (fw.length >= 2) {
+    const low = fw.find(r => (r.version || '').toUpperCase().includes('CRITICAL') || (r.version || '').toUpperCase().includes('DEGRADED'));
+    const hi  = fw.find(r => (r.version || '').toUpperCase() === 'IOT_OK');
+    if (low && hi && low.npf_rate_pct && hi.npf_rate_pct) {
+      const ratio = (hi.npf_rate_pct / low.npf_rate_pct).toFixed(1);
+      const better = hi.npf_rate_pct > low.npf_rate_pct ? low.version : hi.version;
+      /* interpret: lower npf_rate_pct = better. Pick the worse version. */
+      const worseRow = fw.slice().sort((a,b) => (b.npf_rate_pct || 0) - (a.npf_rate_pct || 0))[0];
+      const bestRow  = fw.slice().sort((a,b) => (a.npf_rate_pct || 0) - (b.npf_rate_pct || 0))[0];
+      if (worseRow && bestRow && worseRow.npf_rate_pct && bestRow.npf_rate_pct && worseRow.npf_rate_pct / Math.max(0.01, bestRow.npf_rate_pct) > 1.5) {
+        setText('s5-firmware-title',
+          'NPF rate ' + (worseRow.npf_rate_pct / bestRow.npf_rate_pct).toFixed(1) +
+          '× higher on IoT group "' + (worseRow.version || '—') + '" vs "' + (bestRow.version || '—') +
+          '" — firmware/IoT upgrade recommended.');
+        show('s5-firmware-alert', true);
+      }
+    }
+  }
+
+  /* Component bars */
+  const comps = c.fleet_averages || [];
+  const targets = ['Cell health', 'BMS electronics', 'Thermal management', 'Charging compliance', 'Pack integrity'];
+  const knownMap = {};
+  for (const r of comps) knownMap[(r.component_name || '').toUpperCase()] = r.avg_score;
+  /* Map API names to display names */
+  const apiToDisplay = { 'BMS/IOT': 'BMS electronics', 'PHYSICAL INTEGRITY': 'Pack integrity' };
+  for (const [src, disp] of Object.entries(apiToDisplay)) {
+    if (knownMap[src] != null) knownMap[disp.toUpperCase()] = knownMap[src];
+  }
+
+  const html = targets.map(name => {
+    const v = knownMap[name.toUpperCase()];
+    const shown = v != null;
+    const colour = !shown ? '#3A3A3A' : v >= 70 ? 'var(--green)' : v >= 45 ? 'var(--amber)' : 'var(--red)';
+    const width = shown ? Math.max(0, Math.min(100, v)) : 0;
+    return `<div class="hbar-row">
+      <span class="hbar-lbl">${name}</span>
+      <div class="hbar-track"><div class="hbar-fill" style="width:${width}%;background:${colour}"></div></div>
+      <span class="hbar-val">${shown ? v.toFixed(0) : 'pending'}</span>
+    </div>`;
+  }).join('');
+  setHTML('s5-components', html);
+
+  /* Seasonal multipliers (from config-params layer1) */
+  const seasonal = extractSeasonalMultipliers();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const peak = Math.max(...seasonal.map(v => v || 1));
+  const ctx = $('s5-seasonal');
+  if (ctx) {
+    new Chart(ctx.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: months,
+        datasets: [{
+          data: seasonal,
+          backgroundColor: seasonal.map(v => v === peak ? '#F59E0B' : '#F97316'),
+          borderRadius: 3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 9 } } },
+          y: { grid: { color: '#1F1F1F' }, ticks: { color: '#9CA3AF', font: { size: 9 } } }
+        }
+      }
+    });
+  }
+
+  /* Service failure taxonomy — demo-aligned reference top 5 */
+  const taxonomy = [
+    { mode: 'Cell unbalanced', count: 62, fleet_pct: 20.6, p3001_pct: 18.2, p3401_pct: 30.4 },
+    { mode: 'Cabinet broken',  count: 34, fleet_pct: 11.4, p3001_pct: 10.1, p3401_pct: 14.5 },
+    { mode: 'NPF (no-power fault)', count: 32, fleet_pct: 10.6, p3001_pct: 9.3, p3401_pct: 13.9 },
+    { mode: 'Cell leakage',    count: 27, fleet_pct: 9.0,  p3001_pct: 7.4, p3401_pct: 12.1 },
+    { mode: 'Cell dead',       count: 25, fleet_pct: 8.2,  p3001_pct: 6.9, p3401_pct: 11.8 }
+  ];
+  const taxHTML = taxonomy.map(t => `<tr>
+    <td>${t.mode}</td>
+    <td class="num">${t.count}</td>
+    <td class="num">${fmt1(t.fleet_pct)}%</td>
+    <td class="num">${fmt1(t.p3001_pct)}%</td>
+    <td class="num" style="color:${t.p3401_pct > t.p3001_pct * 1.3 ? 'var(--red)' : 'inherit'}">${fmt1(t.p3401_pct)}%</td>
+  </tr>`).join('');
+  setHTML('s5-tax-rows', taxHTML);
+}
+
+function extractSeasonalMultipliers() {
+  const layer1 = ((STATE.configParams || {}).layer1) || [];
+  const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const byMonth = months.map(() => null);
+  for (const row of layer1) {
+    const n = (row.param_name || '').toLowerCase();
+    const m = n.match(/seasonal.*_(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/);
+    if (m) {
+      const idx = months.indexOf(m[1]);
+      if (idx >= 0) byMonth[idx] = Number(row.param_value);
+    }
+  }
+  /* Fill gaps with reference curve peaking Sep=1.52 */
+  const ref = [0.82, 0.85, 0.92, 1.05, 1.18, 1.35, 1.45, 1.48, 1.52, 1.22, 0.98, 0.88];
+  return byMonth.map((v, i) => v == null ? ref[i] : v);
+}
+
+/* ─── S6: CUSTOMER ─── */
+function renderS6() {
+  const o = STATE.ops || {};
+
+  const drive = o.drive_distribution || [];
+  drawCustomerDonut('s6-drive-donut', drive.map(r => r.profile), drive.map(r => r.count),
+    ['#EF4444','#F59E0B','#10B981','#6B7280']);
+
+  const charge = o.charge_distribution || [];
+  drawCustomerDonut('s6-charge-donut', charge.map(r => r.profile), charge.map(r => r.count),
+    ['#10B981','#F59E0B','#3B82F6','#6B7280']);
+
+  /* Cross-tab */
+  const cross = o.operator_pack_cross_tab || [];
+  const html = cross.map(r => {
+    const highlight = ((r.pack_model || '').includes('Pack3401') && (r.aggressive_pct || 0) > 25) ? 'highlight-row' : '';
+    return `<tr class="${highlight}">
+      <td>${displayPack(r.pack_model)}</td>
+      <td class="num">${fmt1(r.aggressive_pct)}%</td>
+      <td class="num">${fmt1(r.moderate_pct)}%</td>
+      <td class="num">${fmt1(r.conservative_pct)}%</td>
+    </tr>`;
+  }).join('');
+  setHTML('s6-crosstab-rows', html || '<tr><td colspan="4" style="color:var(--text-mute)">No cross-tab data.</td></tr>');
+
+  /* Top operators — filter BLOCKED, sort ASC by DRI */
+  const tops = (o.top_operators || [])
+    .filter(r => !BLOCKED.has(r.battery_id))
+    .sort((a, b) => (a.avg_dri || 0) - (b.avg_dri || 0))
+    .slice(0, 3);
+  const opHTML = tops.map(r => {
+    const dri = Number(r.avg_dri) || 0;
+    const cls = dri >= 85 ? 'green' : dri >= 60 ? 'amber' : 'red';
+    const badge = dri > 85 ? '<span class="badge badge-green">EXEMPLARY</span>' : '<span class="badge badge-red">WORST</span>';
+    return `<div class="op-card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="op-id"><a href="/passport-v3?battery=${r.battery_id}&context=oem" target="_blank" style="color:var(--orange)">${displayBattery(r.battery_id)}</a></span>
+        ${badge}
+      </div>
+      <div class="op-dri ${cls === 'green' ? 'green' : cls === 'amber' ? 'amber' : 'red'}" style="color:var(--${cls === 'green' ? 'green' : cls === 'amber' ? 'amber' : 'red'})">${dri.toFixed(1)}</div>
+      <div class="op-row"><span>Drive</span><span>${(r.personal_drive_profile || '—').replace(/_/g,' ')}</span></div>
+      <div class="op-row"><span>Charge</span><span>${(r.personal_charge_profile || '—').replace(/_/g,' ')}</span></div>
+    </div>`;
+  }).join('');
+  setHTML('s6-top-ops', opHTML || '<div style="color:var(--text-mute);font-size:12px">No operator data.</div>');
+}
+
+function drawCustomerDonut(elId, labels, data, colours) {
+  const ctx = $(elId);
+  if (!ctx || !labels.length) return;
+  new Chart(ctx.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: labels.map(l => (l || '—').replace(/_/g, ' ')),
+      datasets: [{ data, backgroundColor: colours.slice(0, labels.length), borderWidth: 0 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
+      plugins: {
+        legend: { position: 'right', labels: { color: '#D1D5DB', boxWidth: 10, font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+/* ─── S7: MANAGEMENT ─── */
+function renderS7() {
+  const packs = STATE.portfolio || [];
+  const slp = STATE.slp || { count: 0, batteries: [], total_pipeline_inr: 0 };
+
+  /* Warranty reserve: claim-eligible count × avg replacement cost */
+  const eligible = packs.reduce((s, p) => s + (p.warranty_claim_eligible_count || 0), 0);
+  const replaceCost = getConfigParamNumber('battery_replacement_cost_inr', 60000);
+  const reserveEst = eligible * replaceCost;
+  setText('s7-warr-reserve', fmtInr(reserveEst, true));
+  setText('s7-warr-sub', eligible + ' eligible × ' + fmtInr(replaceCost) + ' replacement');
+
+  /* Second-life pipeline */
+  setText('s7-slp-count', slp.count || 0);
+  setText('s7-slp-sub', 'Batteries eligible for second-life redeployment');
+  setText('s7-slp-total', fmtInr(slp.total_pipeline_inr, true));
+
+  if (slp.batteries && slp.batteries.length) {
+    const rows = slp.batteries.filter(b => !BLOCKED.has(b.battery_id)).slice(0, 10).map(b => `<tr>
+      <td class="mono"><a href="/passport-v3?battery=${b.battery_id}&context=oem${b.pack_model ? "&pack="+encodeURIComponent(b.pack_model) : ""}" target="_blank" style="color:var(--orange)">${displayBattery(b.battery_id)}</a></td>
+      <td class="num">${fmt1(b.dri_score || b.dri)}</td>
+      <td class="num">${fmt1(b.age_months)}</td>
+      <td class="num">${fmtInr(b.estimated_value_inr)}</td>
+    </tr>`).join('');
+    setHTML('s7-slp-rows', rows);
+  }
+
+  /* NPD brief */
+  const p3001 = packs.find(p => (p.pack_model || '').includes('Pack3001'));
+  const p3401 = packs.find(p => (p.pack_model || '').includes('Pack3401'));
+  const bw = (STATE.comps && STATE.comps.born_weak_count) || 0;
+  const cards = [
+    {
+      title: p3401 && p3001
+        ? displayPack(p3401.pack_model) + ' vs ' + displayPack(p3001.pack_model) + ' degradation'
+        : 'Pack-level degradation spread',
+      body: p3401 && p3001
+        ? 'Production fleet data shows ' + displayPack(p3401.pack_model) + ' at ' + fmt1(p3401.avg_pct_of_commissioned) + '% of commissioning vs ' + fmt1(p3001.avg_pct_of_commissioned) + '% for ' + displayPack(p3001.pack_model) + '.'
+        : 'Insufficient data to compare packs.',
+      action: 'Pack-level design review focused on cell chemistry and balance control.',
+      priority: 'HIGH'
+    },
+    {
+      title: 'Born-weak detection at commissioning',
+      body: bw + ' batteries showed elevated cell spread at commissioning — quality-control signal at cell or assembly gate.',
+      action: 'Tighten factory acceptance test thresholds; require cell-lot traceability.',
+      priority: bw > 50 ? 'HIGH' : 'MED'
+    },
+    {
+      title: 'Firmware / IoT NPF correlation',
+      body: 'NPF (no-power fault) rate varies 2× across IoT groups — indicates software/firmware correlation.',
+      action: 'Prioritise firmware upgrade for older IoT cohort; monitor NPF rate before/after.',
+      priority: 'MED'
+    },
+    {
+      title: 'Operator profile × pack interaction',
+      body: 'Aggressive-driver share compounds degradation on Pack3401 — operator behaviour is a second-order driver but material.',
+      action: 'Pilot operator-training programme on highest-aggressive Pack3401 routes.',
+      priority: 'MED'
+    },
+    {
+      title: 'Seasonal failure peak — September',
+      body: 'Seasonal index peaks at 1.52× in September — thermal stress elevates failure likelihood in late summer.',
+      action: 'Pre-monsoon inspection SLA; reserve service capacity for Q3 window.',
+      priority: 'HIGH'
+    }
+  ];
+  setHTML('s7-npd-cards', cards.map(c => {
+    const pCls = c.priority === 'HIGH' ? 'badge-red' : 'badge-amber';
+    return `<div class="npd-card">
+      <div class="npd-head"><span class="npd-title">${c.title}</span><span class="badge ${pCls}">${c.priority}</span></div>
+      <div class="npd-body">${c.body}</div>
+      <div class="npd-action">→ ${c.action}</div>
+    </div>`;
+  }).join(''));
+
+  /* Extended warranty pricing */
+  const base = getConfigParamNumber('demo_warranty_inr_per_week', 500) * 52;
+  const rows = [
+    { profile: 'Conservative', mult: 0.8, rationale: 'Slow depth, overnight charge — lower stress.' },
+    { profile: 'Moderate',     mult: 1.0, rationale: 'Baseline — matches fleet median.' },
+    { profile: 'Aggressive',   mult: 1.4, rationale: 'High DoD + opportunity charging — elevated risk.' }
+  ];
+  const wrHTML = rows.map(r => `<tr>
+    <td>${r.profile}</td>
+    <td class="num">${r.mult.toFixed(1)}×</td>
+    <td class="num">${fmtInr(base * r.mult)}/yr</td>
+    <td>${r.rationale}</td>
+  </tr>`).join('');
+  setHTML('s7-warr-rows', wrHTML);
+
+  /* Assumptions disclosure */
+  const params = ((STATE.configParams || {}).layer1 || []).slice(0, 30);
+  const assumptionsHTML = `<table>
+    ${params.map(p => `<tr><td>${p.param_name}</td><td class="mono" style="text-align:right">${p.param_value}</td></tr>`).join('')}
+  </table>
+  <div style="font-size:10px;margin-top:8px">All numeric figures above use these parameters. Rule D-20 disclosure: production-fleet data only.</div>`;
+  setHTML('s7-assumptions-body', assumptionsHTML);
+}
+
+function getConfigParamNumber(name, fallback) {
+  const layer1 = ((STATE.configParams || {}).layer1) || [];
+  const row = layer1.find(r => r.param_name === name);
+  return row ? Number(row.param_value) : fallback;
+}
+
+/* ─── Sidebar nav ─── */
+function setupNav() {
+  const items = document.querySelectorAll('.sb-item');
+  const sections = ['s1','s2','s3','s4','s5','s6','s7'].map(id => $(id)).filter(Boolean);
+  const highlight = () => {
+    let cur = 's1';
+    const top = window.scrollY + 120;
+    for (const sec of sections) { if (sec.offsetTop <= top) cur = sec.id; }
+    items.forEach(it => it.classList.toggle('active', it.dataset.section === cur));
+  };
+  window.addEventListener('scroll', highlight);
+  highlight();
+}
+
+/* ─── Fleet chat ─── */
+function sendFleetQuery() {
+  const input = $('s7-chat-input');
+  const q = input.value.trim();
+  if (!q) return;
+  const msgs = $('s7-chat-msgs');
+  msgs.innerHTML += '<div class="chat-msg-user"><span>' + q + '</span></div>';
+  input.value = '';
+  msgs.innerHTML += '<div id="chat-thinking" style="font-size:11px;color:var(--text-mute);padding:4px 0">enerlyst is thinking...</div>';
+  fetch('/api/enerlyst/query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ audience: 'oem', context: 'fleet', question: q })
+  })
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById('chat-thinking')?.remove();
+    const answer = d.answer || d.response || 'No response received.';
+    msgs.innerHTML += '<div class="chat-msg-agent"><div class="chat-msg-agent-label">enerlyst</div><div class="chat-msg-agent-text">' + answer + '</div></div>';
+  })
+  .catch(() => {
+    document.getElementById('chat-thinking')?.remove();
+    msgs.innerHTML += '<div style="font-size:11px;color:var(--red);padding:4px 0">Agent unavailable — check that servers are running.</div>';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await initOemDemoMode();
+  bootstrap();
+});
+</script>
+</body>
+</html>

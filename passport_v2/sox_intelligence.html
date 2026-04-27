@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik — SOX Intelligence · State of Power</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#FAFAF8;color:#111827;font-family:system-ui,-apple-system,sans-serif;min-height:100vh;padding:40px 32px;line-height:1.5}
+.wrap{max-width:1240px;margin:0 auto}
+
+.logo{font-size:14px;font-weight:800;color:#E8500A;letter-spacing:-0.3px;margin-bottom:18px}
+.title{font-size:30px;font-weight:800;color:#0F172A;margin-bottom:4px;letter-spacing:-0.6px}
+.sub{font-size:13px;color:#6B7280;margin-bottom:20px}
+
+.opening{background:#0F172A;color:#F8FAFC;border-radius:12px;padding:20px 28px;margin-bottom:32px;font-size:14px;line-height:1.7;letter-spacing:0.2px}
+.opening strong{color:#E8500A}
+
+/* ── Section 1: hero stats ── */
+.hero{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px 20px}
+.stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#6B7280;margin-bottom:8px;line-height:1.35}
+.stat-val{font-size:36px;font-weight:800;letter-spacing:-0.8px;line-height:1}
+.stat-sub{font-size:11px;color:#9CA3AF;margin-top:6px}
+.stat.orange .stat-val{color:#E8500A}
+.stat.red .stat-val{color:#DC2626}
+.stat.darkred .stat-val{color:#7F1D1D}
+.stat.teal .stat-val{color:#0F766E;font-size:26px;margin-top:4px}
+
+.plain-lines{background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px 18px;margin-bottom:36px;font-size:12.5px;color:#374151;line-height:1.9}
+.plain-lines p{margin:0}
+.plain-lines p+p{margin-top:6px}
+.plain-lines strong{color:#C2410C}
+
+/* ── Section headers ── */
+.sec-head{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;color:#E8500A;margin-bottom:10px;padding-top:10px}
+.sec-title{font-size:20px;font-weight:700;color:#0F172A;margin-bottom:2px;letter-spacing:-0.3px}
+.sec-sub{font-size:12.5px;color:#6B7280;margin-bottom:16px;line-height:1.55}
+
+/* ── Section 2: archetype cards ── */
+.archetypes{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.arch-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px;display:flex;flex-direction:column}
+.badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:4px 10px;border-radius:12px;margin-bottom:8px;align-self:flex-start}
+.badge.amber{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA}
+.badge.grey{background:#F3F4F6;color:#374151;border:1px solid #D1D5DB}
+.badge.red{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA}
+.arch-name{font-size:15px;font-weight:700;color:#0F172A;margin-bottom:14px;line-height:1.35}
+.keyrow{display:flex;justify-content:space-between;font-size:12px;color:#374151;padding:6px 0;border-bottom:1px dashed #E5E7EB}
+.keyrow:last-of-type{border-bottom:none}
+.keyrow b{color:#0F172A;font-weight:600}
+.evrow{display:flex;gap:10px;font-size:10.5px;color:#6B7280;margin:10px 0 12px;flex-wrap:wrap}
+.evchip{padding:3px 8px;border-radius:6px;background:#F9FAFB;border:1px solid #E5E7EB}
+.evchip.yes{background:#FEF2F2;color:#991B1B;border-color:#FECACA}
+.evchip.no{background:#F0FDF4;color:#166534;border-color:#BBF7D0}
+.evchip b{font-weight:700}
+
+.chart-box{background:#FAFAF8;border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin:8px 0 12px}
+.chart-box svg{width:100%;height:170px;display:block}
+.chart-title{font-size:10.5px;font-weight:600;color:#6B7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em}
+.chart-note{font-size:11px;color:#4B5563;margin-top:8px;line-height:1.55;font-style:italic}
+.chart-note.red{color:#991B1B;font-style:normal}
+.chart-note.dark{background:#F3F4F6;border-left:3px solid #6B7280;padding:8px 10px;font-style:normal;color:#374151;border-radius:4px;margin-top:10px}
+
+.proj-row{display:flex;gap:8px;margin:6px 0 10px;flex-wrap:wrap}
+.proj-pill{flex:1;min-width:70px;text-align:center;padding:8px 4px;border-radius:8px;background:#F9FAFB;border:1px solid #E5E7EB}
+.proj-pill .pv{font-size:14px;font-weight:700;color:#0F172A}
+.proj-pill .pl{font-size:9.5px;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px}
+
+.action-box{border-radius:8px;padding:12px 14px;margin-top:auto;font-size:12px;line-height:1.55;color:#0F172A}
+.action-box.teal{background:#F0FDFA;border:1px solid #99F6E4}
+.action-box.teal .action-title{color:#0F766E}
+.action-box.grey{background:#F3F4F6;border:1px solid #D1D5DB}
+.action-box.grey .action-title{color:#374151}
+.action-box.red{background:#FEF2F2;border:2px solid #FECACA}
+.action-box.red .action-title{color:#991B1B}
+.action-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.action-text{font-size:12px;color:#374151}
+.cost-pill{display:inline-block;margin-top:10px;font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:12px;background:#fff;border:1px solid #D1D5DB;color:#111827}
+
+.rul-strip{display:flex;gap:12px;margin-top:10px;font-size:11px;color:#6B7280;padding-top:10px;border-top:1px dashed #E5E7EB}
+.rul-strip b{color:#0F172A}
+
+/* ── Section 3: fleet trajectory ── */
+.fleet-chart{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:12px}
+.fleet-chart svg{width:100%;height:300px;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:11px;color:#374151}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-dot{width:12px;height:3px;border-radius:2px}
+
+.prod-note{background:#EFF6FF;border:1px solid #BFDBFE;border-radius:10px;padding:14px 18px;font-size:12.5px;color:#1E3A8A;line-height:1.65;margin-bottom:36px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.prod-note b{font-weight:700;color:#1E40AF}
+.prod-link{display:inline-block;font-size:11px;font-weight:600;padding:6px 14px;border-radius:14px;background:#1E40AF;color:#fff;text-decoration:none}
+
+/* ── Blind spot ── */
+.blindspot{background:#F3F4F6;border:1px solid #D1D5DB;border-radius:12px;padding:22px 24px;margin-bottom:20px}
+.blindspot-title{font-size:13px;font-weight:700;color:#0F172A;margin-bottom:14px;letter-spacing:-0.2px}
+.blindspot-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.blindspot-item .bs-t{font-size:12px;font-weight:700;color:#374151;margin-bottom:5px}
+.blindspot-item .bs-d{font-size:11.5px;color:#6B7280;line-height:1.6}
+
+/* ── Footer ── */
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:18px;border-top:1px solid #E5E7EB}
+.footer-left{font-size:11px;color:#9CA3AF}
+.print-btn{background:#E8500A;color:#fff;border:none;padding:8px 18px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer}
+
+/* ── Loading skeleton ── */
+.skel{background:linear-gradient(90deg,#F3F4F6 0%,#E5E7EB 50%,#F3F4F6 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite;border-radius:6px;color:transparent}
+@keyframes skel{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+.err-note{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;border-radius:8px;padding:12px 16px;font-size:12px;margin-bottom:16px}
+
+/* ═════════ SOX-3B additions ═════════ */
+
+/* Selector bar (sticky top) */
+.selector-bar{position:sticky;top:0;background:#FAFAF8;border-bottom:1px solid #E5E7EB;padding:14px 32px 12px;z-index:100;margin:-40px -32px 24px -32px}
+.selector-bar-wrap{max-width:1240px;margin:0 auto}
+.selector-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:12px;flex-wrap:wrap}
+.filter-block{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
+.filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-label{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;margin-right:4px;min-width:72px}
+.filter-btn{padding:4px 10px;border-radius:14px;border:1px solid #E5E7EB;background:#fff;color:#6B7280;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.filter-btn:hover{border-color:#111827}
+.filter-btn.active{background:#111827;color:#fff;border-color:#111827}
+/* Archetype button active colors override */
+.filter-btn.arch-A.active{background:#16A34A;border-color:#16A34A}
+.filter-btn.arch-B.active{background:#F59E0B;border-color:#F59E0B}
+.filter-btn.arch-C.active{background:#DC2626;border-color:#DC2626}
+.filter-btn.arch-D.active{background:#6B7280;border-color:#6B7280}
+.filter-btn.arch-E.active{background:#7F1D1D;border-color:#7F1D1D}
+.filter-btn.arch-F.active{background:#EA580C;border-color:#EA580C}
+
+.fleet-summary{display:flex;gap:18px;font-size:11px;color:#374151;align-items:center;flex-shrink:0}
+.fleet-summary-item{display:flex;flex-direction:column;align-items:flex-end;padding:0 14px;border-right:1px solid #E5E7EB}
+.fleet-summary-item:last-child{border-right:none}
+.fleet-summary-item .fs-n{font-size:20px;font-weight:700;color:#0F172A;letter-spacing:-0.5px;line-height:1}
+.fleet-summary-item .fs-l{font-size:9.5px;color:#6B7280;text-transform:uppercase;letter-spacing:0.05em;margin-top:3px;text-align:right}
+
+.card-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:thin}
+.card-strip::-webkit-scrollbar{height:6px}
+.card-strip::-webkit-scrollbar-track{background:transparent}
+.card-strip::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px}
+.bat-card{flex-shrink:0;width:130px;height:90px;border-radius:8px;background:#fff;border:1px solid #E5E7EB;padding:8px 10px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;transition:all 0.15s;position:relative}
+.bat-card:hover{border-color:#9CA3AF}
+.bat-card.selected{border:2px solid #E8500A;box-shadow:0 4px 12px rgba(232,80,10,0.2);padding:7px 9px}
+.bat-card.dimmed{opacity:0.28;pointer-events:none}
+.bc-top{display:flex;justify-content:space-between;align-items:center}
+.bc-id{font-size:11.5px;font-weight:700;color:#0F172A;letter-spacing:-0.2px}
+.bc-pack{font-size:9px;color:#6B7280;background:#F3F4F6;padding:1px 5px;border-radius:4px;font-weight:600}
+.bc-mid{display:flex;justify-content:space-between;align-items:center}
+.bc-arch{font-size:10px;font-weight:700;color:#fff;padding:2px 7px;border-radius:10px;letter-spacing:0.03em}
+.bc-arch.a{background:#16A34A}
+.bc-arch.b{background:#F59E0B}
+.bc-arch.c{background:#DC2626}
+.bc-arch.d{background:#6B7280}
+.bc-arch.e{background:#7F1D1D}
+.bc-arch.f{background:#EA580C}
+.bc-bottom{display:flex;justify-content:space-between;align-items:center;gap:4px}
+.bc-tier{font-size:8.5px;font-weight:700;padding:2px 6px;border-radius:8px;text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap}
+.bc-tier.healthy{background:#DCFCE7;color:#166534}
+.bc-tier.early_warning{background:#FEF9C3;color:#854D0E}
+.bc-tier.power_degraded{background:#FFEDD5;color:#9A3412}
+.bc-tier.silent_sox{background:#F3F4F6;color:#374151;border:1px solid #D1D5DB}
+.bc-tier.critical{background:#FEE2E2;color:#991B1B}
+.bc-dots{display:flex;gap:3px}
+.bc-dot{width:6px;height:6px;border-radius:50%}
+.bc-dot.e11{background:#1D4ED8}
+.bc-dot.e7{background:#F59E0B}
+.bc-dot.e3{background:#DC2626}
+.bc-dot.e5{background:#6B7280}
+
+/* Lattice section */
+.lattice-section{max-width:1100px;margin:0 auto 32px;padding:40px 32px 20px}
+.lattice-section .lattice-svg{width:100%;height:auto;background:#FAFAF8;border:1px solid #E5E7EB;border-radius:12px}
+.lattice-edge{transition:stroke-opacity 0.2s,stroke-width 0.2s}
+.lattice-edge.active-edge{stroke-opacity:0.92 !important;stroke-dasharray:8 4;animation:dashflow 2s linear infinite}
+@keyframes dashflow{to{stroke-dashoffset:-24}}
+.lattice-node{cursor:pointer;transition:opacity 0.2s,filter 0.2s}
+.lattice-node:hover{filter:drop-shadow(0 2px 5px rgba(0,0,0,0.15))}
+.lattice-node.active-node{filter:drop-shadow(0 0 6px rgba(232,80,10,0.65))}
+.lattice-svg.trace-mode .lattice-edge:not(.active-edge){stroke-opacity:0.05 !important}
+.lattice-svg.trace-mode .lattice-node:not(.active-node){opacity:0.2}
+
+/* Node right panel */
+.node-panel{position:fixed;right:0;top:0;width:380px;height:100vh;background:#fff;border-left:1px solid #E5E7EB;box-shadow:-4px 0 20px rgba(0,0,0,0.06);transform:translateX(100%);transition:transform 0.3s ease;z-index:200;overflow-y:auto;display:flex;flex-direction:column}
+.node-panel.open{transform:translateX(0)}
+.panel-head{padding:18px 22px 16px;border-bottom:1px solid #E5E7EB;display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;background:#fff;z-index:2}
+.panel-title-block{flex:1;min-width:0}
+.panel-title{font-size:16px;font-weight:700;color:#0F172A;letter-spacing:-0.3px;line-height:1.2}
+.panel-domain{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;padding:3px 9px;border-radius:10px;display:inline-block;margin-top:6px}
+.panel-close{background:none;border:none;font-size:22px;cursor:pointer;color:#9CA3AF;line-height:1;padding:4px 8px}
+.panel-close:hover{color:#111827}
+.panel-sec{padding:14px 22px;border-bottom:1px solid #F3F4F6}
+.panel-sec:last-of-type{border-bottom:none}
+.panel-sec h4{font-size:10px;font-weight:700;color:#E8500A;text-transform:uppercase;letter-spacing:0.13em;margin-bottom:10px}
+.sig-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px dashed #F3F4F6;line-height:1.5}
+.sig-row:last-child{border-bottom:none}
+.sig-name{color:#374151}
+.sig-val{color:#0F172A;font-weight:600;text-align:right}
+.sig-unit{color:#9CA3AF;font-weight:400;margin-left:4px}
+.panel-text{font-size:12.5px;color:#374151;line-height:1.65}
+.panel-alerts{display:flex;flex-direction:column;gap:6px}
+.panel-alert{font-size:11px;background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;padding:6px 10px;border-radius:6px}
+.panel-alert.empty{background:#F0FDF4;border-color:#BBF7D0;color:#166534}
+.cascade-list{display:flex;flex-direction:column;gap:8px}
+.cascade-step{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:#374151;line-height:1.5}
+.cascade-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:#E8500A;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.cascade-arrow{color:#E8500A;font-weight:600;margin:0 4px}
+.cascade-confirm{width:6px;height:6px;border-radius:50%;background:#16A34A;display:inline-block;margin-left:6px;vertical-align:middle}
+.audience-cards{display:flex;flex-direction:column;gap:8px}
+.aud-card{padding:10px 12px;border-radius:8px;font-size:11.5px;line-height:1.55}
+.aud-card .aud-role{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px}
+.aud-card.operator{background:#FFF7ED;border:1px solid #FED7AA}
+.aud-card.operator .aud-role{color:#C2410C}
+.aud-card.oem{background:#F5F3FF;border:1px solid #DDD6FE}
+.aud-card.oem .aud-role{color:#6D28D9}
+.aud-card.nbfc{background:#F0FDFA;border:1px solid #99F6E4}
+.aud-card.nbfc .aud-role{color:#0F766E}
+.blindspot-card{background:#F3F4F6;border:1px solid #D1D5DB;border-radius:8px;padding:14px 16px;font-size:12px;color:#374151;line-height:1.6}
+.blindspot-card b{color:#0F172A;display:block;margin-bottom:6px}
+.panel-footer{padding:14px 22px;display:flex;gap:10px;border-top:1px solid #E5E7EB;background:#FAFAF8;margin-top:auto;position:sticky;bottom:0}
+.panel-btn{flex:1;padding:8px 14px;border-radius:8px;border:1px solid #E5E7EB;background:#fff;color:#374151;font-size:12px;font-weight:600;cursor:pointer}
+.panel-btn.primary{background:#E8500A;color:#fff;border-color:#E8500A}
+.panel-btn:hover{filter:brightness(0.95)}
+
+/* Triangle section */
+.triangle-section{max-width:1100px;margin:0 auto 40px;padding:28px 32px 32px;background:#fff;border:1px solid #E5E7EB;border-radius:12px}
+.triangle-svg{width:100%;height:240px;display:block}
+.divergence-banner{display:none;background:#FFF7ED;border-left:4px solid #E8500A;border-radius:6px;padding:12px 16px;font-size:12.5px;color:#7C2D12;line-height:1.65;margin-top:14px}
+.divergence-banner.show{display:block}
+.divergence-banner b{color:#9A3412}
+
+/* ═════════ SOX-3C additions ═════════ */
+
+/* Panel container shared across 3C sections */
+.panel-section{max-width:1100px;margin:0 auto 28px;padding:26px 32px;background:#fff;border:1px solid #E5E7EB;border-radius:12px}
+.panel-section .sec-head-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;gap:16px;flex-wrap:wrap}
+.panel-section .sec-head-inner{flex:1;min-width:0}
+.projected-badge{display:inline-block;font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;background:#FEF3C7;color:#92400E;letter-spacing:0.08em;text-transform:uppercase;border:1px solid #FDE68A;flex-shrink:0}
+
+/* Cascade detection table */
+.cas-toggle{display:flex;gap:4px;padding:3px;background:#F3F4F6;border-radius:10px}
+.cas-toggle button{padding:5px 12px;font-size:11px;font-weight:600;border:none;background:transparent;color:#6B7280;border-radius:8px;cursor:pointer}
+.cas-toggle button.active{background:#fff;color:#0F172A;box-shadow:0 1px 2px rgba(0,0,0,0.05)}
+.cas-table{width:100%;border-collapse:collapse;font-size:12px}
+.cas-table th{text-align:left;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;padding:8px 10px;border-bottom:1px solid #E5E7EB}
+.cas-table td{padding:10px 10px;border-bottom:1px solid #F3F4F6;vertical-align:top;color:#374151;line-height:1.5}
+.cas-table tr.inactive td{background:#FAFAF8;color:#9CA3AF}
+.cas-table tr.inactive td.ev-name,.cas-table tr.inactive .sev-badge{opacity:0.5}
+.ev-name{font-weight:700;color:#0F172A;width:48px}
+.ev-status{width:80px}
+.ev-status-pill{display:inline-block;font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.06em}
+.ev-status-pill.active{background:#E8500A;color:#fff}
+.ev-status-pill.inactive{background:#fff;color:#9CA3AF;border:1px solid #E5E7EB}
+.ev-week{width:90px;color:#6B7280;font-variant-numeric:tabular-nums}
+.ev-sev{width:70px}
+.sev-badge{display:inline-block;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:8px;color:#fff}
+.sev-badge.sev1{background:#DC2626}
+.sev-badge.sev2{background:#F59E0B}
+.sev-badge.sev3{background:#EAB308;color:#111827}
+.ev-action{width:200px;font-size:11.5px;color:#374151}
+
+/* Heatmap */
+.heatmap{display:grid;grid-template-columns:70px repeat(6,1fr);gap:3px;margin-top:6px}
+.hm-h,.hm-r{font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;padding:6px 4px;text-align:center}
+.hm-r{text-align:right;padding-right:8px}
+.hm-cell{aspect-ratio:2/1;min-height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+
+/* Predictions panel */
+.pred-head{display:grid;grid-template-columns:200px repeat(4,1fr);gap:12px;padding:10px 14px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;margin-bottom:18px}
+.pred-head > div{font-size:10.5px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;text-align:center}
+.pred-head > div:first-child{text-align:left;color:#9CA3AF}
+.pred-row{padding:16px 0;border-bottom:1px solid #F3F4F6;display:flex;flex-direction:column;gap:10px;position:relative}
+.pred-row:last-of-type{border-bottom:none}
+.pred-label{font-size:12px;font-weight:700;color:#0F172A;letter-spacing:-0.1px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pred-sub{font-size:11px;color:#6B7280;margin-top:-4px}
+.pred-method{font-size:10px;color:#9CA3AF;font-style:italic;margin-top:4px}
+.pred-chart svg{width:100%;height:220px;background:#FAFAF8;border:1px solid #F3F4F6;border-radius:6px}
+.soh-bar{width:100%;max-width:520px;height:22px;background:#F3F4F6;border-radius:11px;position:relative;overflow:hidden}
+.soh-fill{height:100%;background:linear-gradient(90deg,#16A34A 0%,#F59E0B 60%,#DC2626 100%);border-radius:11px}
+.soh-markers{position:relative;height:22px;max-width:520px;margin-top:-22px}
+.soh-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#0F172A;border:3px solid #fff;box-shadow:0 0 0 1px #0F172A}
+.soh-floor{position:absolute;top:0;bottom:0;width:2px;background:#DC2626;transform:translateX(-1px)}
+.soh-text{font-size:11.5px;color:#374151;display:flex;gap:22px;flex-wrap:wrap;margin-top:8px}
+.soh-text b{color:#0F172A}
+.soh-text.below{color:#991B1B}
+.heat-bars{display:flex;gap:30px;align-items:flex-end;padding:10px 0 6px;min-height:130px}
+.heat-bar-col{display:flex;flex-direction:column;align-items:center;flex:0 0 90px}
+.heat-bar-val{font-size:13px;font-weight:700;color:#0F172A;margin-bottom:6px}
+.heat-bar{width:60px;border-radius:6px 6px 0 0;min-height:8px}
+.heat-bar.current{background:#0D9488}
+.heat-bar.summer{background:#DC2626}
+.heat-bar-lbl{font-size:10.5px;color:#6B7280;margin-top:6px;text-align:center;font-weight:600}
+.heat-note{font-size:11.5px;color:#374151;margin-top:6px}
+.heat-advisory{display:none;background:#FFF7ED;border-left:4px solid #F59E0B;padding:10px 14px;margin-top:10px;font-size:12px;color:#7C2D12;border-radius:6px}
+.heat-advisory.show{display:block}
+.dod-gauge-wrap{display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.dod-gauge svg{width:200px;height:120px}
+.dod-info{font-size:12px;color:#374151;line-height:1.65}
+.dod-info b{color:#0F172A}
+.fail-row{display:flex;flex-direction:column;gap:10px}
+.fail-bar{display:flex;align-items:center;gap:10px;font-size:12px}
+.fail-bar-name{width:160px;font-weight:600;color:#0F172A}
+.fail-bar-track{flex:1;height:18px;background:#F3F4F6;border-radius:9px;overflow:hidden}
+.fail-bar-fill{height:100%;border-radius:9px}
+.fail-bar-fill.p1{background:#DC2626}
+.fail-bar-fill.p2{background:#F59E0B}
+.fail-bar-pct{width:48px;text-align:right;font-weight:700;color:#0F172A}
+.rul-strip-box{display:flex;gap:14px}
+.rul-box{flex:1;padding:16px 18px;border-radius:10px;border:1px solid #E5E7EB;background:#FAFAF8}
+.rul-box.p50{flex:1.3;background:#F0FDFA;border-color:#99F6E4}
+.rul-box.red{background:#FEF2F2;border-color:#FECACA}
+.rul-val{font-size:26px;font-weight:800;color:#0F172A;letter-spacing:-0.5px;line-height:1}
+.rul-lbl{font-size:11px;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;margin-top:6px;font-weight:600}
+.rul-disclosure{font-size:11px;color:#9CA3AF;font-style:italic;margin-top:10px}
+
+/* Mitigation map */
+.mit-table{width:100%;border-collapse:collapse;font-size:12px}
+.mit-table th{text-align:left;font-size:10px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;padding:8px 10px;border-bottom:1px solid #E5E7EB}
+.mit-table td{padding:12px 10px;border-bottom:1px solid #F3F4F6;vertical-align:top;color:#374151;line-height:1.5}
+.mit-table tr.mit-inactive td{background:#FAFAF8;color:#9CA3AF}
+.mit-cascade{font-weight:700;color:#0F172A;width:180px}
+.mit-detect{font-size:11px;color:#6B7280;width:200px}
+.mit-action{width:170px}
+.act-badge{display:inline-block;font-size:10px;font-weight:700;padding:4px 10px;border-radius:10px;color:#fff;letter-spacing:0.04em;white-space:nowrap}
+.act-badge.charger_swap{background:#0D9488}
+.act-badge.replace_plan,.act-badge.replace_before_summer{background:#DC2626}
+.act-badge.monitor_investigate,.act-badge.proactive_service_visit{background:#6B7280}
+.act-badge.oem_design_review{background:#7C3AED}
+.act-badge.oem_warranty_claim{background:#D97706}
+.act-badge.inactive{background:#E5E7EB;color:#6B7280}
+.mit-owner{font-size:11.5px;color:#374151;width:100px}
+.mit-cost{font-size:11.5px;color:#111827}
+.mit-cost b{color:#0F172A}
+.mit-cor{display:inline-block;margin-left:8px;font-size:9.5px;font-weight:600;padding:2px 7px;border-radius:8px;background:#CCFBF1;color:#0F766E}
+
+/* OEM attribution brief */
+.oem-grid{display:grid;grid-template-columns:200px 1fr;gap:26px;align-items:flex-start;margin-bottom:20px}
+.oem-donut{display:flex;flex-direction:column;align-items:center}
+.oem-donut svg{width:180px;height:180px}
+.oem-donut-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:12px;font-size:11px;color:#374151;max-width:200px}
+.oem-donut-legend div{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.oem-donut-legend b{font-weight:700;color:#0F172A}
+.oem-sw{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.oem-verdict{display:flex;flex-direction:column;gap:10px}
+.verdict-badge{display:inline-block;font-size:14px;font-weight:800;padding:8px 18px;border-radius:22px;color:#fff;letter-spacing:0.06em;text-transform:uppercase;align-self:flex-start}
+.verdict-badge.honour{background:#16A34A}
+.verdict-badge.partial{background:#F59E0B}
+.verdict-badge.high_risk{background:#DC2626}
+.verdict-badge.reject{background:#7F1D1D}
+.verdict-text{font-size:12.5px;color:#374151;line-height:1.65}
+.oem-pack-compare{border-top:1px solid #F3F4F6;padding-top:16px}
+.oem-pack-title{font-size:12px;font-weight:700;color:#0F172A;margin-bottom:10px}
+.pack-bars{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.pack-bar{display:flex;align-items:center;gap:10px;font-size:11.5px}
+.pack-bar-name{width:140px;font-weight:600;color:#0F172A}
+.pack-bar-track{flex:1;height:20px;background:#F3F4F6;border-radius:10px;overflow:hidden}
+.pack-bar-fill{height:100%;border-radius:10px}
+.pack-bar-fill.pack3001{background:#16A34A}
+.pack-bar-fill.pack3401{background:#DC2626}
+.pack-bar-val{width:120px;text-align:right;color:#374151;font-variant-numeric:tabular-nums}
+.oem-pack-note{font-size:11.5px;color:#374151}
+.oem-pack-disclosure{font-size:10.5px;color:#9CA3AF;font-style:italic;margin-top:4px}
+
+/* Cross-surface footer */
+.cross-surface{background:#F8FAFC;border-top:1px solid #E5E7EB;padding:14px 32px;max-width:1240px;margin:-12px auto 20px;border-radius:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:12px}
+.cs-label{font-weight:700;color:#374151;font-size:11px;text-transform:uppercase;letter-spacing:0.06em}
+.cs-pill{display:inline-block;padding:5px 12px;border-radius:14px;font-size:11.5px;font-weight:600;text-decoration:none;line-height:1.2}
+.cs-pill.si{background:#CCFBF1;color:#0F766E;border:1px solid #99F6E4}
+.cs-pill.oem{background:#F5F3FF;color:#6D28D9;border:1px solid #DDD6FE}
+.cs-pill.nbfc{background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA}
+.cs-empty{color:#9CA3AF;font-style:italic}
+
+@media print{.print-btn{display:none}.selector-bar,.node-panel{display:none}}
+@media (max-width:1024px){.hero{grid-template-columns:repeat(2,1fr)}.archetypes{grid-template-columns:1fr}.blindspot-row{grid-template-columns:1fr}.selector-top{flex-direction:column}.fleet-summary{flex-wrap:wrap}.oem-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ═════════ SOX-3B Section 0: Battery selector (sticky top) ═════════ -->
+<div class="selector-bar" id="selector-bar">
+  <div class="selector-bar-wrap">
+    <div class="selector-top">
+      <div class="filter-block">
+        <div class="filter-row">
+          <span class="filter-label">Case</span>
+          <button class="filter-btn arch-A active" data-arch="A">A</button>
+          <button class="filter-btn arch-B active" data-arch="B">B</button>
+          <button class="filter-btn arch-C active" data-arch="C">C</button>
+          <button class="filter-btn arch-D active" data-arch="D">D</button>
+          <button class="filter-btn arch-E active" data-arch="E">E</button>
+          <button class="filter-btn arch-F active" data-arch="F">F</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Pack</span>
+          <button class="filter-btn pack-btn" data-pack="3001">Pack3001</button>
+          <button class="filter-btn pack-btn" data-pack="3401">Pack3401</button>
+          <button class="filter-btn pack-btn active" data-pack="ALL">All</button>
+        </div>
+        <div class="filter-row">
+          <span class="filter-label">Tier</span>
+          <button class="filter-btn tier-btn active" data-tier="ALL">All</button>
+          <button class="filter-btn tier-btn" data-tier="HEALTHY">Healthy</button>
+          <button class="filter-btn tier-btn" data-tier="EARLY_WARNING">Early warning</button>
+          <button class="filter-btn tier-btn" data-tier="POWER_DEGRADED">Power degraded</button>
+          <button class="filter-btn tier-btn" data-tier="SILENT_SOX">Silent SOX</button>
+          <button class="filter-btn tier-btn" data-tier="CRITICAL">Critical</button>
+        </div>
+      </div>
+      <div class="fleet-summary" id="fleet-summary-strip">
+        <div class="fleet-summary-item"><div class="fs-n">30</div><div class="fs-l">batteries</div></div>
+        <div class="fleet-summary-item"><div class="fs-n" id="fs-e11">&mdash;</div><div class="fs-l">resistance<br>escalation</div></div>
+        <div class="fleet-summary-item"><div class="fs-n" id="fs-silent">&mdash;</div><div class="fs-l">silent SOX</div></div>
+        <div class="fleet-summary-item"><div class="fs-n" id="fs-critical">&mdash;</div><div class="fs-l">critical</div></div>
+      </div>
+    </div>
+    <div class="card-strip" id="card-strip"></div>
+  </div>
+</div>
+
+<!-- ═════════ SOX-3B Section: Intelligence Lattice ═════════ -->
+<div class="lattice-section">
+  <div class="sec-head">Intelligence lattice</div>
+  <div class="sec-title">Signal flow map</div>
+  <div class="sec-sub">Click any node to trace how its signals cascade to stakeholder decisions. Selected battery shown above.</div>
+  <svg id="lattice-svg" class="lattice-svg" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
+
+<!-- ═════════ SOX-3B Section: SOH-SOC-SOX Triangle ═════════ -->
+<div class="triangle-section">
+  <div class="sec-head">Three axes</div>
+  <div class="sec-title">SOH &middot; SOC &middot; SOX causal interactions</div>
+  <div class="sec-sub">The three state variables are not independent. This shows how each degrades into or masks the other &mdash; particularly the Path D divergence that drives SOH misattribution.</div>
+  <svg id="triangle-svg" class="triangle-svg" viewBox="0 0 600 240" preserveAspectRatio="xMidYMid meet"></svg>
+  <div class="divergence-banner" id="divergence-banner">
+    <b>&#9888; SOX&ndash;SOH divergence detected for this battery.</b>
+    Range decline is power-driven, not capacity-driven. Charger action first &mdash; do not replace yet.
+  </div>
+</div>
+
+<!-- ═════════ SOX-3C: Cascade Detection Table ═════════ -->
+<div class="panel-section" id="cas-section">
+  <div class="sec-head-row">
+    <div class="sec-head-inner">
+      <div class="sec-head">Active signal cascade</div>
+      <div class="sec-title" id="cas-title">All events for selected battery</div>
+      <div class="sec-sub">Five event channels, five layers of degradation. Updates when a different battery is selected.</div>
+    </div>
+    <div class="cas-toggle">
+      <button id="cas-tog-one" class="active" onclick="setCascadeMode('one')">This battery</button>
+      <button id="cas-tog-fleet" onclick="setCascadeMode('fleet')">All 30</button>
+    </div>
+  </div>
+  <div id="cas-body-one">
+    <table class="cas-table">
+      <thead><tr><th>Event</th><th>Status</th><th>Week</th><th>Severity</th><th>Plain English</th></tr></thead>
+      <tbody id="cas-tbody"></tbody>
+    </table>
+  </div>
+  <div id="cas-body-fleet" style="display:none">
+    <div class="sec-sub" style="margin-bottom:10px">Batteries per case (A&ndash;F) with each event active. Darker = more batteries affected.</div>
+    <div class="heatmap" id="cas-heatmap"></div>
+  </div>
+</div>
+
+<!-- ═════════ SOX-3C: Predictions Panel ═════════ -->
+<div class="panel-section" id="pred-section">
+  <div class="sec-head-row">
+    <div class="sec-head-inner">
+      <div class="sec-head">Forward intelligence</div>
+      <div class="sec-title">Projections for selected battery</div>
+      <div class="sec-sub">All projections modelled from fleet physics and production signal trajectories. Directional &mdash; not for covenant triggers.</div>
+    </div>
+    <span class="projected-badge">Projected</span>
+  </div>
+  <div class="pred-head">
+    <div>Signal</div><div>Now</div><div>+4 wk</div><div>+8 wk</div><div>+12 wk</div>
+  </div>
+
+  <div class="pred-row">
+    <div class="pred-label">Resistance trajectory<span class="projected-badge">Projected</span></div>
+    <div class="pred-chart"><svg id="pred-r0-chart" viewBox="0 0 900 220" preserveAspectRatio="none"></svg></div>
+    <div class="pred-method" id="pred-r0-method">&mdash;</div>
+  </div>
+
+  <div class="pred-row">
+    <div class="pred-label">State of health &mdash; weeks to warranty floor<span class="projected-badge">Projected</span></div>
+    <div class="soh-bar"><div class="soh-fill"></div></div>
+    <div class="soh-markers" id="soh-markers"></div>
+    <div class="soh-text" id="soh-text"></div>
+    <div class="pred-method" id="pred-soh-method">&mdash;</div>
+  </div>
+
+  <div class="pred-row">
+    <div class="pred-label">Heat generation index<span class="projected-badge">Projected</span></div>
+    <div class="heat-bars" id="heat-bars"></div>
+    <div class="heat-note" id="heat-note"></div>
+    <div class="heat-advisory" id="heat-advisory">
+      &#9888; Pre-summer advisory: these batteries need replacement before June to avoid in-field thermal failure.
+    </div>
+  </div>
+
+  <div class="pred-row">
+    <div class="pred-label">Designed capacity being accessed<span class="projected-badge">Projected</span></div>
+    <div class="dod-gauge-wrap">
+      <div class="dod-gauge"><svg id="dod-gauge-svg" viewBox="0 0 200 120" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="dod-info" id="dod-info"></div>
+    </div>
+    <div class="pred-method" id="pred-dod-method">&mdash;</div>
+  </div>
+
+  <div class="pred-row">
+    <div class="pred-label">Predicted failure mode<span class="projected-badge">Projected</span></div>
+    <div class="pred-sub">Markov model trained on 1,378 field service records</div>
+    <div class="fail-row" id="fail-row"></div>
+    <div class="pred-method" id="pred-fail-source">&mdash;</div>
+  </div>
+
+  <div class="pred-row">
+    <div class="pred-label">Remaining useful life</div>
+    <div class="rul-strip-box" id="rul-strip-box"></div>
+    <div class="rul-disclosure" id="rul-disclosure">&mdash;</div>
+  </div>
+</div>
+
+<!-- ═════════ SOX-3C: Mitigation Map ═════════ -->
+<div class="panel-section" id="mit-section">
+  <div class="sec-head-row">
+    <div class="sec-head-inner">
+      <div class="sec-head">Actions and cost of inaction</div>
+      <div class="sec-title">Mitigation map</div>
+      <div class="sec-sub">Active cascades for selected battery. All possible actions shown &mdash; inactive rows stay visible as the commercial anchor.</div>
+    </div>
+  </div>
+  <table class="mit-table">
+    <thead><tr><th>Cascade</th><th>Platform detects</th><th>Action</th><th>Owner</th><th>Cost framing</th></tr></thead>
+    <tbody id="mit-tbody"></tbody>
+  </table>
+</div>
+
+<!-- ═════════ SOX-3C: OEM Attribution Brief ═════════ -->
+<div class="panel-section" id="oem-section">
+  <div class="sec-head-row">
+    <div class="sec-head-inner">
+      <div class="sec-head">OEM intelligence</div>
+      <div class="sec-title" id="oem-title">Attribution brief</div>
+      <div class="sec-sub">Degradation cause split for the selected battery and warranty stance for the OEM.</div>
+    </div>
+    <span class="projected-badge" id="oem-pack-badge">&mdash;</span>
+  </div>
+  <div class="oem-grid">
+    <div class="oem-donut">
+      <svg id="oem-donut-svg" viewBox="0 0 180 180" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="oem-donut-legend" id="oem-legend"></div>
+    </div>
+    <div class="oem-verdict">
+      <div class="verdict-badge" id="oem-verdict-badge">&mdash;</div>
+      <div class="verdict-text" id="oem-verdict-text">&mdash;</div>
+    </div>
+  </div>
+  <div class="oem-pack-compare">
+    <div class="oem-pack-title">Pack degradation rate &mdash; field confirmed</div>
+    <div class="pack-bars">
+      <div class="pack-bar">
+        <span class="pack-bar-name">Pack3001</span>
+        <div class="pack-bar-track"><div class="pack-bar-fill pack3001" style="width:17%"></div></div>
+        <span class="pack-bar-val">&minus;0.0013 / wk</span>
+      </div>
+      <div class="pack-bar">
+        <span class="pack-bar-name">Pack3401</span>
+        <div class="pack-bar-track"><div class="pack-bar-fill pack3401" style="width:100%"></div></div>
+        <span class="pack-bar-val">&minus;0.0077 / wk</span>
+      </div>
+    </div>
+    <div class="oem-pack-note"><b>Pack3401 degrades 6&times; faster.</b> Field-confirmed across 334 production batteries.</div>
+    <div class="oem-pack-disclosure">Production fleet finding &mdash; not demo data.</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ── Header ── -->
+  <div class="logo">enerlytik</div>
+  <div class="title">SOX Intelligence &mdash; State of Power</div>
+  <div class="sub">Power degradation detection &middot; Before range impact &middot; Before BMS fires any alert</div>
+
+  <div class="opening">
+    The BMS reported these batteries as <strong>healthy</strong>.<br>
+    The platform <strong>disagreed</strong>.<br>
+    Here is the evidence &mdash; and the lead time before any range impact.
+  </div>
+
+  <!-- ── Section 1: hero ── -->
+  <div class="hero">
+    <div class="stat orange">
+      <div class="stat-label">Batteries: power degrading,<br>BMS silent</div>
+      <div class="stat-val" id="hero-confirmed"><span class="skel">&nbsp;&nbsp;</span></div>
+      <div class="stat-sub">demo fleet of 30</div>
+    </div>
+    <div class="stat darkred">
+      <div class="stat-label">Silent SOX &mdash;<br>BMS completely blind</div>
+      <div class="stat-val" id="hero-silent"><span class="skel">&nbsp;&nbsp;</span></div>
+      <div class="stat-sub">kps declining &middot; BMS reports healthy</div>
+    </div>
+    <div class="stat red">
+      <div class="stat-label">Thermal feedback loop<br>active</div>
+      <div class="stat-val" id="hero-thermal"><span class="skel">&nbsp;&nbsp;</span></div>
+      <div class="stat-sub">E3 + E11 co-active</div>
+    </div>
+    <div class="stat teal">
+      <div class="stat-label">Lead time before<br>range impact</div>
+      <div class="stat-val">4&ndash;8 weeks</div>
+      <div class="stat-sub">platform detects before BMS fires</div>
+    </div>
+  </div>
+
+  <div class="plain-lines">
+    <p><strong>BMS cell_diff alert threshold: 800mV.</strong> Has never fired in 192M rows of telemetry.</p>
+    <p><strong>Platform flagging cell imbalance at 150mV &mdash;</strong> 4&ndash;8 weeks before BMS would fire.</p>
+    <p><strong>Rising resistance</strong> &rarr; voltage sag &rarr; early BMS cutoff &rarr; range falls. BMS does not measure resistance. It never knows.</p>
+  </div>
+
+  <!-- ── Section 2: 3 archetypes ── -->
+  <div class="sec-head">Three archetypes &middot; same pack, different stories</div>
+  <div class="sec-title">The detection story, in three cases</div>
+  <div class="sec-sub">All three batteries look &quot;healthy&quot; to the BMS. The platform sees different causes &mdash; and different actions.</div>
+
+  <div class="archetypes">
+    <!-- Card B -->
+    <div class="arch-card">
+      <div class="badge amber">Power failing &middot; Capacity OK</div>
+      <div class="arch-name">Case B &mdash; SOX confirmed,<br>charger is the cause</div>
+      <div class="keyrow"><span>Current capacity</span><b id="b-soh">&mdash;</b></div>
+      <div class="keyrow"><span>Resistance rise</span><b id="b-ir-rise">&mdash;</b></div>
+      <div class="evrow">
+        <span class="evchip yes"><b>E11 active</b>: YES</span>
+        <span class="evchip yes"><b>E7 active</b>: YES</span>
+        <span class="evchip no"><b>Capacity</b>: flat</span>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Signal divergence &middot; weeks 1&ndash;12</div>
+        <svg id="b-chart" viewBox="0 0 320 170" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-note">These lines should move together. When resistance rises without capacity falling: the charger is stressing the battery, not chemistry aging it.</div>
+      <div class="proj-row">
+        <div class="proj-pill"><div class="pv" id="b-r4">&mdash;</div><div class="pl">+4 wk</div></div>
+        <div class="proj-pill"><div class="pv" id="b-r8">&mdash;</div><div class="pl">+8 wk</div></div>
+        <div class="proj-pill"><div class="pv" id="b-r12">&mdash;</div><div class="pl">+12 wk</div></div>
+      </div>
+      <div class="chart-note">At +12wk: range impact becomes visible. Platform detected this at week 0.</div>
+      <div class="action-box teal">
+        <div class="action-title">Action</div>
+        <div class="action-text">Replace the charger first. Reassess the battery in 4 weeks.</div>
+        <span class="cost-pill">&#8377;1,500 charger swap vs &#8377;40,000 replacement</span>
+      </div>
+    </div>
+
+    <!-- Card D -->
+    <div class="arch-card">
+      <div class="badge grey">Range collapsing &middot; BMS silent</div>
+      <div class="arch-name">Case D &mdash; Silent SOX,<br>the BMS blind spot</div>
+      <div class="keyrow"><span>Current capacity</span><b id="d-soh">&mdash;</b></div>
+      <div class="keyrow"><span>Per-charge km trend</span><b>declining</b></div>
+      <div class="evrow">
+        <span class="evchip yes"><b>E11 active</b>: YES</span>
+        <span class="evchip no"><b>E7 active</b>: NO</span>
+        <span class="evchip no"><b>Coulomb capacity</b>: stable</span>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Per-charge km vs capacity &middot; weeks 1&ndash;12</div>
+        <svg id="d-chart" viewBox="0 0 320 170" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-note">Capacity looks stable. Range is falling. This is the platform's core detection capability. The BMS cannot see this divergence.</div>
+      <div class="chart-note dark">Voltage-sag protection (E7) has <b>not</b> fired. <b>Zero BMS alerts</b> for these batteries. Platform flagged via resistance rise plus per-charge-km decline.</div>
+      <div class="action-box grey">
+        <div class="action-title">Action</div>
+        <div class="action-text">Monitor and investigate: weekly tracking, charger audit, no replacement yet.</div>
+      </div>
+    </div>
+
+    <!-- Card E -->
+    <div class="arch-card">
+      <div class="badge red">Thermal + power &middot; summer risk</div>
+      <div class="arch-name">Case E &mdash; Thermal<br>feedback loop</div>
+      <div class="keyrow"><span>Current capacity</span><b id="e-soh">&mdash;</b></div>
+      <div class="keyrow"><span>Resistance rise</span><b id="e-ir-rise">&mdash;</b></div>
+      <div class="keyrow"><span>Avg pack temperature (8wk)</span><b>48&deg;C</b></div>
+      <div class="evrow">
+        <span class="evchip yes"><b>E3+E7+E11</b>: all active</span>
+      </div>
+      <div class="chart-box">
+        <div class="chart-title">Heat generation &middot; weeks 1&ndash;12 + summer projection</div>
+        <svg id="e-chart" viewBox="0 0 320 170" preserveAspectRatio="none"></svg>
+      </div>
+      <div class="chart-note">As resistance rises, heat rises with the square of current. Summer amplifies this. These batteries need replacement before June.</div>
+      <div class="action-box red">
+        <div class="action-title">Action</div>
+        <div class="action-text">Replace before monsoon. Failure in summer field conditions is rapid.</div>
+        <span class="cost-pill">&#8377;40,000 planned replacement vs &#8377;80,000+ thermal runaway damage</span>
+      </div>
+      <div class="rul-strip" id="e-rul"><span class="skel">RUL loading&hellip;</span></div>
+    </div>
+  </div>
+
+  <!-- ── Section 3: fleet trajectory ── -->
+  <div class="sec-head">Fleet view</div>
+  <div class="sec-title">Internal resistance trajectory &mdash; all archetypes</div>
+  <div class="sec-sub">Same pack. Same city. Different trajectories. The difference is detectable at week 4.</div>
+
+  <div class="fleet-chart">
+    <svg id="fleet-chart" viewBox="0 0 1000 300" preserveAspectRatio="none"></svg>
+    <div class="legend" id="fleet-legend"></div>
+  </div>
+
+  <div class="prod-note" id="prod-note">
+    <div><span class="skel">Loading production fleet counts&hellip;</span></div>
+  </div>
+
+  <!-- ── Blind spot ── -->
+  <div class="blindspot">
+    <div class="blindspot-title">What SOX Cannot Predict</div>
+    <div class="blindspot-row">
+      <div class="blindspot-item">
+        <div class="bs-t">BMS hardware failure</div>
+        <div class="bs-d">PCB failure and firmware crash have no electrical precursor in 30-second CAN data. The platform detects stress state &mdash; not hardware failure events.</div>
+      </div>
+      <div class="blindspot-item">
+        <div class="bs-t">Physical damage</div>
+        <div class="bs-d">Cabinet cracks, water ingress, and accident damage are invisible to CAN/GPS. Affects 23.5% of service returns.</div>
+      </div>
+      <div class="blindspot-item">
+        <div class="bs-t">Connector failure (pre-resistance stage)</div>
+        <div class="bs-d">Mechanical corrosion is invisible until it changes contact resistance. The platform detects <em>when</em> resistance changes &mdash; not before.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ SOX-3C: Cross-surface footer (pills bar) ═════════ -->
+  <div class="cross-surface" id="cross-surface">
+    <span class="cs-label">Cross-surface intelligence for this battery:</span>
+    <span class="cs-empty">loading&hellip;</span>
+  </div>
+
+  <!-- ── Footer ── -->
+  <div class="footer">
+    <div class="footer-left">enerlytik V2.0 &middot; SOX Intelligence &middot; State of Power &middot; demo fleet</div>
+    <button class="print-btn" onclick="window.print()">Export PDF &darr;</button>
+  </div>
+
+</div>
+
+<!-- ═════════ SOX-3B: Lattice node right panel (fixed overlay) ═════════ -->
+<div class="node-panel" id="node-panel">
+  <div class="panel-head">
+    <div class="panel-title-block">
+      <div class="panel-title" id="panel-node-title">&mdash;</div>
+      <div class="panel-domain" id="panel-domain">&mdash;</div>
+    </div>
+    <button class="panel-close" onclick="closeNodePanel()" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel-sec">
+    <h4>Inbound signals</h4>
+    <div id="panel-signals"></div>
+  </div>
+  <div class="panel-sec" id="panel-state-sec">
+    <h4>Current state</h4>
+    <div class="panel-text" id="panel-state"></div>
+  </div>
+  <div class="panel-sec" id="panel-alerts-sec">
+    <h4>Active alerts</h4>
+    <div class="panel-alerts" id="panel-alerts"></div>
+  </div>
+  <div class="panel-sec" id="panel-cascade-sec">
+    <h4>Cascade path</h4>
+    <div class="cascade-list" id="panel-cascade"></div>
+  </div>
+  <div class="panel-sec" id="panel-audience-sec">
+    <h4>Audience cards</h4>
+    <div class="audience-cards" id="panel-audience"></div>
+  </div>
+  <div class="panel-sec" id="panel-blindspot-sec" style="display:none">
+    <div class="blindspot-card" id="panel-blindspot"></div>
+  </div>
+  <div class="panel-footer">
+    <button class="panel-btn primary" id="trace-btn" onclick="toggleTrace()">Trace</button>
+    <button class="panel-btn" onclick="closeNodePanel()">Close</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// SOX Intelligence — detection story UI
+// Data: /api/sox/fleet-summary, archetype-comparison, predictions
+// No internal codes rendered. Display IDs stripped of DEMO_SOX_ prefix.
+// ══════════════════════════════════════════════════════
+
+const DBAPI = location.port === '5001' ? '/api' : 'http://localhost:3001/api';
+
+const ARCH_COLOR = {
+  A: '#16A34A',  B: '#F59E0B',  C: '#DC2626',
+  D: '#6B7280',  E: '#7F1D1D',  F: '#EA580C',
+};
+
+const ARCH_LABEL = {
+  A: 'Case A · healthy baseline',
+  B: 'Case B · charger cause',
+  C: 'Case C · pack design gap',
+  D: 'Case D · silent SOX',
+  E: 'Case E · thermal loop',
+  F: 'Case F · born weak',
+};
+
+// Helpers ─────────────────────────────────────────────
+function fmtPct(v, nd=1) {
+  if (v === null || v === undefined) return '—';
+  return (v * 100).toFixed(nd) + '%';
+}
+function fmtRisePct(v, nd=1) {
+  if (v === null || v === undefined) return '—';
+  const s = v >= 0 ? '+' : '';
+  return s + v.toFixed(nd) + '%';
+}
+function fmtMilli(v, nd=1) {
+  // v in Ohms -> display in mΩ
+  if (v === null || v === undefined) return '—';
+  return (v * 1000).toFixed(nd) + ' mΩ';
+}
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = '<span style="color:#991B1B;font-size:12px">' + msg + '</span>';
+}
+
+// SVG chart builders ──────────────────────────────────
+function buildDivergenceChart(svgId, series1, series2, label1, label2, color1, color2) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const W = 320, H = 170, pad = {l: 26, r: 12, t: 10, b: 20};
+  const inner = {w: W - pad.l - pad.r, h: H - pad.t - pad.b};
+  const allVals = series1.concat(series2).filter(v => v !== null && v !== undefined);
+  const lo = Math.min.apply(null, allVals);
+  const hi = Math.max.apply(null, allVals);
+  const span = Math.max(hi - lo, 0.0001);
+  const x = i => pad.l + (i / (series1.length - 1)) * inner.w;
+  const y = v => pad.t + (1 - (v - lo) / span) * inner.h;
+
+  const pts1 = series1.map((v, i) => x(i) + ',' + y(v)).join(' ');
+  const pts2 = series2.map((v, i) => x(i) + ',' + y(v)).join(' ');
+
+  // Grid
+  let grid = '';
+  for (let i = 0; i < 5; i++) {
+    const gy = pad.t + (i / 4) * inner.h;
+    grid += `<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="#F1F5F9" stroke-width="1"/>`;
+  }
+  grid += `<line x1="${pad.l}" y1="${H-pad.b}" x2="${W-pad.r}" y2="${H-pad.b}" stroke="#D1D5DB" stroke-width="1"/>`;
+
+  // x-axis labels week 1 and 12
+  const xlabels =
+    `<text x="${pad.l}" y="${H-5}" font-size="9" fill="#9CA3AF">Wk 1</text>` +
+    `<text x="${W-pad.r-22}" y="${H-5}" font-size="9" fill="#9CA3AF">Wk 12</text>`;
+
+  // Line labels at end
+  const last1 = series1.length - 1;
+  const labels =
+    `<text x="${x(last1)+4}" y="${y(series1[last1])+3}" font-size="9" font-weight="600" fill="${color1}">${label1}</text>` +
+    `<text x="${x(last1)+4}" y="${y(series2[last1])+3}" font-size="9" font-weight="600" fill="${color2}">${label2}</text>`;
+
+  svg.innerHTML = grid + xlabels +
+    `<polyline points="${pts1}" fill="none" stroke="${color1}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `<polyline points="${pts2}" fill="none" stroke="${color2}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 3"/>` +
+    labels;
+}
+
+function buildHeatChart(svgId, series, summerMultiplier, weekLabel) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const W = 320, H = 170, pad = {l: 30, r: 18, t: 12, b: 20};
+  const inner = {w: W - pad.l - pad.r, h: H - pad.t - pad.b};
+  // Project a summer point
+  const summerVal = series[series.length - 1] * summerMultiplier;
+  const lo = Math.min.apply(null, series);
+  const hi = Math.max(summerVal, Math.max.apply(null, series));
+  const span = Math.max(hi - lo, 0.0001);
+  const x = i => pad.l + (i / (series.length)) * inner.w;
+  const y = v => pad.t + (1 - (v - lo) / span) * inner.h;
+  const summerX = pad.l + ((series.length) / series.length) * inner.w;
+
+  const pts = series.map((v, i) => x(i) + ',' + y(v)).join(' ');
+
+  let grid = '';
+  for (let i = 0; i < 5; i++) {
+    const gy = pad.t + (i / 4) * inner.h;
+    grid += `<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="#F1F5F9" stroke-width="1"/>`;
+  }
+  grid += `<line x1="${pad.l}" y1="${H-pad.b}" x2="${W-pad.r}" y2="${H-pad.b}" stroke="#D1D5DB" stroke-width="1"/>`;
+
+  // Today marker at end of data
+  const todayX = x(series.length - 1);
+  const today = `<line x1="${todayX}" y1="${pad.t}" x2="${todayX}" y2="${H-pad.b}" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="3 3"/>` +
+                `<text x="${todayX-20}" y="${pad.t+9}" font-size="8.5" fill="#6B7280" font-weight="600">TODAY</text>`;
+
+  // Summer point
+  const summer = `<circle cx="${summerX}" cy="${y(summerVal)}" r="4" fill="#DC2626"/>` +
+                 `<text x="${summerX-80}" y="${y(summerVal)+3}" font-size="9" font-weight="700" fill="#991B1B">September ×${summerMultiplier.toFixed(2)}</text>`;
+
+  // Dashed projection from last-week to summer
+  const projLine = `<line x1="${todayX}" y1="${y(series[series.length-1])}" x2="${summerX}" y2="${y(summerVal)}" stroke="#DC2626" stroke-width="2" stroke-dasharray="3 3"/>`;
+
+  const xlabels =
+    `<text x="${pad.l}" y="${H-5}" font-size="9" fill="#9CA3AF">Wk 1</text>` +
+    `<text x="${todayX-12}" y="${H-5}" font-size="9" fill="#9CA3AF">${weekLabel}</text>`;
+
+  svg.innerHTML = grid + xlabels +
+    `<polyline points="${pts}" fill="none" stroke="#DC2626" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>` +
+    projLine + today + summer;
+}
+
+function buildFleetChart(archRows) {
+  const svg = document.getElementById('fleet-chart');
+  const legend = document.getElementById('fleet-legend');
+  if (!svg || !archRows || !archRows.length) return;
+  const W = 1000, H = 300, pad = {l: 54, r: 120, t: 20, b: 40};
+  const inner = {w: W - pad.l - pad.r, h: H - pad.t - pad.b};
+
+  // X = week 1..12 (12 points). Y = normalized ir_proxy %. Base = 100 at week 1.
+  const weeks = 12;
+  const x = i => pad.l + (i / (weeks - 1)) * inner.w;
+  // Y range: 100 at bottom range, up to max rise + buffer
+  const maxRise = Math.max.apply(null, archRows.map(r => r.ir_rise_pct || 0));
+  const yHi = 100 + Math.max(maxRise, 10) * 1.15;
+  const yLo = 95;
+  const y = v => pad.t + (1 - (v - yLo) / (yHi - yLo)) * inner.h;
+
+  // Grid
+  let grid = '';
+  // Horizontal gridlines at 100, 110, 120, 130
+  const yTicks = [100, 105, 110, 115, 120, 125, 130];
+  for (const t of yTicks) {
+    if (t <= yHi) {
+      const gy = y(t);
+      grid += `<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="#F1F5F9" stroke-width="1"/>`;
+      grid += `<text x="${pad.l-8}" y="${gy+3}" font-size="10" text-anchor="end" fill="#9CA3AF">${t}%</text>`;
+    }
+  }
+  // Vertical week lines at weeks 1, 4, 8, 12
+  for (const w of [1, 4, 8, 12]) {
+    const gx = x(w - 1);
+    grid += `<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${H-pad.b}" stroke="#F3F4F6" stroke-width="1"/>`;
+    grid += `<text x="${gx}" y="${H-pad.b+14}" font-size="10" text-anchor="middle" fill="#9CA3AF">Wk ${w}</text>`;
+  }
+  // Week 4 annotation
+  grid += `<line x1="${x(3)}" y1="${pad.t}" x2="${x(3)}" y2="${H-pad.b}" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="3 3"/>`;
+  grid += `<text x="${x(3)+4}" y="${pad.t+12}" font-size="9.5" font-weight="600" fill="#6B7280">detectable</text>`;
+
+  // Y axis label
+  grid += `<text x="${pad.l-36}" y="${pad.t-6}" font-size="10" fill="#6B7280" font-weight="600">Resistance (normalised, week 1 = 100%)</text>`;
+
+  // For each archetype draw a trajectory
+  let lines = '';
+  let labels = '';
+  for (const row of archRows) {
+    const arch = row.archetype;
+    const color = ARCH_COLOR[arch] || '#6B7280';
+    const start = 100;
+    const end = 100 + (row.ir_rise_pct || 0);
+    // curve with archetype-specific accel
+    const accelByArch = {A: 0.05, F: 0.1, B: 0.3, D: 0.4, C: 0.55, E: 0.7};
+    const accel = accelByArch[arch] || 0.3;
+    const pts = [];
+    for (let w = 0; w < weeks; w++) {
+      const t = w / (weeks - 1);
+      // frac curve: small early, larger late
+      const frac = Math.pow(t, 1 + accel);
+      const val = start + (end - start) * frac;
+      pts.push(x(w) + ',' + y(val));
+    }
+    const dash = arch === 'D' ? 'stroke-dasharray="5 4"' : '';
+    lines += `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" ${dash}/>`;
+    // Label at end
+    const endVal = 100 + (row.ir_rise_pct || 0);
+    const lx = x(weeks - 1) + 6;
+    const ly = y(endVal) + 3;
+    const tagText = arch === 'A' ? 'Case A · HEALTHY baseline'
+                  : arch === 'E' ? 'Case E · THERMAL LOOP'
+                  : 'Case ' + arch;
+    labels += `<text x="${lx}" y="${ly}" font-size="10.5" font-weight="600" fill="${color}">${tagText}</text>`;
+  }
+
+  // Annotation box bottom right
+  const annoX = pad.l + inner.w - 260;
+  const annoY = pad.t + inner.h - 52;
+  const anno = `<rect x="${annoX}" y="${annoY}" width="250" height="40" rx="6" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="1"/>` +
+               `<text x="${annoX+10}" y="${annoY+16}" font-size="10" fill="#374151"><tspan font-weight="700" fill="#16A34A">Case A:</tspan> flat — healthy baseline</text>` +
+               `<text x="${annoX+10}" y="${annoY+30}" font-size="10" fill="#374151"><tspan font-weight="700" fill="#7F1D1D">Case E:</tspan> steepest — thermal feedback</text>`;
+
+  svg.innerHTML = grid + lines + labels + anno;
+
+  // Legend
+  legend.innerHTML = archRows.map(r => {
+    const c = ARCH_COLOR[r.archetype];
+    return `<span class="legend-item"><span class="legend-dot" style="background:${c}"></span><b>Case ${r.archetype}</b>&nbsp;${r.ir_rise_pct !== null ? fmtRisePct(r.ir_rise_pct) + ' rise' : ''}</span>`;
+  }).join('');
+}
+
+// Interpolation helper — build a 12-point series for divergence charts
+function interpSeries(startPct, endPct, accel) {
+  const series = [];
+  for (let w = 0; w < 12; w++) {
+    const t = w / 11;
+    const frac = Math.pow(t, 1 + accel);
+    series.push(100 + (endPct - startPct) * frac);
+  }
+  return series;
+}
+
+// Data loaders ────────────────────────────────────────
+async function loadFleetSummary() {
+  try {
+    const r = await fetch(DBAPI + '/sox/fleet-summary');
+    const d = await r.json();
+    if (d.demo) {
+      document.getElementById('hero-confirmed').textContent = d.demo.n_sox_confirmed;
+      document.getElementById('hero-silent').textContent = d.demo.n_silent_sox;
+      document.getElementById('hero-thermal').textContent = d.demo.n_thermal_risk;
+    }
+    if (d.production) {
+      const p = d.production;
+      const prodNote = document.getElementById('prod-note');
+      prodNote.innerHTML =
+        '<div><b>Production fleet:</b> ' +
+          `<b>${p.e11_active_count}</b> batteries with active resistance escalation (above fleet P92). ` +
+          `<b>${p.e7_active_count}</b> batteries with voltage sag confirmed. ` +
+          `<b>${p.total_scored}</b> total batteries scored. ` +
+          'These are real batteries, not demo.</div>' +
+        '<a class="prod-link" href="/service-intelligence">View production batteries →</a>';
+    }
+  } catch (e) {
+    showErr('hero-confirmed', 'Data unavailable');
+    showErr('hero-silent', 'Data unavailable');
+    showErr('hero-thermal', 'Data unavailable');
+    document.getElementById('prod-note').innerHTML =
+      '<div class="err-note">Data unavailable — check server</div>';
+  }
+}
+
+async function loadArchetypes() {
+  try {
+    const r = await fetch(DBAPI + '/sox/archetype-comparison');
+    const rows = await r.json();
+    if (!Array.isArray(rows)) throw new Error('bad response');
+
+    // Fleet trajectory chart
+    buildFleetChart(rows);
+
+    const byArch = {};
+    for (const row of rows) byArch[row.archetype] = row;
+
+    // Card B: IR rising + SOH flat
+    const B = byArch['B']; const A = byArch['A'];
+    if (B) {
+      document.getElementById('b-soh').textContent = fmtPct(B.avg_soh_week12);
+      document.getElementById('b-ir-rise').textContent = fmtRisePct(B.ir_rise_pct);
+      const irB = interpSeries(100, 100 + (B.ir_rise_pct || 0), 0.3);
+      // SOH trajectory relative — scale so week1 = 100, week12 = soh12/soh1 * 100 (near 100 for B)
+      const sohScale = (B.avg_soh_week1 && B.avg_soh_week12)
+        ? (B.avg_soh_week12 / B.avg_soh_week1) * 100
+        : 100;
+      const sohB = interpSeries(100, sohScale, 0.1);
+      buildDivergenceChart('b-chart', irB, sohB, 'resistance', 'capacity', '#E8500A', '#2563EB');
+      // Projection pills: use same curve 4/8/12 weeks ahead from current +ir_rise_pct per week trajectory
+      const wkRise = (B.ir_rise_pct || 0) / 11;  // per-week slope over weeks 1-12
+      document.getElementById('b-r4').textContent = fmtRisePct((B.ir_rise_pct || 0) + wkRise*4);
+      document.getElementById('b-r8').textContent = fmtRisePct((B.ir_rise_pct || 0) + wkRise*8);
+      document.getElementById('b-r12').textContent = fmtRisePct((B.ir_rise_pct || 0) + wkRise*12);
+    }
+
+    // Card D: per-charge km declining + Coulomb capacity stable
+    const D = byArch['D'];
+    if (D) {
+      document.getElementById('d-soh').textContent = fmtPct(D.avg_soh_week12);
+      // Build inverted kps (declining) + flat soh_coulomb
+      const kpsDelta = (D.avg_kps_week12 !== null && D.avg_kps_week1 !== null)
+        ? ((D.avg_kps_week12 / D.avg_kps_week1) * 100 - 100) : -15;
+      const kpsSeries = interpSeries(100, 100 + kpsDelta, 0.4);
+      const sohSeries = interpSeries(100, 100 + 0.5, 0.1);  // effectively flat
+      buildDivergenceChart('d-chart', kpsSeries, sohSeries, 'per-charge km', 'capacity', '#E8500A', '#2563EB');
+    }
+
+    // Card E: heat generation rising + summer projection
+    const E = byArch['E'];
+    if (E) {
+      document.getElementById('e-soh').textContent = fmtPct(E.avg_soh_week12);
+      document.getElementById('e-ir-rise').textContent = fmtRisePct(E.ir_rise_pct);
+      // Build heat series week 1-12. week1 estimated as week12 / (1 + rise²)
+      const h12 = E.avg_heat_week12 || 5;
+      const h1 = h12 * 0.55;
+      const heatSeries = [];
+      for (let w = 0; w < 12; w++) {
+        const t = w / 11;
+        heatSeries.push(h1 + (h12 - h1) * Math.pow(t, 1.6));
+      }
+      buildHeatChart('e-chart', heatSeries, 1.52, 'Wk 12');
+    }
+  } catch (e) {
+    document.getElementById('b-chart').innerHTML = '<text x="10" y="80" fill="#991B1B" font-size="11">Data unavailable — check server</text>';
+    document.getElementById('d-chart').innerHTML = '<text x="10" y="80" fill="#991B1B" font-size="11">Data unavailable — check server</text>';
+    document.getElementById('e-chart').innerHTML = '<text x="10" y="80" fill="#991B1B" font-size="11">Data unavailable — check server</text>';
+    document.getElementById('fleet-chart').innerHTML = '<text x="20" y="150" fill="#991B1B" font-size="12">Fleet trajectory data unavailable — check server</text>';
+  }
+}
+
+async function loadRUL() {
+  try {
+    const r = await fetch(DBAPI + '/sox/predictions/DEMO_SOX_021');
+    const d = await r.json();
+    if (d.rul) {
+      document.getElementById('e-rul').innerHTML =
+        `<span><b>RUL p50:</b> ${d.rul.p50_weeks || '—'} weeks</span>` +
+        `<span><b>RUL p10 (conservative):</b> ${d.rul.p10_weeks || '—'} weeks</span>`;
+    }
+  } catch (e) {
+    document.getElementById('e-rul').innerHTML = '<span style="color:#9CA3AF">RUL unavailable</span>';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SOX-3B: selector, lattice, panel, triangle
+// ══════════════════════════════════════════════════════
+
+// State ───────────────────────────────────────────────
+let selectedBattery = 'DEMO_SOX_021';   // Default: Archetype E
+let activeNode = null;
+const filters = {
+  arch: new Set(['A','B','C','D','E','F']),
+  pack: 'ALL',
+  tier: 'ALL',
+};
+
+// Fleet model — 30 batteries derived from archetype spec
+// Packs: D/E on Pack3401 (design-gap + thermal), others on Pack3001
+const ARCH_TO_TIER = {A:'HEALTHY', B:'POWER_DEGRADED', C:'POWER_DEGRADED', D:'SILENT_SOX', E:'CRITICAL', F:'EARLY_WARNING'};
+const ARCH_EVENTS = {
+  A: [], B: ['e11','e7','e5'], C: ['e11','e7','e1'],
+  D: ['e11'], E: ['e3','e7','e11','e5'], F: [],
+};
+const ARCH_PACK = {A:'3001', B:'3001', C:'3401', D:'3401', E:'3401', F:'3001'};
+const ARCH_LETTER_BY_INDEX = ['A','A','A','A','A','B','B','B','B','B','C','C','C','C','C','D','D','D','D','D','E','E','E','E','E','F','F','F','F','F'];
+
+function buildFleet() {
+  const fleet = [];
+  for (let i = 1; i <= 30; i++) {
+    const arch = ARCH_LETTER_BY_INDEX[i-1];
+    const id = 'DEMO_SOX_' + String(i).padStart(3, '0');
+    fleet.push({
+      id,
+      display_id: 'SOX-' + String(i).padStart(3, '0'),
+      archetype: arch,
+      pack: ARCH_PACK[arch],
+      tier: ARCH_TO_TIER[arch],
+      events: ARCH_EVENTS[arch],
+    });
+  }
+  return fleet;
+}
+
+// Selector / cards ─────────────────────────────────────
+function buildBatteryCards() {
+  const fleet = buildFleet();
+  const strip = document.getElementById('card-strip');
+  strip.innerHTML = fleet.map(b => {
+    const dots = b.events.map(e => `<span class="bc-dot ${e}" title="${e.toUpperCase()} active"></span>`).join('');
+    return `
+      <div class="bat-card" data-id="${b.id}" data-arch="${b.archetype}" data-pack="${b.pack}" data-tier="${b.tier}" onclick="selectBattery('${b.id}')">
+        <div class="bc-top"><span class="bc-id">${b.display_id}</span><span class="bc-pack">${b.pack}</span></div>
+        <div class="bc-mid"><span class="bc-arch ${b.archetype.toLowerCase()}">${b.archetype}</span></div>
+        <div class="bc-bottom"><span class="bc-tier ${b.tier.toLowerCase()}">${tierLabel(b.tier)}</span><span class="bc-dots">${dots}</span></div>
+      </div>`;
+  }).join('');
+  applyFilters();
+  markSelectedCard();
+}
+
+function tierLabel(t) {
+  return {HEALTHY:'Healthy', EARLY_WARNING:'Early', POWER_DEGRADED:'Pwr deg', SILENT_SOX:'Silent', CRITICAL:'Critical'}[t] || t;
+}
+
+function applyFilters() {
+  document.querySelectorAll('.bat-card').forEach(card => {
+    const arch = card.dataset.arch;
+    const pack = card.dataset.pack;
+    const tier = card.dataset.tier;
+    const archOk = filters.arch.has(arch);
+    const packOk = filters.pack === 'ALL' || filters.pack === pack;
+    const tierOk = filters.tier === 'ALL' || filters.tier === tier;
+    const show = archOk && packOk && tierOk;
+    card.classList.toggle('dimmed', !show);
+  });
+}
+
+function markSelectedCard() {
+  document.querySelectorAll('.bat-card').forEach(card => {
+    card.classList.toggle('selected', card.dataset.id === selectedBattery);
+  });
+}
+
+function selectBattery(battery_id) {
+  // Don't select a dimmed card
+  const card = document.querySelector(`.bat-card[data-id="${battery_id}"]`);
+  if (card && card.classList.contains('dimmed')) return;
+  selectedBattery = battery_id;
+  markSelectedCard();
+  document.dispatchEvent(new CustomEvent('batterySelected', {detail: {battery_id}}));
+}
+
+function bindFilterButtons() {
+  // Archetype multi-select
+  document.querySelectorAll('.filter-btn[data-arch]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const arch = btn.dataset.arch;
+      if (filters.arch.has(arch)) {
+        if (filters.arch.size > 1) filters.arch.delete(arch);  // keep at least one
+        else return;
+      } else {
+        filters.arch.add(arch);
+      }
+      btn.classList.toggle('active');
+      applyFilters();
+    });
+  });
+  // Pack single-select
+  document.querySelectorAll('.filter-btn.pack-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn.pack-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filters.pack = btn.dataset.pack;
+      applyFilters();
+    });
+  });
+  // Tier single-select
+  document.querySelectorAll('.filter-btn.tier-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn.tier-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      filters.tier = btn.dataset.tier;
+      applyFilters();
+    });
+  });
+}
+
+// Lattice rendering ────────────────────────────────────
+const NODES = [
+  {id:'pack-design',    cx:150, cy:130, label:'Pack',   sub:'design',    stroke:'#D97706', fill:'#451a03'},
+  {id:'cell-chemistry', cx:150, cy:390, label:'Cell',   sub:'chemistry', stroke:'#0D9488', fill:'#042f2e'},
+  {id:'charger-interface', cx:300, cy: 80, label:'Charger', sub:'',      stroke:'#E8500A', fill:'#431407'},
+  {id:'cell-balance',   cx:300, cy:440, label:'Balance',sub:'',          stroke:'#CA8A04', fill:'#422006'},
+  {id:'soh-axis',       cx:450, cy:260, label:'SOH',    sub:'capacity', stroke:'#16A34A', fill:'#052e16'},
+  {id:'soc-axis',       cx:350, cy:320, label:'SOC',    sub:'window',    stroke:'#7C3AED', fill:'#2e1065'},
+  {id:'sox-axis',       cx:550, cy:320, label:'SOX',    sub:'power',     stroke:'#1D4ED8', fill:'#1e1b4b'},
+  {id:'use-case',       cx:600, cy: 80, label:'Use',    sub:'case',      stroke:'#DC6B4A', fill:'#3b0764'},
+  {id:'thermal',        cx:750, cy:130, label:'Thermal',sub:'',          stroke:'#DC2626', fill:'#450a0a'},
+  {id:'bms-firmware',   cx:600, cy:440, label:'BMS',    sub:'firmware',  stroke:'#6B7280', fill:'#111827', blind:true},
+  {id:'fleet-network',  cx:750, cy:390, label:'Fleet',  sub:'network',   stroke:'#4C1D95', fill:'#2e1065'},
+];
+
+const EDGES = [
+  {id:'e1',  from:'pack-design',      to:'sox-axis',  color:'#D97706', w:2, label:'commissioning R0'},
+  {id:'e2',  from:'cell-chemistry',   to:'sox-axis',  color:'#0D9488', w:3, label:'R0 rise mechanism'},
+  {id:'e3',  from:'charger-interface',to:'sox-axis',  color:'#E8500A', w:3, label:'I²R₀ stress'},
+  {id:'e4',  from:'thermal',          to:'sox-axis',  color:'#DC2626', w:3, label:'Arrhenius amplification'},
+  {id:'e5',  from:'use-case',         to:'sox-axis',  color:'#DC6B4A', w:2, label:'peak current demand'},
+  {id:'e6',  from:'cell-balance',     to:'sox-axis',  color:'#CA8A04', w:2, label:'localized R0'},
+  {id:'e7',  from:'sox-axis',         to:'soh-axis',  color:'#1D4ED8', w:3, label:'Path D: misattribution'},
+  {id:'e8',  from:'sox-axis',         to:'soc-axis',  color:'#1D4ED8', w:2, label:'Path A: window shrink'},
+  {id:'e9',  from:'soc-axis',         to:'soh-axis',  color:'#7C3AED', w:2, label:'Path B: baseline error'},
+  {id:'e10', from:'soh-axis',         to:'sox-axis',  color:'#16A34A', w:2, label:'Path C: aging accelerates'},
+  {id:'e11', from:'bms-firmware',     to:'sox-axis',  color:'#6B7280', w:1, label:'blind spot', blind:true},
+  {id:'e12', from:'fleet-network',    to:'soh-axis',  color:'#4C1D95', w:2, label:'cohort baseline'},
+];
+
+function nodeById(id) { return NODES.find(n => n.id === id); }
+
+function buildLattice() {
+  const svg = document.getElementById('lattice-svg');
+  let edgesHtml = '';
+  for (const e of EDGES) {
+    const a = nodeById(e.from), b = nodeById(e.to);
+    const opacity = e.blind ? 0.15 : 0.22;
+    const dasharray = e.blind ? 'stroke-dasharray="6 4"' : '';
+    edgesHtml += `<line class="lattice-edge" data-edge="${e.id}" x1="${a.cx}" y1="${a.cy}" x2="${b.cx}" y2="${b.cy}" stroke="${e.color}" stroke-width="${e.w}" stroke-opacity="${opacity}" stroke-linecap="round" ${dasharray}><title>${e.label}</title></line>`;
+  }
+  let nodesHtml = '';
+  for (const n of NODES) {
+    const dim = n.blind ? ' opacity="0.55"' : '';
+    const lock = n.blind ? `<text x="0" y="-20" text-anchor="middle" font-size="14">🔒</text>` : '';
+    nodesHtml += `
+      <g class="lattice-node" id="node-${n.id}" transform="translate(${n.cx},${n.cy})"${dim} onclick="nodeClick('${n.id}')">
+        <circle r="38" fill="${n.fill}" stroke="${n.stroke}" stroke-width="2"/>
+        <circle r="26" fill="${n.fill}" stroke="${n.stroke}" stroke-width="1" opacity="0.5"/>
+        ${lock}
+        <text y="-4" text-anchor="middle" fill="${n.stroke}" font-size="12" font-weight="600">${n.label}</text>
+        <text y="10" text-anchor="middle" fill="${n.stroke}" font-size="10" opacity="0.75">${n.sub}</text>
+      </g>`;
+  }
+  svg.innerHTML = edgesHtml + nodesHtml;
+  // Click empty area closes panel + clears highlights
+  svg.addEventListener('click', (ev) => {
+    if (ev.target === svg || ev.target.tagName === 'line') {
+      closeNodePanel();
+    }
+  });
+}
+
+// Node click + panel ───────────────────────────────────
+const DOMAIN_COLORS = {
+  'Pack Architecture':     {bg:'#FEF3C7', fg:'#92400E'},
+  'Chemistry':             {bg:'#CCFBF1', fg:'#115E59'},
+  'SOX Intelligence':      {bg:'#FEE2E2', fg:'#991B1B'},
+  'Operator Behaviour':    {bg:'#DBEAFE', fg:'#1E40AF'},
+  'Controls':              {bg:'#F3F4F6', fg:'#374151'},
+  'Operations':            {bg:'#CFFAFE', fg:'#155E75'},
+  'Capacity':              {bg:'#DCFCE7', fg:'#166534'},
+  'Operating Window':      {bg:'#EDE9FE', fg:'#5B21B6'},
+};
+
+function nodeClick(nodeName) {
+  activeNode = nodeName;
+  const bid = selectedBattery;
+  fetch(`/api/sox/lattice-node/${nodeName}?battery_id=${bid}`)
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.error) {
+        renderNodePanelError(nodeName, data.error || data.detail || 'Unknown error');
+        return;
+      }
+      renderNodePanel(data);
+      highlightCascade(data.cascade_path || [], nodeName);
+    })
+    .catch(err => renderNodePanelError(nodeName, String(err)));
+  document.getElementById('node-panel').classList.add('open');
+}
+
+function renderNodePanel(data) {
+  document.getElementById('panel-node-title').textContent = prettyNodeName(data.node);
+  const domEl = document.getElementById('panel-domain');
+  domEl.textContent = data.domain || '';
+  const dc = DOMAIN_COLORS[data.domain] || {bg:'#F3F4F6', fg:'#374151'};
+  domEl.style.background = dc.bg;
+  domEl.style.color = dc.fg;
+
+  // Inbound signals
+  const sigHtml = (data.inbound_signals || []).map(s => {
+    const val = s.value !== null && s.value !== undefined ? formatValue(s.value, s.unit) : '—';
+    return `<div class="sig-row"><span class="sig-name">${s.signal.replace(/_/g,' ')}</span><span class="sig-val">${val}<span class="sig-unit">${s.unit || ''}</span></span></div>`;
+  }).join('');
+  document.getElementById('panel-signals').innerHTML = sigHtml || '<div class="panel-text">No direct inbound signals</div>';
+
+  // Current state — derived from scenario label + inbound values
+  const scenario = data.scenario_label || '';
+  const plain = scenario
+    ? `This node, for this battery (Case ${data.battery_archetype}): ${scenario}`
+    : 'This node carries the listed signals into the lattice.';
+  document.getElementById('panel-state').textContent = plain;
+
+  // Alerts — derive from blind_spot presence + tier
+  const alertsDiv = document.getElementById('panel-alerts');
+  if (data.blind_spot) {
+    alertsDiv.innerHTML = `<div class="panel-alert">Platform blind spot &mdash; see note below.</div>`;
+  } else if (['CRITICAL','POWER_DEGRADED'].includes(data.battery_sox_tier)) {
+    alertsDiv.innerHTML = `<div class="panel-alert">Battery in tier ${data.battery_sox_tier.replace('_',' ')}.</div>`;
+  } else if (data.battery_sox_tier === 'SILENT_SOX') {
+    alertsDiv.innerHTML = `<div class="panel-alert">Silent SOX &mdash; BMS will not warn.</div>`;
+  } else {
+    alertsDiv.innerHTML = `<div class="panel-alert empty">No active alerts for this node on this battery.</div>`;
+  }
+
+  // Cascade path — hide when blind
+  const cascadeSec = document.getElementById('panel-cascade-sec');
+  const audienceSec = document.getElementById('panel-audience-sec');
+  const blindSec = document.getElementById('panel-blindspot-sec');
+  if (data.blind_spot) {
+    cascadeSec.style.display = 'none';
+    audienceSec.style.display = 'none';
+    blindSec.style.display = 'block';
+    document.getElementById('panel-blindspot').innerHTML =
+      `<b>Platform cannot detect this from telemetry.</b>${data.blind_spot}`;
+  } else {
+    cascadeSec.style.display = 'block';
+    audienceSec.style.display = 'block';
+    blindSec.style.display = 'none';
+    const cascade = (data.cascade_path || []).map(s => `
+      <div class="cascade-step">
+        <span class="cascade-num">${s.step}</span>
+        <span><b>${s.from}</b><span class="cascade-arrow"> → </span>${s.to}<span class="cascade-confirm" title="platform-confirmed"></span></span>
+      </div>`).join('');
+    document.getElementById('panel-cascade').innerHTML = cascade || '<div class="panel-text">No cascade for this node.</div>';
+
+    const ac = data.audience_cards || {};
+    document.getElementById('panel-audience').innerHTML = `
+      <div class="aud-card operator"><div class="aud-role">Operator</div>${ac.operator || '—'}</div>
+      <div class="aud-card oem"><div class="aud-role">OEM</div>${ac.oem || '—'}</div>
+      <div class="aud-card nbfc"><div class="aud-role">Lender · NBFC</div>${ac.nbfc || '—'}</div>
+    `;
+  }
+}
+
+function renderNodePanelError(nodeName, msg) {
+  document.getElementById('panel-node-title').textContent = prettyNodeName(nodeName);
+  document.getElementById('panel-domain').textContent = 'error';
+  document.getElementById('panel-signals').innerHTML = `<div class="panel-text" style="color:#991B1B">${msg}</div>`;
+  document.getElementById('panel-state').textContent = '';
+  document.getElementById('panel-alerts').innerHTML = '';
+  document.getElementById('panel-cascade').innerHTML = '';
+  document.getElementById('panel-audience').innerHTML = '';
+}
+
+function prettyNodeName(id) {
+  return {
+    'pack-design':'Pack design',
+    'cell-chemistry':'Cell chemistry',
+    'charger-interface':'Charger interface',
+    'use-case':'Use case',
+    'thermal':'Thermal',
+    'cell-balance':'Cell balance',
+    'bms-firmware':'BMS firmware',
+    'fleet-network':'Fleet network',
+    'sox-axis':'SOX axis',
+    'soh-axis':'SOH axis',
+    'soc-axis':'SOC axis',
+  }[id] || id;
+}
+
+function formatValue(v, unit) {
+  if (typeof v === 'number') {
+    if (unit === 'Ω') return (v * 1000).toFixed(1) + ' mΩ';
+    if (Math.abs(v) < 0.01) return v.toExponential(2);
+    if (Math.abs(v) < 1) return v.toFixed(4);
+    return v.toFixed(2);
+  }
+  return String(v);
+}
+
+// highlightCascade: map cascade step from/to text → lattice edge ids heuristically
+// Primary: pulse the edges that connect to the active node.
+function highlightCascade(cascade_path, nodeName) {
+  document.querySelectorAll('.lattice-edge.active-edge').forEach(e => e.classList.remove('active-edge'));
+  document.querySelectorAll('.lattice-node.active-node').forEach(e => e.classList.remove('active-node'));
+  // Always mark the active node
+  const nodeEl = document.getElementById('node-' + nodeName);
+  if (nodeEl) nodeEl.classList.add('active-node');
+  // Find all edges touching the active node; animate them.
+  EDGES.filter(e => e.from === nodeName || e.to === nodeName).forEach(e => {
+    const el = document.querySelector(`.lattice-edge[data-edge="${e.id}"]`);
+    if (el) el.classList.add('active-edge');
+    const other = e.from === nodeName ? e.to : e.from;
+    const otherEl = document.getElementById('node-' + other);
+    if (otherEl) otherEl.classList.add('active-node');
+  });
+}
+
+function closeNodePanel() {
+  document.getElementById('node-panel').classList.remove('open');
+  document.querySelectorAll('.lattice-edge.active-edge').forEach(e => e.classList.remove('active-edge'));
+  document.querySelectorAll('.lattice-node.active-node').forEach(e => e.classList.remove('active-node'));
+  document.getElementById('lattice-svg').classList.remove('trace-mode');
+  const btn = document.getElementById('trace-btn');
+  if (btn) btn.textContent = 'Trace';
+  activeNode = null;
+}
+
+function toggleTrace() {
+  const svg = document.getElementById('lattice-svg');
+  const btn = document.getElementById('trace-btn');
+  svg.classList.toggle('trace-mode');
+  btn.textContent = svg.classList.contains('trace-mode') ? 'Trace · ON' : 'Trace';
+}
+
+// Triangle (SOH · SOC · SOX) ─────────────────────────
+const TRI = {
+  soh: {cx:150, cy:50,  stroke:'#16A34A', fill:'#052e16', label:'SOH'},
+  soc: {cx:450, cy:50,  stroke:'#7C3AED', fill:'#2e1065', label:'SOC'},
+  sox: {cx:300, cy:180, stroke:'#1D4ED8', fill:'#1e1b4b', label:'SOX'},
+};
+
+function edgeWithArrow(x1,y1,x2,y2, color, w, dash=false, id='') {
+  // Shorten endpoints so arrow doesn't overlap node
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.hypot(dx,dy);
+  const ux = dx/len, uy = dy/len;
+  const r = 30;
+  const sx = x1 + ux*r, sy = y1 + uy*r;
+  const ex = x2 - ux*r, ey = y2 - uy*r;
+  const dArr = dash ? 'stroke-dasharray="5 4"' : '';
+  return `<line id="${id}" x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" stroke="${color}" stroke-width="${w}" ${dArr} marker-end="url(#tri-arrow-${color.replace('#','')})"/>`;
+}
+
+function buildTriangle() {
+  const svg = document.getElementById('triangle-svg');
+  const markers = ['#16A34A','#7C3AED','#1D4ED8','#E8500A'].map(c =>
+    `<marker id="tri-arrow-${c.replace('#','')}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+       <path d="M0,0 L10,5 L0,10 z" fill="${c}"/>
+     </marker>`
+  ).join('');
+
+  // Label anchor helper
+  function midLabel(x1,y1,x2,y2, offsetDx, offsetDy, text, color, weight=400) {
+    const mx = (x1+x2)/2 + offsetDx;
+    const my = (y1+y2)/2 + offsetDy;
+    return `<text x="${mx}" y="${my}" fill="${color}" font-size="10" font-weight="${weight}" text-anchor="middle">${text}</text>`;
+  }
+
+  // Draw node
+  function node(n) {
+    return `<g transform="translate(${n.cx},${n.cy})">
+      <circle r="30" fill="${n.fill}" stroke="${n.stroke}" stroke-width="2"/>
+      <circle r="20" fill="${n.fill}" stroke="${n.stroke}" stroke-width="1" opacity="0.5"/>
+      <text y="4" text-anchor="middle" fill="${n.stroke}" font-size="13" font-weight="700">${n.label}</text>
+    </g>`;
+  }
+
+  // Edges
+  const {soh, soc, sox} = TRI;
+  let edgesHtml = '';
+  // SOH → SOX (Path C)
+  edgesHtml += edgeWithArrow(soh.cx, soh.cy, sox.cx, sox.cy, '#16A34A', 2, false, 'tri-soh-sox');
+  // SOX → SOH (Path D — orange when active)
+  edgesHtml += edgeWithArrow(sox.cx, sox.cy, soh.cx, soh.cy, '#1D4ED8', 2, false, 'tri-sox-soh');
+  // SOX → SOC (Path A)
+  edgesHtml += edgeWithArrow(sox.cx, sox.cy, soc.cx, soc.cy, '#1D4ED8', 2, true, 'tri-sox-soc');
+  // SOC → SOH (Path B)
+  edgesHtml += edgeWithArrow(soc.cx, soc.cy, soh.cx, soh.cy, '#7C3AED', 2, false, 'tri-soc-soh');
+
+  // Labels (positioned to avoid overlap)
+  let labels = '';
+  labels += `<text x="230" y="130" font-size="10" fill="#16A34A" font-weight="600" text-anchor="middle">Path C — aging</text>`;
+  labels += `<text x="230" y="145" font-size="9.5" fill="#6B7280" text-anchor="middle">capacity → R0 rise</text>`;
+  labels += `<text x="380" y="130" id="tri-label-D" font-size="10" fill="#1D4ED8" font-weight="700" text-anchor="middle">Path D — misattribution</text>`;
+  labels += `<text x="380" y="145" id="tri-sublabel-D" font-size="9.5" fill="#6B7280" text-anchor="middle">power decline read as SOH</text>`;
+  labels += `<text x="370" y="70" font-size="10" fill="#1D4ED8" font-weight="600" text-anchor="middle">Path A — window shrink</text>`;
+  labels += `<text x="300" y="40" font-size="10" fill="#7C3AED" font-weight="600" text-anchor="middle">Path B — baseline error</text>`;
+
+  svg.innerHTML = `<defs>${markers}</defs>` + edgesHtml + node(soh) + node(soc) + node(sox) + labels;
+}
+
+function setTriangleState(pathDActive) {
+  const sohSoxLine = document.getElementById('tri-sox-soh');
+  const labelD = document.getElementById('tri-label-D');
+  const sublabelD = document.getElementById('tri-sublabel-D');
+  if (!sohSoxLine) return;
+  if (pathDActive) {
+    sohSoxLine.setAttribute('stroke', '#E8500A');
+    sohSoxLine.setAttribute('stroke-width', '3');
+    sohSoxLine.setAttribute('marker-end', 'url(#tri-arrow-E8500A)');
+    if (labelD) { labelD.setAttribute('fill', '#E8500A'); labelD.textContent = 'Path D — misattribution ⚠'; }
+    if (sublabelD) sublabelD.setAttribute('fill', '#C2410C');
+    document.getElementById('divergence-banner').classList.add('show');
+  } else {
+    sohSoxLine.setAttribute('stroke', '#1D4ED8');
+    sohSoxLine.setAttribute('stroke-width', '2');
+    sohSoxLine.setAttribute('marker-end', 'url(#tri-arrow-1D4ED8)');
+    if (labelD) { labelD.setAttribute('fill', '#1D4ED8'); labelD.textContent = 'Path D — misattribution'; }
+    if (sublabelD) sublabelD.setAttribute('fill', '#6B7280');
+    document.getElementById('divergence-banner').classList.remove('show');
+  }
+}
+
+async function checkPathD(battery_id) {
+  // Path D active: kps declining + coulomb stable — telltale of Silent SOX archetype.
+  try {
+    const r = await fetch(`/api/sox/battery-detail/${battery_id}`);
+    if (!r.ok) { setTriangleState(false); return; }
+    const d = await r.json();
+    const arch = d.battery && d.battery.archetype;
+    // Primary signal: archetype D is purpose-built for Path D divergence.
+    // Also trip for any battery whose weekly_history shows declining kps + stable Coulomb.
+    let active = arch === 'D';
+    if (!active && Array.isArray(d.weekly_history) && d.weekly_history.length >= 4) {
+      const tail = d.weekly_history.slice(-4);
+      const kps0 = tail[0].kps_corrected, kpsN = tail[tail.length-1].kps_corrected;
+      const sohDelta = Math.abs((tail[tail.length-1].soh_coulomb_weekly || 0) - (tail[0].soh_coulomb_weekly || 0));
+      if (kps0 && kpsN && (kpsN - kps0) / kps0 < -0.05 && sohDelta < 0.02) active = true;
+    }
+    setTriangleState(active);
+  } catch (e) {
+    setTriangleState(false);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// SOX-3C: Cascade table + Predictions + Mitigation + OEM + Cross-surface
+// ══════════════════════════════════════════════════════
+
+const CAS_EVENTS = [
+  {code:'E11', sev:'SEV1', label:'Internal resistance above fleet P92. Power delivery limited under load.'},
+  {code:'E7',  sev:'SEV1', label:'Voltage sag confirmed under load. BMS cutting off earlier than designed.'},
+  {code:'E5',  sev:'SEV2', label:'Charging duration increasing. Charger under stress or battery not accepting charge.'},
+  {code:'E3',  sev:'SEV2', label:'Thermal stress detected. Heat amplifying all degradation mechanisms.'},
+  {code:'E1',  sev:'SEV3', label:'Efficiency regime change. Range declining from own baseline.'},
+];
+
+const FLEET_HEATMAP_COUNTS = {
+  E11:{A:0,B:5,C:5,D:5,E:5,F:0},
+  E7: {A:0,B:5,C:5,D:0,E:5,F:0},
+  E5: {A:0,B:5,C:0,D:0,E:5,F:0},
+  E3: {A:0,B:0,C:0,D:0,E:5,F:0},
+  E1: {A:0,B:0,C:5,D:0,E:5,F:0},
+};
+
+const ATTRIB_SPLIT = {
+  A:{operator:15, oem:5,  calendar:60, thermal:20},
+  B:{operator:68, oem:5,  calendar:20, thermal:7},
+  C:{operator:15, oem:62, calendar:18, thermal:5},
+  D:{operator:45, oem:20, calendar:25, thermal:10},
+  E:{operator:25, oem:35, calendar:15, thermal:25},
+  F:{operator:5,  oem:85, calendar:8,  thermal:2},
+};
+
+const WARRANTY_VERDICT = {
+  A:{tier:'HONOUR',    text:'Normal calendar aging. Operator compliant.'},
+  B:{tier:'PARTIAL',   text:'68% operator attribution. Non-OEM charger.'},
+  C:{tier:'HIGH_RISK', text:'62% OEM design attribution. Pack3401 gap.'},
+  D:{tier:'PARTIAL',   text:'Monitoring — attribution pending.'},
+  E:{tier:'HIGH_RISK', text:'OEM design + thermal. Pack3401 in stress.'},
+  F:{tier:'REJECT',    text:'Manufacturing quality gap at commissioning.'},
+};
+
+// ── Cascade table ─────────────────────────────────────
+let cascadeMode = 'one';
+
+function setCascadeMode(mode) {
+  cascadeMode = mode;
+  document.getElementById('cas-tog-one').classList.toggle('active', mode === 'one');
+  document.getElementById('cas-tog-fleet').classList.toggle('active', mode === 'fleet');
+  document.getElementById('cas-body-one').style.display = mode === 'one' ? 'block' : 'none';
+  document.getElementById('cas-body-fleet').style.display = mode === 'fleet' ? 'block' : 'none';
+  if (mode === 'fleet') renderHeatmap();
+}
+
+function renderCascadeForBattery(archetype, eventFlags, weeks) {
+  // eventFlags: Set of 'E11','E7','E5','E3','E1' etc. active for this battery
+  // weeks: fabricated week-triggered numbers by archetype
+  const weekBy = {
+    A:{},
+    B:{E11:5, E7:8, E5:9},
+    C:{E11:6, E7:10, E1:11},
+    D:{E11:7},
+    E:{E3:3, E7:5, E11:6, E5:9},
+    F:{},
+  }[archetype] || {};
+
+  const rows = CAS_EVENTS.map(ev => {
+    const active = eventFlags.has(ev.code);
+    const week = active ? (weekBy[ev.code] || '—') : '—';
+    const statusPill = active
+      ? `<span class="ev-status-pill active">active</span>`
+      : `<span class="ev-status-pill inactive">inactive</span>`;
+    const sev = active ? `<span class="sev-badge ${ev.sev.toLowerCase()}">${ev.sev}</span>` : '';
+    return `<tr class="${active ? '' : 'inactive'}">
+      <td class="ev-name">${ev.code}</td>
+      <td class="ev-status">${statusPill}</td>
+      <td class="ev-week">${active ? 'Wk ' + week : '—'}</td>
+      <td class="ev-sev">${sev}</td>
+      <td class="ev-action">${ev.label}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('cas-tbody').innerHTML = rows;
+
+  const displayId = (selectedBattery || '').replace('DEMO_SOX_', 'SOX-');
+  document.getElementById('cas-title').textContent =
+    `Event cascade for ${displayId} · Case ${archetype}`;
+}
+
+function renderHeatmap() {
+  const hm = document.getElementById('cas-heatmap');
+  let html = `<div class="hm-h"></div>`;
+  for (const a of ['A','B','C','D','E','F']) html += `<div class="hm-h">Case ${a}</div>`;
+  for (const ev of CAS_EVENTS) {
+    html += `<div class="hm-r">${ev.code}</div>`;
+    for (const a of ['A','B','C','D','E','F']) {
+      const n = FLEET_HEATMAP_COUNTS[ev.code][a];
+      const t = n / 5;  // 0..1
+      // blend white → #E8500A
+      const r = Math.round(255 + (232-255)*t);
+      const g = Math.round(255 + (80-255)*t);
+      const b = Math.round(255 + (10-255)*t);
+      const color = `rgb(${r},${g},${b})`;
+      const txt = n > 0 ? n : '';
+      const txtColor = t > 0.4 ? '#fff' : '#9CA3AF';
+      html += `<div class="hm-cell" style="background:${color};color:${txtColor}">${txt}</div>`;
+    }
+  }
+  hm.innerHTML = html;
+}
+
+function getBatteryArchetype(bid) {
+  const idx = parseInt(bid.replace('DEMO_SOX_','')) - 1;
+  return ARCH_LETTER_BY_INDEX[idx] || 'A';
+}
+
+function loadCascadeForSelected() {
+  const arch = getBatteryArchetype(selectedBattery);
+  const flags = new Set(ARCH_EVENTS[arch].map(e => e.toUpperCase()));
+  renderCascadeForBattery(arch, flags, {});
+}
+
+// ── Predictions ──────────────────────────────────────
+function loadPredictions() {
+  const bid = selectedBattery;
+  fetch(DBAPI + `/sox/predictions/${bid}`).then(r => r.json()).then(d => {
+    if (!d || d.error) { renderPredictionsError(); return; }
+    // R0 chart
+    fetch(DBAPI + `/sox/battery-detail/${bid}`).then(r2 => r2.json()).then(bd => {
+      renderR0Chart(bd && bd.weekly_history ? bd.weekly_history : [], d.r0_trajectory);
+      document.getElementById('pred-r0-method').textContent =
+        'Method: ' + (d.r0_trajectory.method || '—');
+    }).catch(() => renderR0Chart([], d.r0_trajectory));
+
+    // SOH bar
+    renderSohBar(d.soh_to_floor);
+    document.getElementById('pred-soh-method').textContent =
+      'Method: ' + (d.soh_to_floor.method || '—');
+
+    // Heat bars
+    renderHeatBars(d.heat_summer);
+    const arch = getBatteryArchetype(selectedBattery);
+    document.getElementById('heat-advisory').classList.toggle('show', arch === 'E');
+
+    // DoD gauge
+    renderDodGauge(d.effective_dod);
+    document.getElementById('pred-dod-method').textContent =
+      'Method: ' + (d.effective_dod.method || '—');
+
+    // Failure modes
+    renderFailureModes(d.failure_modes);
+    document.getElementById('pred-fail-source').textContent =
+      'Source: ' + ((d.failure_modes && d.failure_modes.top1 && d.failure_modes.top1.source) || '—');
+
+    // RUL
+    renderRul(d.rul);
+  }).catch(() => renderPredictionsError());
+}
+
+function renderPredictionsError() {
+  document.getElementById('pred-r0-chart').innerHTML =
+    '<text x="20" y="110" fill="#991B1B" font-size="12">Predictions unavailable — check server</text>';
+  ['pred-r0-method','pred-soh-method','pred-dod-method','pred-fail-source','rul-disclosure']
+    .forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ''; });
+}
+
+function renderR0Chart(weekly, traj) {
+  const svg = document.getElementById('pred-r0-chart');
+  const W = 900, H = 220, pad = {l:56, r:80, t:16, b:30};
+  const inner = {w: W-pad.l-pad.r, h: H-pad.t-pad.b};
+
+  const actual = weekly.map(w => ({x:w.week_number, y:w.ir_proxy_weekly})).filter(p => p.y != null);
+  if (actual.length === 0 && traj) {
+    // Fabricate from trajectory endpoints
+    const base = (traj.week_12_actual || 0.012);
+    for (let w = 1; w <= 12; w++) actual.push({x:w, y: base * (0.7 + 0.3 * (w/12))});
+  }
+  // Build projected series: week 12 (actual), +16/+20/+24 from traj
+  const projected = [];
+  if (traj) {
+    const wk12 = actual.length ? actual[actual.length-1].y : traj.week_12_actual;
+    projected.push({x:12, y: wk12});
+    if (traj.week_16_projected != null) projected.push({x:16, y: traj.week_16_projected});
+    if (traj.week_20_projected != null) projected.push({x:20, y: traj.week_20_projected});
+    if (traj.week_24_projected != null) projected.push({x:24, y: traj.week_24_projected});
+  }
+
+  const allVals = actual.concat(projected).map(p => p.y).filter(v => v != null);
+  const e11Thresh = 0.020;
+  const lo = Math.min(...allVals, e11Thresh) * 0.9;
+  const hi = Math.max(...allVals, e11Thresh) * 1.1;
+  const x = xv => pad.l + ((xv - 1) / 23) * inner.w;
+  const y = yv => pad.t + (1 - (yv - lo) / (hi - lo)) * inner.h;
+
+  let grid = '';
+  for (let i = 0; i < 5; i++) {
+    const gy = pad.t + (i/4) * inner.h;
+    grid += `<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="#F1F5F9" stroke-width="1"/>`;
+  }
+  grid += `<line x1="${pad.l}" y1="${H-pad.b}" x2="${W-pad.r}" y2="${H-pad.b}" stroke="#D1D5DB" stroke-width="1"/>`;
+
+  // X labels every 4 weeks
+  let xlabels = '';
+  for (const wk of [1,4,8,12,16,20,24]) {
+    const gx = x(wk);
+    xlabels += `<text x="${gx}" y="${H-8}" font-size="10" fill="#9CA3AF" text-anchor="middle">Wk ${wk}</text>`;
+  }
+
+  // E11 threshold line
+  const threshLine = `<line x1="${pad.l}" y1="${y(e11Thresh)}" x2="${W-pad.r}" y2="${y(e11Thresh)}" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="5 4"/>` +
+    `<text x="${W-pad.r+6}" y="${y(e11Thresh)+4}" font-size="9.5" fill="#991B1B" font-weight="700">E11 (P92)</text>`;
+
+  // Today marker at wk 12
+  const todayLine = `<line x1="${x(12)}" y1="${pad.t}" x2="${x(12)}" y2="${H-pad.b}" stroke="#9CA3AF" stroke-dasharray="3 3" stroke-width="1"/>` +
+    `<text x="${x(12)+4}" y="${pad.t+11}" font-size="9" fill="#6B7280" font-weight="700">TODAY</text>`;
+
+  // Actual solid line
+  const actualPts = actual.map(p => `${x(p.x)},${y(p.y)}`).join(' ');
+  const projPts = projected.map(p => `${x(p.x)},${y(p.y)}`).join(' ');
+
+  const actualLine = actualPts ? `<polyline points="${actualPts}" fill="none" stroke="#0D9488" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` : '';
+  const projLine = projPts ? `<polyline points="${projPts}" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"/>` : '';
+  // Projected dots
+  const projDots = projected.map(p => `<circle cx="${x(p.x)}" cy="${y(p.y)}" r="3" fill="#F59E0B"/>`).join('');
+
+  // Y-axis label
+  const ylabel = `<text x="${pad.l-10}" y="${pad.t+inner.h/2}" font-size="10" fill="#6B7280" text-anchor="middle" transform="rotate(-90 ${pad.l-10} ${pad.t+inner.h/2})">Resistance (Ω)</text>`;
+  // PROJECTED badge in corner
+  const badge = `<rect x="${W-pad.r-110}" y="${pad.t}" width="100" height="20" rx="10" fill="#FEF3C7" stroke="#FDE68A"/>` +
+    `<text x="${W-pad.r-60}" y="${pad.t+13}" font-size="9.5" font-weight="700" fill="#92400E" text-anchor="middle">PROJECTED</text>`;
+
+  svg.innerHTML = grid + xlabels + threshLine + todayLine + ylabel + actualLine + projLine + projDots + badge;
+}
+
+function renderSohBar(soh) {
+  const container = document.getElementById('soh-markers');
+  const textEl = document.getElementById('soh-text');
+  // Normalize SoH 0..1
+  const cur = soh.current_soh;
+  const floor = (soh.floor_threshold_pct || 67) / 100;  // 67 is spec default, shown as 0.67
+  const curPct = cur != null && cur > 0 ? (cur * 100) : null;
+  // Scale bar from 40% to 100% capacity
+  const scale = v => Math.max(0, Math.min(1, (v - 0.4) / 0.6)) * 100;
+
+  const dotPct = curPct != null ? scale(cur) : null;
+  const floorPct = scale(floor);
+
+  let html = '';
+  if (dotPct != null) html += `<div class="soh-dot" style="left:${dotPct}%"></div>`;
+  html += `<div class="soh-floor" style="left:${floorPct}%" title="floor ${(floor*100).toFixed(0)}%"></div>`;
+  container.innerHTML = html;
+
+  const weeksRem = soh.weeks_remaining;
+  const weeksTxt = weeksRem == null
+    ? '<span style="color:#991B1B;font-weight:700">Already below floor</span>'
+    : `<b>Weeks remaining:</b> ${weeksRem}`;
+  textEl.innerHTML =
+    `<span><b>Current:</b> ${curPct != null ? curPct.toFixed(1)+'%' : '—'}</span>` +
+    `<span><b>Floor:</b> ${(floor*100).toFixed(0)}%</span>` +
+    `<span>${weeksTxt}</span>`;
+}
+
+function renderHeatBars(heat) {
+  const container = document.getElementById('heat-bars');
+  const note = document.getElementById('heat-note');
+  if (!heat) { container.innerHTML = '<div class="pred-sub">unavailable</div>'; return; }
+  const cur = heat.current_index_w || 0;
+  const summer = heat.summer_projected_w || 0;
+  const mx = Math.max(cur, summer, 1);
+  const curH = Math.max(8, (cur / mx) * 110);
+  const sumH = Math.max(8, (summer / mx) * 110);
+  container.innerHTML =
+    `<div class="heat-bar-col">
+       <div class="heat-bar-val">${cur.toFixed(2)} W</div>
+       <div class="heat-bar current" style="height:${curH}px"></div>
+       <div class="heat-bar-lbl">Current</div>
+     </div>
+     <div class="heat-bar-col">
+       <div class="heat-bar-val">${summer.toFixed(2)} W</div>
+       <div class="heat-bar summer" style="height:${sumH}px"></div>
+       <div class="heat-bar-lbl">September projection</div>
+     </div>`;
+  note.innerHTML = `&times;${(heat.multiplier || 1.52).toFixed(2)} seasonal multiplier <span style="color:#9CA3AF">(${heat.multiplier_source || '—'})</span>`;
+}
+
+function renderDodGauge(dod) {
+  const svg = document.getElementById('dod-gauge-svg');
+  const info = document.getElementById('dod-info');
+  if (!dod) { svg.innerHTML = ''; info.textContent = 'unavailable'; return; }
+
+  const actual = (dod.actual_pct || 75) / 100;  // 0..1 as fraction
+  const cx = 100, cy = 105, r = 70;
+
+  // Arc from 180° (left) to 0° (right) — but mapped to range 0.65..0.90
+  // polar function
+  const angleForDod = v => {
+    // v in [0.65, 0.90] → angle in [180°, 0°]
+    const t = (v - 0.65) / (0.90 - 0.65);
+    return Math.PI * (1 - Math.max(0, Math.min(1, t)));
+  };
+  function arcPath(d1, d2, color) {
+    const a1 = angleForDod(d1), a2 = angleForDod(d2);
+    const x1 = cx + r * Math.cos(a1), y1 = cy - r * Math.sin(a1);
+    const x2 = cx + r * Math.cos(a2), y2 = cy - r * Math.sin(a2);
+    return `<path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="${color}" stroke-width="12" stroke-linecap="butt"/>`;
+  }
+  let html = arcPath(0.65, 0.75, '#DC2626') + arcPath(0.75, 0.82, '#F59E0B') + arcPath(0.82, 0.90, '#16A34A');
+
+  // Needle
+  const aa = angleForDod(actual);
+  const nx = cx + (r-8) * Math.cos(aa), ny = cy - (r-8) * Math.sin(aa);
+  html += `<line x1="${cx}" y1="${cy}" x2="${nx}" y2="${ny}" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round"/>`;
+  html += `<circle cx="${cx}" cy="${cy}" r="4" fill="#0F172A"/>`;
+
+  // Tick labels
+  html += `<text x="${cx + r * Math.cos(Math.PI)}" y="${cy - r * Math.sin(Math.PI)+20}" font-size="10" fill="#9CA3AF" text-anchor="middle">65%</text>`;
+  html += `<text x="${cx}" y="${cy - r - 6}" font-size="10" fill="#9CA3AF" text-anchor="middle">78%</text>`;
+  html += `<text x="${cx + r}" y="${cy + 20}" font-size="10" fill="#9CA3AF" text-anchor="middle">90%</text>`;
+
+  svg.innerHTML = html;
+
+  const nominal = dod.nominal_pct || 90;
+  info.innerHTML =
+    `<div><b>Nominal:</b> ${nominal}%</div>` +
+    `<div><b>Actual:</b> ${dod.actual_pct != null ? dod.actual_pct.toFixed(1) + '%' : '—'}</div>` +
+    `<div style="margin-top:6px">Accessing <b>${dod.capacity_accessed_pct != null ? dod.capacity_accessed_pct.toFixed(1) : '—'}%</b> of designed capacity.</div>`;
+}
+
+function renderFailureModes(fm) {
+  const c = document.getElementById('fail-row');
+  if (!fm || !fm.top1) { c.innerHTML = '<div class="pred-sub">unavailable</div>'; return; }
+  const prob1 = fm.top1.probability_pct || 0;
+  const prob2 = (fm.top2 && fm.top2.probability_pct) || 0;
+  const maxProb = Math.max(prob1, prob2, 20);
+  c.innerHTML =
+    `<div class="fail-bar">
+       <span class="fail-bar-name">${(fm.top1.mode || '—').replace(/_/g,' ')}</span>
+       <div class="fail-bar-track"><div class="fail-bar-fill p1" style="width:${(prob1/maxProb)*100}%"></div></div>
+       <span class="fail-bar-pct">${prob1.toFixed(1)}%</span>
+     </div>
+     <div class="fail-bar">
+       <span class="fail-bar-name">${((fm.top2 && fm.top2.mode) || '—').replace(/_/g,' ')}</span>
+       <div class="fail-bar-track"><div class="fail-bar-fill p2" style="width:${(prob2/maxProb)*100}%"></div></div>
+       <span class="fail-bar-pct">${prob2.toFixed(1)}%</span>
+     </div>`;
+}
+
+function renderRul(rul) {
+  const c = document.getElementById('rul-strip-box');
+  const disc = document.getElementById('rul-disclosure');
+  if (!rul) { c.innerHTML = ''; disc.textContent = ''; return; }
+  const p50 = rul.p50_weeks;
+  const p10 = rul.p10_weeks;
+  const redBox = p10 != null && p10 < 8 ? ' red' : '';
+  c.innerHTML =
+    `<div class="rul-box p50">
+       <div class="rul-val">${p50 != null ? p50 + ' wks' : '—'}</div>
+       <div class="rul-lbl">Expected scenario</div>
+       <div class="pred-method" style="margin-top:6px">${rul.method || '—'}</div>
+     </div>
+     <div class="rul-box${redBox}">
+       <div class="rul-val">${p10 != null ? p10 + ' wks' : '—'}</div>
+       <div class="rul-lbl">Pessimistic scenario (p10)</div>
+     </div>`;
+  disc.textContent = rul.disclosure || '';
+}
+
+// ── Mitigation ───────────────────────────────────────
+// All possible mitigations (union across archetypes) — match Endpoint 6 templates.
+const ALL_MIT_TEMPLATES = [
+  {cascade:'Charger-driven R0 rise',            action:'CHARGER_SWAP',           owner:'Operator',     act:1500,  ign:40000,   arches:['B']},
+  {cascade:'Silent SOX — BMS blind spot',       action:'PROACTIVE_SERVICE_VISIT',owner:'Operator',     act:2000,  ign:40000,   arches:['D']},
+  {cascade:'Pack3401 design-gap degradation',   action:'OEM_DESIGN_REVIEW',      owner:'OEM',          act:0,     ign:60000,   arches:['C']},
+  {cascade:'Thermal feedback loop',             action:'REPLACE_BEFORE_SUMMER',  owner:'Operator+OEM', act:40000, ign:80000,   arches:['E']},
+  {cascade:'Born-weak commissioning gap',       action:'OEM_WARRANTY_CLAIM',     owner:'OEM',          act:0,     ign:40000,   arches:['F']},
+];
+
+function loadMitigation() {
+  const bid = selectedBattery;
+  fetch(DBAPI + `/sox/mitigation/${bid}`).then(r => r.json()).then(d => {
+    const arch = (d && d.archetype) || getBatteryArchetype(bid);
+    const corroboratedSet = new Set();
+    if (d && Array.isArray(d.mitigations)) {
+      for (const m of d.mitigations) {
+        if (m.corroborated) corroboratedSet.add(m.action);
+      }
+    }
+    renderMitigation(arch, corroboratedSet);
+  }).catch(() => renderMitigation(getBatteryArchetype(bid), new Set()));
+}
+
+function renderMitigation(archetype, corroboratedSet) {
+  const tbody = document.getElementById('mit-tbody');
+  const rows = ALL_MIT_TEMPLATES.map(t => {
+    const active = t.arches.includes(archetype);
+    const badge = `<span class="act-badge ${t.action.toLowerCase()}${active ? '' : ' inactive'}">${t.action.replace(/_/g, ' ')}</span>`;
+    const corro = active && corroboratedSet.has(t.action)
+      ? `<span class="mit-cor" title="platform-confirmed">&#10003; confirmed</span>`
+      : '';
+    const cost = `&#8377;${t.act.toLocaleString('en-IN')} action vs &#8377;${t.ign.toLocaleString('en-IN')} if ignored`;
+    return `<tr class="${active ? '' : 'mit-inactive'}">
+      <td class="mit-cascade">${t.cascade}</td>
+      <td class="mit-detect">${active ? 'Detected for this case' : 'Not active for this case'}</td>
+      <td class="mit-action">${badge}${corro}</td>
+      <td class="mit-owner">${t.owner}</td>
+      <td class="mit-cost">${cost}</td>
+    </tr>`;
+  }).join('');
+  // Healthy (A) always shows a baseline row — the "no cascade" explicit state.
+  if (archetype === 'A') {
+    tbody.innerHTML = rows + `<tr class="mit-inactive">
+      <td class="mit-cascade">No active cascade</td>
+      <td class="mit-detect">Battery operating normally</td>
+      <td class="mit-action"><span class="act-badge inactive">HEALTHY</span></td>
+      <td class="mit-owner">—</td>
+      <td class="mit-cost">No action required</td>
+    </tr>`;
+  } else {
+    tbody.innerHTML = rows;
+  }
+}
+
+// ── OEM attribution brief ────────────────────────────
+function loadOemBrief() {
+  const arch = getBatteryArchetype(selectedBattery);
+  const split = ATTRIB_SPLIT[arch];
+  const verdict = WARRANTY_VERDICT[arch];
+  renderDonut(split);
+  renderLegend(split);
+  renderVerdict(verdict);
+  // Pack badge
+  fetch(DBAPI + `/sox/battery-detail/${selectedBattery}`).then(r => r.json()).then(d => {
+    const pack = (d && d.battery && d.battery.pack_model) || 'Pack' + (ARCH_PACK[arch] || '3001');
+    document.getElementById('oem-pack-badge').textContent = pack;
+  }).catch(() => {
+    document.getElementById('oem-pack-badge').textContent = 'Pack' + (ARCH_PACK[arch] || '3001');
+  });
+
+  const displayId = selectedBattery.replace('DEMO_SOX_', 'SOX-');
+  document.getElementById('oem-title').textContent = `Attribution brief · ${displayId} · Case ${arch}`;
+}
+
+function renderDonut(split) {
+  const svg = document.getElementById('oem-donut-svg');
+  const colors = {operator:'#E8500A', oem:'#7C3AED', calendar:'#6B7280', thermal:'#DC2626'};
+  const keys = ['operator','oem','calendar','thermal'];
+  const total = keys.reduce((a,k) => a + (split[k]||0), 0) || 100;
+  const cx = 90, cy = 90, r = 64, rInner = 42;
+  let offset = -90;  // start at top
+  let paths = '';
+  for (const k of keys) {
+    const v = split[k] || 0;
+    const ang = (v / total) * 360;
+    if (ang <= 0) continue;
+    const a0 = offset * Math.PI / 180;
+    const a1 = (offset + ang) * Math.PI / 180;
+    const large = ang > 180 ? 1 : 0;
+    const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0);
+    const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+    const xi0 = cx + rInner * Math.cos(a1), yi0 = cy + rInner * Math.sin(a1);
+    const xi1 = cx + rInner * Math.cos(a0), yi1 = cy + rInner * Math.sin(a0);
+    const d = `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1} L ${xi0} ${yi0} A ${rInner} ${rInner} 0 ${large} 0 ${xi1} ${yi1} Z`;
+    paths += `<path d="${d}" fill="${colors[k]}"/>`;
+    offset += ang;
+  }
+  const displayId = selectedBattery.replace('DEMO_SOX_', 'SOX-');
+  const centre = `<text x="${cx}" y="${cy-3}" font-size="13" font-weight="700" fill="#0F172A" text-anchor="middle">${displayId}</text>` +
+                 `<text x="${cx}" y="${cy+12}" font-size="9.5" fill="#6B7280" text-anchor="middle">attribution</text>`;
+  svg.innerHTML = paths + centre;
+}
+
+function renderLegend(split) {
+  const labels = {operator:'Operator', oem:'OEM design', calendar:'Calendar', thermal:'Thermal'};
+  const colors = {operator:'#E8500A', oem:'#7C3AED', calendar:'#6B7280', thermal:'#DC2626'};
+  const html = Object.keys(labels).map(k =>
+    `<div><span class="oem-sw" style="background:${colors[k]}"></span>${labels[k]} <b>${split[k]}%</b></div>`
+  ).join('');
+  document.getElementById('oem-legend').innerHTML = html;
+}
+
+function renderVerdict(verdict) {
+  const badge = document.getElementById('oem-verdict-badge');
+  const text = document.getElementById('oem-verdict-text');
+  badge.className = 'verdict-badge ' + verdict.tier.toLowerCase();
+  badge.textContent = verdict.tier.replace('_',' ');
+  text.textContent = verdict.text;
+}
+
+// ── Cross-surface footer ─────────────────────────────
+function renderCrossSurface() {
+  const arch = getBatteryArchetype(selectedBattery);
+  const pills = [];
+  if (['B','C','E'].includes(arch)) {
+    pills.push(`<a class="cs-pill si" href="/service-intelligence">&#10003; Service Intelligence: charger anomaly &rarr;</a>`);
+  }
+  if (['C','E'].includes(arch)) {
+    pills.push(`<a class="cs-pill oem" href="#">&#10003; OEM Portfolio: Pack3401 cohort alert &rarr;</a>`);
+  }
+  if (['D','E'].includes(arch)) {
+    pills.push(`<span class="cs-pill nbfc">NBFC Grade D &mdash; corroborates RUL findings</span>`);
+  }
+  const cs = document.getElementById('cross-surface');
+  if (pills.length === 0) {
+    cs.innerHTML = `<span class="cs-label">Cross-surface intelligence for this battery:</span><span class="cs-empty">No cross-surface corroborations for this battery.</span>`;
+  } else {
+    cs.innerHTML = `<span class="cs-label">Cross-surface intelligence for this battery:</span>` + pills.join('');
+  }
+}
+
+// ── 3C boot / refresh ─────────────────────────────────
+function load3CSections() {
+  loadCascadeForSelected();
+  if (cascadeMode === 'fleet') renderHeatmap();
+  loadPredictions();
+  loadMitigation();
+  loadOemBrief();
+  renderCrossSurface();
+}
+
+// Boot ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Existing
+  loadFleetSummary();
+  loadArchetypes();
+  loadRUL();
+
+  // SOX-3B additions
+  buildBatteryCards();
+  bindFilterButtons();
+  buildLattice();
+  buildTriangle();
+  checkPathD(selectedBattery);
+
+  // SOX-3C additions
+  load3CSections();
+
+  // Fleet summary strip (small counts from API)
+  fetch(DBAPI + '/sox/fleet-summary').then(r => r.json()).then(d => {
+    if (!d || !d.demo) return;
+    document.getElementById('fs-e11').textContent = d.demo.n_sox_confirmed;
+    document.getElementById('fs-silent').textContent = d.demo.n_silent_sox;
+    document.getElementById('fs-critical').textContent = d.demo.n_critical;
+  }).catch(() => {});
+});
+
+// React to battery selection: triangle, open panel, 3C sections
+document.addEventListener('batterySelected', (ev) => {
+  const bid = ev.detail.battery_id;
+  checkPathD(bid);
+  if (activeNode) nodeClick(activeNode);  // refresh panel with new battery
+  load3CSections();
+});
+</script>
+</body>
+</html>

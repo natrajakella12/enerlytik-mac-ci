@@ -1,0 +1,11 @@
+{
+  "ENERLYTIK_DEMO_MODE": "true",
+  "ENERLYTIK_DB_PATH": "__TAURI_RESOURCE_DIR__/data/enerlytik_tauri.db",
+  "DB_API_PORT": "3001",
+  "RAG_API_PORT": "8001",
+  "ENERLYST_PORT": "8002",
+  "WEB_PORT": "5001",
+  "DB_API_HOST": "localhost",
+  "LOG_LEVEL": "INFO",
+  "NOTE": "ENERLYTIK_API_TOKEN set by Tauri shell at runtime - not stored here"
+}

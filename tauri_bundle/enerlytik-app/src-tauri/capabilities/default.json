@@ -1,0 +1,25 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "default capabilities for enerlytik",
+  "windows": ["main", "splashscreen"],
+  "permissions": [
+    "core:default",
+    "core:window:default",
+    "core:webview:default",
+    "core:webview:allow-create-webview-window",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-close",
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        { "name": "sidecars/db_api",   "sidecar": true, "args": true },
+        { "name": "sidecars/passport", "sidecar": true, "args": true },
+        { "name": "sidecars/rag_api",  "sidecar": true, "args": true },
+        { "name": "sidecars/enerlyst", "sidecar": true, "args": true }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+
+=== Q16 (operator, BAT_LFP_109) — 7.0s ===
+Q: What is the health status of BAT_LFP_109?
+A: SITUATION: 1.07 km range is predicted for BAT_LFP_109. CAUSE: Capacity fade is the primary cause of this reduced range. ACTION: Monitor the battery's health closely. HORIZON: If left unaddressed, the range may decrease further in the next 12 weeks.
+conf=HIGH  citations=8
+
+=== Q18 (operator, BAT_LFP_109) — 9.4s ===
+Q: Should BAT_LFP_109 be replaced?
+A: 45.54 km: BAT_LFP_109 has a degraded battery. It is happening because cell imbalance was detected, requiring a balancing service. Replace the battery within 4-6 weeks. If not replaced, the battery's range will continue to degrade, potentially causing operational issues within the next 4 weeks.
+conf=HIGH  citations=8
+
+=== Q23 (operator, None) — 9.7s ===
+Q: What is SOH and why does my BMS show 97% when the platform shows 53%?
+A: SITUATION: km range is decreasing despite BMS showing high SOH. CAUSE: BMS SoH is deceptive for LFP batteries due to a flat OCV curve. ACTION: Trust the km range number shown by the platform. HORIZON: If you continue to trust BMS SoH, you may experience unexpected range loss within the next few weeks.
+conf=HIGH  citations=8
+
+=== Q28 (nbfc, BAT_LFP_109) — 10.2s ===
+Q: BAT_LFP_109 is collateral for a loan. What is its current condition?
+A: D RISK SIGNAL: The battery's capacity state is critical, with a range of 45.54 km, indicating significant deterioration and potential loan repayment risk.
+RECOMMENDATION: Monitor the battery's condition closely and consider adjusting the loan terms or collateral value.
+TIMELINE: This becomes critical within 2-4 months if unaddressed.
+conf=ESTIMATED  citations=8
+
+=== Q38 (nbfc, None) — 6.7s ===
+Q: What does PRELIMINARY mean on the RUL estimate?
+A: D. RISK SIGNAL: Preliminary RUL estimates indicate uncertainty in loan coverage due to uncalibrated bands.
+RECOMMENDATION: Review and adjust loan terms based on preliminary RUL estimates.
+TIMELINE: 30 floor outcome events are required for conformal calibration, which is currently pending.
+conf=ESTIMATED  citations=8
+
+=== Q56 (oem, None) — 6.0s ===
+Q: What evidence exists for the Pack3401 design gap?
+A: FINDING: Pack3401 exhibits a design gap, with 61% manufacturing attribution.
+ATTRIBUTION: Degradation split: charging 0% / maintenance 0% / manufacturing 61% / other 39%.
+IMPLICATION: This gap affects residual value estimates and may impact warranty claims.
+RECOMMENDED ACTION: Conduct a cell-level investigation to identify the root cause.
+conf=ESTIMATED  citations=8
+
+=== Q86 (internal, BAT_LFP_109) — 7.7s ===
+Q: Give me a full intelligence summary for BAT_LFP_109.
+A: BAT_LFP_109 has a range of 45.544516884049564 km, an operational score of 48.872872463194085, and the primary action is to MONITOR. This is due to the battery's critical capacity state, which is primarily driven by charging, and its high degradation rate, as indicated by the kps_slope_4wk of -0.06456. The battery's remaining useful life is estimated to be 0 weeks, and it has a high fault risk, wit
+conf=MEDIUM  citations=8
+
+=== Q91 (internal, None) — 10.6s ===
+Q: How many batteries are in each service group right now?
+A: The context does not contain information about the current number of batteries in each service group. The provided context includes operator summaries for specific batteries and archive lifecycle scores for other batteries, but it does not provide a comprehensive overview of the service groups or the number of batteries in each group.
+conf=ESTIMATED  citations=8
+
+=== Q96 (internal, None) — 10.7s ===
+Q: A battery shows warranty_claim_eligible=1 but rul_action_v2=MONITOR. Which is correct?
+A: According to the context, `rul_action_v2` is broken and not being written correctly. The decision logic that converts `rul_weeks_v2` into an action (including `REPLACE_URGENT` / `REPLACE_PLAN` / etc.) was designed but not implemented. Given that `warranty_claim_eligible=1`, it suggests that the battery is eligible for a warranty claim, which typically implies a more severe condition than `MONITOR`
+conf=HIGH  citations=8
+
+=== Q100 (internal, None) — 6.3s ===
+Q: What are the platform's known limitations that should be disclosed to OEM customers?
+A: The context does not contain an explicit list of the platform's known limitations that should be disclosed to OEM customers. However, some limitations can be inferred from the provided information: 1. **QUARANTINED models**: The platform has invalidated certain models that were trained on complaint-derived labels, which may indicate a limitation in the platform's ability to handle certain types of
+conf=ESTIMATED  citations=8
+
+All tests complete. Results in RAG/kb/_test_results.json

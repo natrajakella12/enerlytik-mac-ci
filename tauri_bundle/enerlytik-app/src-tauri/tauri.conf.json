@@ -1,0 +1,62 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "enerlytik",
+  "version": "3.0.0",
+  "identifier": "com.enerlytik.app",
+  "build": {
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "withGlobalTauri": false,
+    "windows": [
+      {
+        "label": "splashscreen",
+        "url": "splashscreen.html",
+        "title": "enerlytik",
+        "width": 640,
+        "height": 420,
+        "decorations": false,
+        "resizable": false,
+        "center": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": false,
+        "visible": true
+      },
+      {
+        "label": "main",
+        "url": "index.html",
+        "title": "enerlytik — Battery Intelligence",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["msi"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "externalBin": [
+      "sidecars/db_api",
+      "sidecars/passport",
+      "sidecars/rag_api",
+      "sidecars/enerlyst"
+    ],
+    "resources": [
+      "resources/data/enerlytik_tauri.db",
+      "resources/data/RAG/**/*",
+      "resources/passport_v2/**/*",
+      "resources/enerlyst/ui/**/*"
+    ]
+  }
+}

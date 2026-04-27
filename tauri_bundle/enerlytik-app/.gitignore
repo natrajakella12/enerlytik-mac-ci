@@ -1,0 +1,22 @@
+# Tauri build artifacts
+/dist/**
+!/dist/index.html
+!/dist/splashscreen.html
+!/dist/enerlytik_logo.png
+
+# PyInstaller artifacts
+build/
+__pycache__/
+*.pyc
+_MEI*/
+
+# Smoke test logs
+smoke_*.log
+rag_diag.log
+rag_direct.log
+
+# Local-only DBs (must never ship)
+*.db
+*.duckdb
+*.sqlite3
+!/dist/**/*.db

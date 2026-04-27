@@ -1,0 +1,6 @@
+{
+  "name": "enerlytik-app",
+  "version": "3.0.0",
+  "private": true,
+  "description": "enerlytik — Battery Intelligence (Tauri shell)"
+}

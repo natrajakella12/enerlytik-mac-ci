@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlyst · intelligence applied</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-body:     #FAF9F6;
+  --bg-sidebar:  #F3F1EC;
+  --bg-surface:  #FFFFFF;
+  --bg-hover:    #EEEAE3;
+  --bg-input:    #FFFFFF;
+  --border:      #E5E0D8;
+  --border-soft: #EDE9E2;
+  --text-primary:   #1A1714;
+  --text-secondary: #4A4540;
+  --text-muted:     #8A7E74;
+  --text-label:     #B0A69C;
+  --accent:         #C96A2A;
+  --accent-hover:   #B55A1F;
+  --accent-light:   #FDF0E8;
+  --accent-border:  #F0C8A0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg-body);color:var(--text-primary);font-family:'Inter',sans-serif;font-size:15px;height:100vh;overflow:hidden;line-height:1.6}
+
+/* ── Layout ── */
+.app-container{display:flex;flex-direction:column;height:100vh;overflow:hidden;width:100%}
+.main-content{display:flex;flex:1;overflow:hidden}
+
+/* ── Topbar ── */
+.topbar{display:flex;align-items:center;height:48px;padding:0 16px;background:var(--bg-surface);border-bottom:1px solid var(--border);flex-shrink:0;gap:12px;z-index:30}
+.topbar-logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.topbar-logo-box{width:32px;height:32px;background:#f97316;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;font-family:'Inter',sans-serif}
+.topbar-brand{display:flex;flex-direction:column;line-height:1.1}
+.topbar-brand-name{font-size:15px;font-weight:600;color:var(--text-primary)}
+.topbar-brand-sub{font-size:10px;color:var(--text-muted);letter-spacing:.04em}
+.topbar-divider{width:1px;height:24px;background:var(--border);flex-shrink:0}
+.topbar-filters{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.filter-pill{padding:4px 12px;border:0.5px solid var(--border);border-radius:20px;font-size:12px;font-family:'Inter',sans-serif;background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;position:relative;white-space:nowrap}
+.filter-pill.active{border-color:#f97316;color:#f97316;background:rgba(249,115,22,0.06)}
+.filter-pill:hover:not(.active){background:var(--bg-hover);color:var(--text-secondary)}
+.filter-pill select{appearance:none;border:none;background:transparent;font-size:12px;font-family:'Inter',sans-serif;color:inherit;cursor:pointer;outline:none;padding-right:12px}
+.filter-pill.active select{color:#f97316}
+.chem-toggle{display:flex;gap:0;border:0.5px solid var(--border);border-radius:20px;overflow:hidden}
+.chem-btn{padding:4px 10px;font-size:12px;font-family:'Inter',sans-serif;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;font-weight:500}
+.chem-btn.active{background:#f97316;color:#fff}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto}
+.thermal-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-secondary);padding:4px 10px;background:rgba(220,38,38,0.05);border:0.5px solid rgba(220,38,38,0.2);border-radius:20px}
+.thermal-badge .red-dot{width:6px;height:6px;border-radius:50%;background:#dc2626;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+.thermal-badge .new-badge{font-size:9px;font-weight:700;background:#dc2626;color:#fff;padding:1px 4px;border-radius:4px;letter-spacing:.04em}
+.aud-tab{padding:5px 12px;border-radius:20px;font-size:12px;font-family:'Inter',sans-serif;border:0.5px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .15s;font-weight:500}
+.aud-tab.active{background:#f97316;color:#fff;border-color:#f97316}
+.aud-tab:hover:not(.active){background:var(--bg-hover);color:var(--text-secondary)}
+
+/* ── Left panel: Battery hierarchy ── */
+.left-panel{width:240px;flex-shrink:0;overflow-y:auto;overflow-x:hidden;background:var(--bg-sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column}
+.left-search{padding:8px 10px;border-bottom:1px solid var(--border)}
+.left-search input{width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'Inter',sans-serif;background:var(--bg-surface);outline:none;color:var(--text-primary)}
+.left-search input:focus{border-color:var(--accent-border)}
+.hierarchy{flex:1;overflow-y:auto;padding:4px 0}
+.hier-oem{border-bottom:1px solid var(--border-soft)}
+.hier-header{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;transition:background .15s;user-select:none}
+.hier-header:hover{background:var(--bg-hover)}
+.hier-chevron{font-size:10px;color:var(--text-muted);transition:transform .2s;flex-shrink:0;width:12px}
+.hier-chevron.open{transform:rotate(90deg)}
+.hier-name{font-size:13px;font-weight:600;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hier-count{font-size:11px;color:var(--text-muted)}
+.hier-healthbar{width:40px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;display:flex;flex-shrink:0}
+.hier-healthbar span{height:100%}
+.hier-children{display:none;padding-left:0}
+.hier-children.open{display:block}
+.hier-pack .hier-header{padding-left:20px}
+.hier-battery{display:flex;align-items:center;gap:8px;padding:6px 12px 6px 32px;cursor:pointer;transition:background .15s;border-left:2px solid transparent}
+.hier-battery:hover{background:var(--bg-hover)}
+.hier-battery.selected{background:var(--accent-light);border-left-color:var(--accent)}
+.hier-bat-id{font-size:13px;font-weight:500;color:var(--text-primary);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hier-bat-trend{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:3px}
+.hier-bat-trend .arrow-up{color:#16a34a}
+.hier-bat-trend .arrow-down{color:#dc2626}
+.hier-bat-trend .arrow-flat{color:#d97706}
+.action-badge{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:.02em;white-space:nowrap;flex-shrink:0}
+.action-badge.replace-now{background:rgba(220,38,38,0.1);color:#dc2626}
+.action-badge.plan-replace{background:rgba(217,119,6,0.1);color:#d97706}
+.action-badge.balance{background:rgba(37,99,235,0.1);color:#2563eb}
+.action-badge.monitor{background:rgba(217,119,6,0.08);color:#b45309}
+.action-badge.no-action{background:rgba(22,163,74,0.08);color:#16a34a}
+.action-badge.suspended{background:rgba(107,114,128,0.1);color:#6b7280}
+.fleet-footer{flex-shrink:0;padding:8px 12px;border-top:1px solid var(--border);background:var(--bg-surface);font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:12px}
+.fleet-footer .ff-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.fleet-footer .ff-num{font-weight:700;color:var(--text-primary)}
+
+/* ── Center: Chat ── */
+.chat-main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;background:var(--bg-body);position:relative}
+#chat-container{scroll-behavior:smooth}
+.msg-user{background:var(--bg-surface);border:1px solid var(--border);border-radius:18px 18px 4px 18px;padding:9px 14px;max-width:80%;margin-left:auto;font-size:14px;line-height:1.5;box-shadow:var(--shadow-sm)}
+.msg-bot{max-width:100%}
+.bot-label{font-size:9px;font-weight:600;letter-spacing:.06em;color:var(--accent);text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.bot-label::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.chip{border:1px solid var(--border);background:var(--bg-surface);color:var(--text-secondary);padding:7px 14px;border-radius:16px;font-size:13px;cursor:pointer;box-shadow:var(--shadow-sm);transition:all .15s}
+.chip:hover{border-color:var(--accent-border);background:var(--accent-light);color:var(--accent);box-shadow:var(--shadow-md)}
+.follow-pill{border:1px solid var(--accent-border);background:var(--accent-light);color:var(--accent);border-radius:12px;padding:4px 10px;font-size:11px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.follow-pill:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.input-area{position:absolute;bottom:0;left:0;right:0;padding:12px 24px 18px;background:linear-gradient(transparent,var(--bg-body) 40%);z-index:10}
+.input-pill{background:var(--bg-surface);border:1px solid var(--border);border-radius:14px;padding:10px 14px;display:flex;align-items:flex-end;gap:10px;box-shadow:var(--shadow-md);transition:border-color .15s,box-shadow .15s}
+.input-pill:focus-within{border-color:var(--accent-border);box-shadow:0 4px 16px rgba(201,106,42,0.12)}
+.input-pill textarea{flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:15px;resize:none;max-height:120px;line-height:1.5}
+.input-pill textarea::placeholder{color:var(--text-label)}
+.input-pill .send-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 18px;font-size:14px;font-weight:500;cursor:pointer;flex-shrink:0;transition:background .15s}
+.input-pill .send-btn:hover{background:var(--accent-hover)}
+
+/* ── Right panel: Analysis ── */
+.right-panel{width:220px;flex-shrink:0;overflow:hidden;background:var(--bg-surface);border-left:1px solid var(--border);display:flex;flex-direction:column;min-width:180px;max-width:380px;resize:horizontal;overflow-y:auto;direction:rtl}
+.right-panel>*{direction:ltr}
+.right-panel-header{padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.right-panel-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.contextual-badge{font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;background:rgba(249,115,22,0.1);color:#f97316;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;overflow-y:auto;flex:1}
+.skill-card{background:var(--bg-body);border:1px solid var(--border);border-radius:9px;padding:10px 9px;text-align:left;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;display:flex;flex-direction:column;gap:3px}
+.skill-card:hover{border-color:var(--accent-border);background:var(--accent-light);transform:translateY(-1px);box-shadow:0 2px 8px rgba(201,106,42,0.12)}
+.skill-card.active-skill{border-color:#f97316;box-shadow:0 0 0 1px #f97316}
+.skill-icon{font-size:14px;margin-bottom:1px}
+.skill-name{font-size:11px;font-weight:500;color:var(--text-primary)}
+.skill-desc{font-size:9px;color:var(--text-muted);line-height:1.3}
+
+/* ── Result card (in chat) ── */
+.result-card{border:0.5px solid rgba(249,115,22,0.3);border-radius:10px;padding:12px 16px;background:rgba(249,115,22,0.03);margin-top:10px}
+.result-card-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.result-card-skill{font-size:10px;font-weight:600;background:rgba(249,115,22,0.1);color:#f97316;padding:2px 8px;border-radius:6px}
+.result-card-bid{font-size:11px;font-family:monospace;color:var(--text-secondary)}
+.result-card-time{font-size:10px;color:var(--text-label);margin-left:auto}
+.result-card-content{font-size:13px;color:var(--text-secondary);line-height:1.6}
+.result-card-bottom{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--border-soft)}
+.result-download-btn{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:500;color:var(--accent);background:transparent;border:1px solid var(--accent-border);border-radius:6px;padding:4px 10px;cursor:pointer;transition:all .15s}
+.result-download-btn:hover{background:var(--accent-light)}
+
+/* ── Artifacts ── */
+.artifact-card{margin:14px 0;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.artifact-header{padding:10px 16px;background:var(--bg-body);border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted)}
+
+/* ── E2E Chain ── */
+.e2e-chain{display:flex;align-items:flex-start;gap:0;padding:16px 12px;overflow-x:auto;min-width:0}
+.e2e-layer{flex:1;min-width:140px;background:var(--bg-body);border:1.5px solid var(--layer-color);border-radius:10px;overflow:hidden;opacity:0;transform:translateY(8px);transition:opacity .4s ease var(--delay),transform .4s ease var(--delay)}
+.e2e-layer.animated{opacity:1;transform:translateY(0)}
+.e2e-layer-header{background:var(--layer-color);padding:7px 10px;display:flex;align-items:center;gap:6px}
+.e2e-layer-icon{font-size:12px}
+.e2e-layer-label{font-size:9px;font-weight:800;letter-spacing:.12em;color:#fff;font-family:'Inter',sans-serif}
+.e2e-layer-body{padding:8px 10px}
+.e2e-item{display:flex;flex-direction:column;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border-soft,var(--border))}
+.e2e-item:last-child{border-bottom:none;margin-bottom:0}
+.e2e-item-key{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em}
+.e2e-item-val{font-size:12px;font-weight:600;color:var(--text-primary);line-height:1.3;margin-top:1px}
+.e2e-connector{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:22px;width:28px;flex-shrink:0;opacity:0;transition:opacity .3s ease var(--delay);position:relative}
+.e2e-connector.animated{opacity:1}
+.e2e-connector-arrow{font-size:10px;color:var(--accent);animation:arrowPulse 1.5s ease-in-out infinite}
+@keyframes arrowPulse{0%,100%{transform:translateX(0);opacity:.6}50%{transform:translateX(4px);opacity:1}}
+
+/* ── Inline sparkline ── */
+.inline-sparkline{margin-top:12px;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;padding:10px 14px 8px}
+.spark-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-family:'Inter',sans-serif;font-size:11px}
+.spark-bid{font-weight:600;font-family:monospace;color:var(--text-primary)}
+.spark-range{color:var(--accent);font-weight:600}
+.spark-trend{color:var(--text-muted)}
+.spark-trend.declining{color:#dc2626}
+.spark-trend.stable{color:#d97706}
+.spark-trend.improving{color:#16a34a}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td{padding:8px 10px;border-bottom:1px solid var(--border-soft);color:var(--text-secondary)}
+tr:hover td{background:var(--bg-hover)}
+
+/* ── Discovery callout ── */
+.discovery-callout{display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding:8px 12px;background:var(--accent-light);border:1px solid var(--accent-border,#F0C8A0);border-radius:10px;font-family:'Crimson Pro',serif;font-size:14px;color:var(--text-secondary);line-height:1.5}
+.discovery-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;animation:fadeInOut 3s ease}
+@keyframes fadeInOut{0%{opacity:0;transform:translateY(10px)}10%{opacity:1;transform:translateY(0)}85%{opacity:1}100%{opacity:0}}
+
+/* ── Scroll demo ── */
+.scroll-demo{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth}
+.scroll-section{min-height:100vh;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;position:relative;overflow:hidden}
+.lattice-bg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.lattice-nodes circle{animation:pulse 3s ease-in-out infinite}
+.lattice-nodes circle:nth-child(odd){animation-delay:1s}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.opening-line{font-family:'Crimson Pro',serif;font-size:clamp(22px,3vw,32px);font-weight:400;color:#e8e4df;line-height:1.6;margin:4px 0;opacity:0;transform:translateY(12px);animation:fadeUp .6s ease forwards;animation-delay:var(--delay)}
+.opening-line.muted{color:rgba(232,228,223,0.45);font-size:clamp(16px,2vw,22px)}
+.opening-punchline{font-family:'Crimson Pro',serif;font-size:clamp(28px,4vw,42px);font-weight:700;color:#fff;margin-top:32px;opacity:0;animation:fadeUp .8s ease forwards;animation-delay:var(--delay)}
+.orange{color:#F97316}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.moment-section-label{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#C96A2A;margin-bottom:8px}
+.moment-headline{font-family:'Crimson Pro',serif;font-size:clamp(20px,2.8vw,34px);font-weight:600;color:#1A1714;max-width:700px;text-align:center;line-height:1.3;margin-bottom:36px}
+.moment-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:960px;width:100%}
+.moment-card{background:#fff;border:1px solid #E5E0D8;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,0.06);transition:transform .2s,box-shadow .2s}
+.moment-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,0.1)}
+.moment-card-number{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;color:#C96A2A;letter-spacing:.1em;margin-bottom:12px}
+.moment-card-title{font-family:'Crimson Pro',serif;font-size:18px;font-weight:600;color:#1A1714;line-height:1.3;margin-bottom:12px}
+.moment-card-body{font-family:'Inter',sans-serif;font-size:12px;color:#6B6560;line-height:1.6;margin-bottom:16px}
+.moment-card-stat{display:flex;align-items:baseline;gap:6px}
+.stat-number{font-family:'Inter',sans-serif;font-size:24px;font-weight:800;color:#C96A2A;line-height:1}
+.stat-label{font-family:'Inter',sans-serif;font-size:12px;color:#8A7E74}
+.moment-card-visual{margin-top:16px;border-radius:8px;overflow:hidden;background:#FAF9F6;padding:12px}
+.scroll-dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100}
+.scroll-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,106,42,0.3);cursor:pointer;transition:all .3s}
+.scroll-dot.active{background:#C96A2A;transform:scale(1.4)}
+@media(max-width:900px){.moment-cards{grid-template-columns:1fr}.left-panel{display:none}.right-panel{display:none}}
+
+/* ── Clickable numbers ── */
+.click-num{color:var(--accent);font-weight:600;cursor:pointer;border-bottom:1px dashed var(--accent-border,#F0C8A0);transition:all .15s}
+.click-num:hover{background:var(--accent-light);border-radius:3px;border-bottom-color:var(--accent)}
+
+/* ── Context request (inline battery search) ── */
+.context-request{background:var(--bg-sidebar);border-radius:10px;border:0.5px solid rgba(249,115,22,0.3);padding:12px 16px;max-width:360px;margin:8px 0}
+.cr-label{font-size:13px;color:var(--text-secondary);margin-bottom:8px}
+.cr-search{width:100%;padding:8px 12px;border:0.5px solid var(--border);border-radius:20px;font-size:13px;font-family:'Inter',sans-serif;outline:none;background:var(--bg-surface);color:var(--text-primary)}
+.cr-search:focus{border-color:#f97316}
+.cr-results{margin-top:6px;max-height:200px;overflow-y:auto;border-radius:8px;display:none}
+.cr-result-item{padding:8px 12px;cursor:pointer;border-radius:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.cr-result-item:hover{background:rgba(249,115,22,0.08)}
+.cr-result-id{font-weight:500;color:var(--text-primary)}
+.cr-result-meta{font-size:11px;color:var(--text-muted)}
+.cr-result-action{font-size:10px;padding:2px 6px;border-radius:4px}
+/* ── Chat actions bar ── */
+.chat-actions{display:flex;gap:6px;padding:6px 16px;justify-content:flex-end;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.chat-actions button{padding:3px 10px;font-size:11px;border:0.5px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text-muted);font-family:'Inter',sans-serif;transition:all .15s}
+.chat-actions button:hover{border-color:#f97316;color:#f97316}
+/* ── Left search results dropdown ── */
+#left-search-results{position:absolute;left:0;right:0;top:100%;background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:300px;overflow-y:auto;z-index:100;display:none}
+/* ── Skill result card ── */
+.skill-result-card{border:0.5px solid rgba(249,115,22,0.25);border-radius:10px;padding:14px 16px;background:rgba(249,115,22,0.02);margin:4px 0}
+.src-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.src-badge{background:rgba(249,115,22,0.1);color:#f97316;font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.src-battery{font-size:12px;font-weight:500;color:var(--text-primary)}
+.src-time{font-size:10px;color:var(--text-label);margin-left:auto}
+.src-body{font-size:13px;line-height:1.6;color:var(--text-secondary);margin-bottom:10px;white-space:pre-wrap}
+.src-confidence{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.src-actions{display:flex;gap:6px;flex-wrap:wrap}
+.src-btn{padding:4px 10px;font-size:11px;border:0.5px solid var(--border);border-radius:20px;background:none;cursor:pointer;color:var(--text-muted);font-family:'Inter',sans-serif;transition:all .15s}
+.src-btn:hover{border-color:#f97316;color:#f97316}
+/* ── Compact fleet bar ── */
+.fleet-bar{padding:8px 12px;border-top:0.5px solid var(--border)}
+.fb-score{display:flex;align-items:baseline;gap:4px;margin-bottom:6px}
+.fb-val{font-size:18px;font-weight:500;color:var(--text-primary)}
+.fb-label{font-size:10px;color:var(--text-label)}
+.fb-segments{display:flex;height:4px;border-radius:2px;overflow:hidden;gap:1px;margin-bottom:4px}
+.fb-seg{flex:1;transition:flex 0.3s}
+.fb-counts{display:flex;justify-content:space-between;font-size:10px;font-weight:500}
+</style>
+</head>
+<body>
+
+<script>
+// ── Token: injected by serve.py or from cookie/storage ──
+// Seed RAG token on first load (P5-C auth fix)
+if (!localStorage.getItem('enerlyst_token')) {
+  localStorage.setItem('enerlyst_token', '{{ api_token }}');
+}
+const API_TOKEN = window.ENERLYST_TOKEN ||
+  (document.cookie.split('enerlyst_token=')[1]||'').split(';')[0] ||
+  localStorage.getItem('enerlyst_token') || '{{ api_token }}';
+
+window.ENERLYST = {
+  config: { RAG_URL:'http://localhost:8001', DB_URL:'http://localhost:3001', TOKEN: API_TOKEN ? 'Bearer '+API_TOKEN : '' },
+  currentAudience: sessionStorage.getItem('enerlyst_audience')||'operator',
+  currentThread: null,
+  contextBar: { fleet:'Greenfuel LFP', battery_id:null, week:'Mar 24 2026' },
+};
+window.currentAudience = window.ENERLYST.currentAudience;
+window.currentBattery = null;
+</script>
+
+<!-- ═══ TOPBAR ═══ -->
+<div class="app-container">
+<div class="topbar" id="topbar">
+  <div class="topbar-logo">
+    <div class="topbar-logo-box">E</div>
+    <div class="topbar-brand">
+      <span class="topbar-brand-name">enerlyst</span>
+      <span class="topbar-brand-sub">intelligence applied</span>
+    </div>
+  </div>
+  <div class="topbar-divider"></div>
+  <div class="topbar-filters">
+    <div class="filter-pill" id="filterOEM"><select id="oemSelect" onchange="onFilterChange()"></select></div>
+    <div class="filter-pill" id="filterPack"><select id="packSelect" onchange="onFilterChange()"><option value="">All packs</option></select></div>
+    <div class="filter-pill" id="filterCity"><select id="citySelect" onchange="onFilterChange()"><option value="">All cities</option></select></div>
+    <div class="chem-toggle">
+      <button class="chem-btn active" id="chemLFP" onclick="setChemistry('LFP')">LFP</button>
+      <button class="chem-btn" id="chemNMC" onclick="setChemistry('NMC')">NMC</button>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="thermal-badge" id="thermalBadge" style="display:none">
+      <span class="red-dot"></span>
+      <span id="thermalText">--</span>
+      <span class="new-badge">NEW</span>
+    </div>
+    <div class="topbar-divider"></div>
+    <button class="aud-tab active" data-aud="operator" onclick="setAudience('operator')">Operator</button>
+    <button class="aud-tab" data-aud="nbfc" onclick="setAudience('nbfc')">NBFC</button>
+    <button class="aud-tab" data-aud="oem" onclick="setAudience('oem')">OEM</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<div class="main-content">
+
+<!-- LEFT PANEL: Battery Hierarchy -->
+<div class="left-panel" id="sidebar">
+  <div class="left-search" id="left-search-wrap" style="position:relative">
+    <input type="text" id="hierSearch" placeholder="Search batteries..." oninput="contextSearchLeft(this.value)" autocomplete="off">
+    <div id="left-search-results"></div>
+  </div>
+  <div class="hierarchy" id="hierarchy">
+    <div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px">Loading batteries...</div>
+  </div>
+  <div class="fleet-bar" id="fleetFooter">
+    <div class="fb-score"><span class="fb-val" id="fleet-score">--</span><span class="fb-label">fleet score</span></div>
+    <div class="fb-segments"><div class="fb-seg" style="background:#22c55e" id="fb-healthy"></div><div class="fb-seg" style="background:#f59e0b" id="fb-action"></div><div class="fb-seg" style="background:#ef4444" id="fb-urgent"></div></div>
+    <div class="fb-counts"><span style="color:#22c55e" id="fc-healthy">--</span><span style="color:#f59e0b" id="fc-action">--</span><span style="color:#ef4444" id="fc-urgent">--</span></div>
+  </div>
+</div>
+
+<!-- CENTER: Chat -->
+<div class="chat-main">
+  <div class="chat-actions">
+    <button onclick="newChat()" title="New chat">+ New</button>
+    <button onclick="clearChat()" title="Clear">Clear</button>
+    <button onclick="location.reload()" title="Refresh">&#8634;</button>
+  </div>
+  <div style="flex:1;overflow-y:auto" id="chat-container">
+    <!-- SCROLL DEMO (empty state) -->
+    <div id="empty-state" class="scroll-demo">
+      <div class="scroll-section" id="section-opening" style="background:#0d1b2a;color:#fff;position:relative">
+        <svg class="lattice-bg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice"><g class="lattice-lines" opacity="0.25"><line x1="80" y1="120" x2="280" y2="60" stroke="#C96A2A" stroke-width="1"/><line x1="280" y1="60" x2="520" y2="100" stroke="#C96A2A" stroke-width="1"/><line x1="520" y1="100" x2="720" y2="80" stroke="#C96A2A" stroke-width="1"/><line x1="720" y1="80" x2="980" y2="160" stroke="#C96A2A" stroke-width="1"/><line x1="60" y1="340" x2="200" y2="460" stroke="#C96A2A" stroke-width="1"/><line x1="200" y1="460" x2="480" y2="400" stroke="#C96A2A" stroke-width="1"/><line x1="480" y1="400" x2="720" y2="320" stroke="#C96A2A" stroke-width="1"/><line x1="720" y1="320" x2="960" y2="380" stroke="#C96A2A" stroke-width="1"/><line x1="280" y1="60" x2="340" y2="260" stroke="#C96A2A" stroke-width="1"/><line x1="340" y1="260" x2="480" y2="400" stroke="#C96A2A" stroke-width="1"/><line x1="520" y1="100" x2="720" y2="320" stroke="#C96A2A" stroke-width="1"/><line x1="200" y1="460" x2="160" y2="600" stroke="#C96A2A" stroke-width="1"/><line x1="160" y1="600" x2="420" y2="580" stroke="#C96A2A" stroke-width="1"/><line x1="420" y1="580" x2="640" y2="620" stroke="#C96A2A" stroke-width="1"/><line x1="80" y1="120" x2="60" y2="340" stroke="#C96A2A" stroke-width="1"/></g><g class="lattice-nodes"><circle cx="80" cy="120" r="5" fill="#C96A2A"/><circle cx="280" cy="60" r="5" fill="#C96A2A"/><circle cx="520" cy="100" r="5" fill="#C96A2A"/><circle cx="720" cy="80" r="5" fill="#C96A2A"/><circle cx="980" cy="160" r="5" fill="#C96A2A"/><circle cx="60" cy="340" r="5" fill="#C96A2A"/><circle cx="200" cy="460" r="5" fill="#C96A2A"/><circle cx="480" cy="400" r="5" fill="#C96A2A"/><circle cx="720" cy="320" r="5" fill="#C96A2A"/><circle cx="960" cy="380" r="5" fill="#C96A2A"/><circle cx="340" cy="260" r="4" fill="#C96A2A"/><circle cx="160" cy="600" r="5" fill="#C96A2A"/><circle cx="420" cy="580" r="5" fill="#C96A2A"/><circle cx="640" cy="620" r="5" fill="#C96A2A"/></g></svg>
+        <div style="position:absolute;top:24px;left:24px"><svg width="80" height="80" viewBox="0 0 80 80"><path d="M8 72 L8 8 L72 8" stroke="#C96A2A" stroke-width="8" fill="none" stroke-linecap="square"/></svg></div>
+        <div style="text-align:center;z-index:2;position:relative;max-width:700px">
+          <p class="opening-line" style="--delay:0.2s">A driver knows their route.</p>
+          <p class="opening-line" style="--delay:0.6s">An operator knows their fleet.</p>
+          <p class="opening-line" style="--delay:1.0s">A lender knows their loan.</p>
+          <p class="opening-line" style="--delay:1.4s">A cell knows its temperature.</p>
+          <p class="opening-line muted" style="--delay:2.0s">None of them see what the others see.</p>
+          <p class="opening-line muted" style="--delay:2.4s">None of them see the connections between.</p>
+          <p class="opening-punchline" style="--delay:3.0s"><span class="orange">enerlytik</span> is the intelligence layer.</p>
+        </div>
+        <div style="position:absolute;bottom:32px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.3);font-size:11px;font-family:'Inter',sans-serif;letter-spacing:0.15em;text-align:center;animation:bounce 2s ease-in-out infinite 4s">SCROLL TO EXPLORE &#8595;</div>
+      </div>
+      <div class="scroll-section" id="section-transition" style="background:linear-gradient(180deg,#0d1b2a 0%,#FAF9F6 100%);min-height:50vh">
+        <div style="text-align:center;z-index:2"><p style="font-family:'Crimson Pro',serif;font-size:clamp(20px,3vw,32px);color:#FAF9F6;opacity:0.7;margin-bottom:16px">The intelligence layer connects what they cannot see individually.</p><p style="font-family:'Inter',sans-serif;font-size:13px;letter-spacing:0.2em;color:#C96A2A;text-transform:uppercase">Three stakeholders. One platform. See for yourself.</p></div>
+      </div>
+      <div class="scroll-section" id="section-operator" style="background:#FAF9F6">
+        <div class="moment-section-label">Fleet Operator</div>
+        <h2 class="moment-headline">Precision intelligence for every vehicle, every week.</h2>
+        <div class="moment-cards">
+          <div class="moment-card"><div class="moment-card-number">01</div><div class="moment-card-title">Same symptom. Different cause. Different cost.</div><div class="moment-card-body">Two batteries. Identical range loss. One needs replacement. One needs a charger swap. Platform tells them apart.</div><div class="moment-card-visual"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:#dc2626;letter-spacing:.08em;margin-bottom:4px">BATTERY A</div><div style="font-size:18px;font-weight:800;color:#1A1714">&#8377;30,000</div><div style="font-size:10px;color:#6B6560">Replace battery</div></div><div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:#16a34a;letter-spacing:.08em;margin-bottom:4px">BATTERY B</div><div style="font-size:18px;font-weight:800;color:#1A1714">&#8377;3,000</div><div style="font-size:10px;color:#6B6560">Swap charger</div></div></div><div style="text-align:center;margin-top:8px;font-size:11px;color:#C96A2A;font-weight:600">&#8377;27,000 saved on one decision</div></div></div>
+          <div class="moment-card"><div class="moment-card-number">02</div><div class="moment-card-title">4 urgent batteries. No BMS alert. No complaint.</div><div class="moment-card-body">enerlyst found them from range trend alone. The BMS never fired. No driver complained. Weeks from failure.</div><div class="moment-card-stat"><span class="stat-number">4</span><span class="stat-label">batteries discovered<br>by platform this week</span></div></div>
+          <div class="moment-card"><div class="moment-card-number">03</div><div class="moment-card-title">Know your capex 12 weeks before the breakdown.</div><div class="moment-card-body">Fleet range forecast with confidence bands. Plan replacements. Avoid unplanned downtime.</div><div class="moment-card-visual" style="padding:8px"><canvas id="forecastMiniChart" height="80"></canvas></div></div>
+        </div>
+      </div>
+      <div class="scroll-section" id="section-nbfc" style="background:#FDFBF7">
+        <div class="moment-section-label">NBFC &middot; Lender</div>
+        <h2 class="moment-headline">Your loan portfolio, through the battery.</h2>
+        <div class="moment-cards">
+          <div class="moment-card"><div class="moment-card-number">01</div><div class="moment-card-title">Same loan. Same vehicle. Three different risk profiles.</div><div class="moment-card-body">Before enerlytik, every e-rickshaw loan looked identical. Now every asset has a health grade.</div><div class="moment-card-visual"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center"><div style="background:#F0FDF4;border-radius:8px;padding:10px 4px"><div style="font-size:24px;font-weight:800;color:#16a34a">A</div><div style="font-size:10px;color:#6B6560">Healthy</div></div><div style="background:#FFFBEB;border-radius:8px;padding:10px 4px"><div style="font-size:24px;font-weight:800;color:#d97706">B</div><div style="font-size:10px;color:#6B6560">Watch</div></div><div style="background:#FFF7ED;border-radius:8px;padding:10px 4px"><div style="font-size:24px;font-weight:800;color:#ea580c">C</div><div style="font-size:10px;color:#6B6560">At risk</div></div><div style="background:#FEF2F2;border-radius:8px;padding:10px 4px"><div style="font-size:24px;font-weight:800;color:#dc2626">D</div><div style="font-size:10px;color:#6B6560">Urgent</div></div></div><div style="display:flex;height:6px;border-radius:3px;overflow:hidden;gap:1px;margin-top:10px"><div style="flex:44;background:#16a34a"></div><div style="flex:73;background:#d97706"></div><div style="flex:42;background:#ea580c"></div><div style="flex:24;background:#dc2626"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:#8A7E74;margin-top:4px"><span>A: 44</span><span>B: 73</span><span>C: 42</span><span>D: 24</span></div></div></div>
+          <div class="moment-card"><div class="moment-card-number">02</div><div class="moment-card-title">Is poor driver behaviour affecting your NPAs?</div><div class="moment-card-body">Charging discipline, route intensity, and maintenance gaps are now measurable — and mappable to repayment risk.</div><div class="moment-card-stat"><span class="stat-number">38%</span><span class="stat-label">of degradation in<br>Grade D assets is<br>operator-driven</span></div></div>
+          <div class="moment-card"><div class="moment-card-number">03</div><div class="moment-card-title">The flag reaches you 8 weeks before the EMI misses.</div><div class="moment-card-body">RUL vs loan tenure. When battery life falls below loan term — your credit team knows first.</div><div class="moment-card-visual"><div style="display:flex;flex-direction:column;gap:6px"><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:#6B6560;width:60px">RUL left</span><div style="flex:1;height:8px;background:#E5E0D8;border-radius:4px;overflow:hidden"><div style="width:35%;height:100%;background:#dc2626;border-radius:4px"></div></div><span style="font-size:11px;font-weight:700;color:#dc2626">11wk</span></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:#6B6560;width:60px">Loan left</span><div style="flex:1;height:8px;background:#E5E0D8;border-radius:4px;overflow:hidden"><div style="width:72%;height:100%;background:#C96A2A;border-radius:4px"></div></div><span style="font-size:11px;font-weight:700;color:#C96A2A">28wk</span></div><div style="margin-top:4px;padding:6px 10px;background:#FEF2F2;border-radius:6px;font-size:11px;color:#dc2626;font-weight:600">&#9888; 17-week coverage gap</div></div></div></div>
+        </div>
+      </div>
+      <div class="scroll-section" id="section-oem" style="background:#FAF9F6">
+        <div class="moment-section-label">Battery OEM</div>
+        <h2 class="moment-headline">Real field intelligence. Not lab cycles.</h2>
+        <div class="moment-cards">
+          <div class="moment-card"><div class="moment-card-number">01</div><div class="moment-card-title">Your battery. Indian conditions. 13 months of truth.</div><div class="moment-card-body">97 million data points. Real e-rickshaw stop-start discharge. Indian summer 35-45C.</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:16px;text-align:center"><div style="background:#FAF9F6;border:1px solid #E5E0D8;border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:#C96A2A">97M</div><div style="font-size:10px;color:#8A7E74">CAN rows</div></div><div style="background:#FAF9F6;border:1px solid #E5E0D8;border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:#C96A2A">13mo</div><div style="font-size:10px;color:#8A7E74">Field data</div></div><div style="background:#FAF9F6;border:1px solid #E5E0D8;border-radius:8px;padding:10px"><div style="font-size:20px;font-weight:800;color:#C96A2A">45&#176;C</div><div style="font-size:10px;color:#8A7E74">Peak thermal</div></div></div></div>
+          <div class="moment-card"><div class="moment-card-number">02</div><div class="moment-card-title">Pack3401 is delivering 7km less — with better maintenance.</div><div class="moment-card-body">Same usage. Better charging. Still underperforming. Intrinsic pack characteristic detected.</div><div class="moment-card-visual" style="padding:8px"><canvas id="packCompareChart" height="90"></canvas></div></div>
+          <div class="moment-card"><div class="moment-card-number">03</div><div class="moment-card-title">BMS cell alert: fired zero times. We found 90% above threshold.</div><div class="moment-card-body">Firmware threshold 800mV. Platform threshold 150mV. The BMS never fired. The platform found what firmware missed.</div><div style="margin-top:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:#6B6560">BMS alerts fired</span><span style="font-size:20px;font-weight:800;color:#16a34a">0</span></div><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:12px;color:#6B6560">Batteries above 150mV</span><span style="font-size:20px;font-weight:800;color:#dc2626">165</span></div><div style="height:6px;background:#E5E0D8;border-radius:3px;overflow:hidden"><div style="width:90%;height:100%;background:linear-gradient(90deg,#C96A2A,#dc2626);border-radius:3px"></div></div><div style="font-size:10px;color:#8A7E74;text-align:right;margin-top:4px">90% of fleet &middot; BMS unaware</div></div></div>
+        </div>
+      </div>
+      <div class="scroll-section" id="section-cta" style="background:#FAF9F6;min-height:40vh">
+        <div style="text-align:center;max-width:500px"><div style="font-family:'Crimson Pro',serif;font-size:clamp(28px,4vw,44px);font-weight:300;color:#1A1714;line-height:1.2;margin-bottom:16px">The chain exists.<br>The connections didn't.<br><em>Now they do.</em></div><div style="font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.18em;color:#C96A2A;text-transform:uppercase;margin-bottom:32px">Intelligence Applied</div><button onclick="document.getElementById('chat-input')?.focus();document.getElementById('empty-state').style.display='none'" style="background:#C96A2A;color:white;border:none;border-radius:12px;padding:14px 32px;font-size:15px;font-family:'Inter',sans-serif;font-weight:500;cursor:pointer">Ask enerlyst &rarr;</button></div>
+      </div>
+    </div>
+    <!-- Messages area -->
+    <div style="max-width:720px;margin:0 auto;padding:32px 32px 160px;display:none" id="messages-wrapper">
+      <div id="suggested-pills" style="display:none;margin-bottom:16px"></div>
+      <div id="messages" class="space-y-5"></div>
+    </div>
+  </div>
+  <!-- Input bar -->
+  <div class="input-area">
+    <div style="max-width:720px;margin:0 auto">
+      <div id="suggested-battery-pills" style="display:none;margin-bottom:8px"></div>
+      <div class="input-pill">
+        <textarea id="chat-input" rows="1" placeholder="Ask enerlyst about your fleet..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}" oninput="autoResize(this)"></textarea>
+        <button onclick="sendMessage()" class="send-btn">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT PANEL: Analysis -->
+<div class="right-panel" id="analysisPanel">
+  <div class="right-panel-header">
+    <span class="right-panel-label">Analysis</span>
+    <span class="contextual-badge" id="contextBadge" style="display:none">Contextual</span>
+  </div>
+  <div class="analysis-grid" id="skill-grid">
+    <!-- Populated by loadSkills() -->
+  </div>
+</div>
+
+</div><!-- end main-content -->
+</div><!-- end app-container -->
+
+<!-- ════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ════════════════════════════════════════════════════════════ -->
+<script>
+const E = window.ENERLYST;
+const $=s=>document.querySelector(s);
+const $$=s=>document.querySelectorAll(s);
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
+function shortT(s,n=40){return s&&s.length>n?s.slice(0,n)+'...':s||''}
+
+async function api(url,opts={}){
+  const h={'Content-Type':'application/json'};
+  if(E.config.TOKEN)h['Authorization']=E.config.TOKEN;
+  try{const r=await fetch(url,{headers:h,...opts});return r.json()}catch(e){return{error:e.message}}
+}
+function ragApi(path,opts){return api(E.config.RAG_URL+path,opts)}
+function toast(msg){const d=document.createElement('div');d.className='toast';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),3100)}
+
+// ── OEM masking ──
+const OEM_NAMES={'Greenfuel':'Green Energy','INV':'Electric Solutions'};
+function maskOEM(n){return OEM_NAMES[n]||n}
+const CITY_NAMES={'Panipat-Karnal':'Panipat-Karnal','Delhi NCR':'Delhi NCR','Gwalior':'Gwalior','Kanpur':'Kanpur','Dehradun area':'Dehradun area','Other':'Other','CU':'Cuttack','SR':'Surat','UNKNOWN_GEN1':'Unknown','UNKNOWN':'Unknown'};
+
+// ═══════════════════════════════════════════════════════════════
+// Threads
+// ═══════════════════════════════════════════════════════════════
+function getThreads(){return JSON.parse(localStorage.getItem('enerlyst_threads_'+E.currentAudience)||'[]')}
+function saveThreads(t){localStorage.setItem('enerlyst_threads_'+E.currentAudience,JSON.stringify(t.slice(0,20)))}
+function newThread(){E.currentThread={id:Date.now(),title:'New chat',created:new Date().toISOString(),messages:[]};$('#messages').innerHTML='';$('#empty-state').style.display='block';const _mwh=$('#messages-wrapper');if(_mwh)_mwh.style.display='none';updatePlaceholder()}
+function loadThread(id){const threads=getThreads();const t=threads.find(x=>x.id===id);if(!t)return;E.currentThread=t;renderMessages()}
+
+// ═══════════════════════════════════════════════════════════════
+// Audience
+// ═══════════════════════════════════════════════════════════════
+function setAudience(a){
+  E.currentAudience=a;window.currentAudience=a;
+  sessionStorage.setItem('enerlyst_audience',a);
+  $$('.aud-tab').forEach(b=>b.classList.toggle('active',b.dataset.aud===a));
+  updatePlaceholder();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Filter pills + Chemistry
+// ═══════════════════════════════════════════════════════════════
+const FCTX={chemistry:'LFP',oem:'Greenfuel',pack:null,city:null,allBatteries:[]};
+
+function setChemistry(chem){
+  FCTX.chemistry=chem;
+  FCTX.oem=chem==='LFP'?'Greenfuel':'INV';
+  FCTX.pack=null;FCTX.city=null;
+  $('#chemLFP').classList.toggle('active',chem==='LFP');
+  $('#chemNMC').classList.toggle('active',chem==='NMC');
+  $('#packSelect').value='';$('#citySelect').value='';
+  loadFilterData().then(()=>loadHierarchy());
+}
+function onFilterChange(){
+  FCTX.pack=$('#packSelect').value||null;
+  FCTX.city=$('#citySelect').value||null;
+  // Update pill active state
+  $('#filterPack').classList.toggle('active',!!FCTX.pack);
+  $('#filterCity').classList.toggle('active',!!FCTX.city);
+  loadHierarchy();
+}
+async function loadFilterData(){
+  const oem=FCTX.oem;
+  try{
+    const[pd,cd]=await Promise.all([
+      api(E.config.DB_URL+'/api/packs/list?oem='+oem),
+      api(E.config.DB_URL+'/api/cities/list?oem='+oem)
+    ]);
+    // OEM select
+    const oemSel=$('#oemSelect');
+    oemSel.innerHTML=`<option value="Greenfuel"${FCTX.oem==='Greenfuel'?' selected':''}>Green Energy</option><option value="INV"${FCTX.oem==='INV'?' selected':''}>Electric Solutions</option>`;
+    // Pack select
+    const packSel=$('#packSelect');
+    const packs=(pd.packs||[]).map(p=>typeof p==='string'?p:p.pack||p);
+    packSel.innerHTML='<option value="">All packs</option>'+packs.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+    // City select
+    const citySel=$('#citySelect');
+    const cities=(cd.cities||[]).map(c=>c.city||c.city_code||c).filter(c=>typeof c==='string'&&!c.startsWith('NMC')&&!c.startsWith('BAT'));
+    citySel.innerHTML='<option value="">All cities</option>'+cities.map(c=>`<option value="${esc(c)}">${esc(CITY_NAMES[c]||c)}</option>`).join('');
+  }catch(e){console.warn('Filter load failed:',e)}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Battery Hierarchy
+// ═══════════════════════════════════════════════════════════════
+let _hierData=[];
+let _openOEM=null;
+let _openPack=null;
+
+async function loadHierarchy(){
+  const oem=FCTX.oem;
+  const p=new URLSearchParams({oem,chemistry:FCTX.chemistry});
+  if(FCTX.pack)p.set('pack_model',FCTX.pack);
+  if(FCTX.city)p.set('city',FCTX.city);
+  try{
+    const d=await api(E.config.DB_URL+'/api/batteries/list?'+p);
+    _hierData=(d.batteries||[]).map(b=>{
+      if(typeof b==='string')return{battery_id:b,pack_model:'Standard Pack',oem_name:oem,operational_score:null,range_est_km:null,action_primary:null,trend:null,health_tier:null};
+      return{
+        battery_id:b.battery_id||b.id||b.label||String(b),
+        pack_model:b.battery_model||b.pack_model||b.pack||'Standard Pack',
+        oem_name:b.oem_name||b.oem||b.manufacturer||oem,
+        operational_score:b.operational_score||b.score||null,
+        range_est_km:b.range_est_km||b.range_corrected_km||b.range||null,
+        action_primary:b.action_primary||b.recommended_action||b.action||null,
+        trend:b.kps_slope_4wk||b.trend||null,
+        health_tier:b.tier_label_v2||b.tier_v2||b.health_tier||b.tier||null,
+        scoring_mode:b.scoring_mode||null,
+        tier_label:b.tier_label_v2||b.tier_label||null
+      };
+    });
+    FCTX.allBatteries=_hierData;
+    window._batteryCache=_hierData;
+  }catch(e){console.warn('Hierarchy load failed:',e);_hierData=[]}
+  renderHierarchy();
+}
+
+function renderHierarchy(filter){
+  const el=$('#hierarchy');
+  let data=_hierData;
+  if(filter){
+    const q=filter.toLowerCase();
+    data=data.filter(b=>b.battery_id.toLowerCase().includes(q));
+  }
+  // Group by OEM → Pack
+  const oemGroups={};
+  data.forEach(b=>{
+    const oem=maskOEM(b.oem_name||b.oem||b.manufacturer||'Fleet');
+    if(!oemGroups[oem])oemGroups[oem]={batteries:[],packs:{}};
+    oemGroups[oem].batteries.push(b);
+    const pack=b.pack_model||b.pack||'Standard Pack';
+    if(!oemGroups[oem].packs[pack])oemGroups[oem].packs[pack]=[];
+    oemGroups[oem].packs[pack].push(b);
+  });
+
+  if(!Object.keys(oemGroups).length){
+    el.innerHTML='<div style="padding:16px;text-align:center;color:var(--text-muted);font-size:12px">No batteries found</div>';
+    return;
+  }
+
+  let h='';
+  for(const[oem,grp] of Object.entries(oemGroups)){
+    const oemOpen=_openOEM===oem;
+    const oemCount=grp.batteries.length;
+    const {green,amber,red}=countHealth(grp.batteries);
+    h+=`<div class="hier-oem">`;
+    h+=`<div class="hier-header" onclick="toggleOEM('${esc(oem)}')">`;
+    h+=`<span class="hier-chevron${oemOpen?' open':''}">&#9654;</span>`;
+    h+=`<span class="hier-name">${esc(oem)}</span>`;
+    h+=`<span class="hier-count">${oemCount}</span>`;
+    h+=miniHealthBar(green,amber,red);
+    h+=`</div>`;
+    h+=`<div class="hier-children${oemOpen?' open':''}">`;
+    // Sort packs by name
+    const packs=Object.entries(grp.packs).sort((a,b)=>a[0].localeCompare(b[0]));
+    for(const[pack,bats] of packs){
+      const packOpen=_openPack===pack&&oemOpen;
+      const pc=bats.length;
+      const ph=countHealth(bats);
+      h+=`<div class="hier-pack">`;
+      h+=`<div class="hier-header" onclick="togglePack('${esc(oem)}','${esc(pack)}')">`;
+      h+=`<span class="hier-chevron${packOpen?' open':''}">&#9654;</span>`;
+      h+=`<span class="hier-name">${esc(pack)}</span>`;
+      h+=`<span class="hier-count">${pc}</span>`;
+      h+=miniHealthBar(ph.green,ph.amber,ph.red);
+      h+=`</div>`;
+      h+=`<div class="hier-children${packOpen?' open':''}">`;
+      // Sort by operational_score ASC (worst first)
+      const sorted=[...bats].sort((a,b)=>(a.operational_score||999)-(b.operational_score||999));
+      for(const bat of sorted){
+        const bid=bat.battery_id;
+        const sel=window.currentBattery===bid;
+        const range=bat.range_est_km?Math.round(bat.range_est_km)+'km':'--';
+        const trend=bat.trend;
+        const arrow=trend==null?'':trend>0.003?'<span class="arrow-up">&#9650;</span>':trend<-0.003?'<span class="arrow-down">&#9660;</span>':'<span class="arrow-flat">&#8594;</span>';
+        const trendKm=trend!=null?Math.abs(Math.round(trend*80*4))+'km':'';
+        h+=`<div class="hier-battery${sel?' selected':''}" onclick="selectBattery('${esc(bid)}')">`;
+        h+=`<span class="hier-bat-id">${esc(bid)}</span>`;
+        h+=`<span class="hier-bat-trend">${range} ${arrow} ${trendKm}</span>`;
+        h+=actionBadge(bat.action_primary,bat.health_tier);
+        h+=`</div>`;
+      }
+      h+=`</div></div>`;
+    }
+    h+=`</div></div>`;
+  }
+  el.innerHTML=h;
+}
+
+function countHealth(bats){
+  let green=0,amber=0,red=0;
+  bats.forEach(b=>{
+    const s=b.operational_score;
+    if(s==null){amber++;return}
+    if(s>=60)green++;else if(s>=30)amber++;else red++;
+  });
+  return{green,amber,red};
+}
+function miniHealthBar(g,a,r){
+  const t=g+a+r||1;
+  return`<div class="hier-healthbar"><span style="width:${g/t*100}%;background:#16a34a"></span><span style="width:${a/t*100}%;background:#d97706"></span><span style="width:${r/t*100}%;background:#dc2626"></span></div>`;
+}
+function actionBadge(action,tier){
+  if(!action&&!tier)return'';
+  if(!action&&tier){
+    const tc={'PRIME':'no-action','STABLE':'no-action','WATCH':'monitor','STRESSED':'plan-replace','CRITICAL':'replace-now'};
+    const tl={'PRIME':'Prime','STABLE':'Stable','WATCH':'Watch','STRESSED':'Stressed','CRITICAL':'Critical'};
+    const cls=tc[tier]||'suspended';
+    return`<span class="action-badge ${cls}">${tl[tier]||tier}</span>`;
+  }
+  const a=String(action).toUpperCase();
+  if(a.includes('REPLACE_URGENT')||a.includes('EOL'))return'<span class="action-badge replace-now">Replace</span>';
+  if(a.includes('REPLACE_PLAN'))return'<span class="action-badge plan-replace">Plan</span>';
+  if(a.includes('CELL_BALANCE'))return'<span class="action-badge balance">Balance</span>';
+  if(a.includes('MONITOR'))return'<span class="action-badge monitor">Monitor</span>';
+  if(a.includes('SUSPEND'))return'<span class="action-badge suspended">Suspended</span>';
+  if(a.includes('CHARGING'))return'<span class="action-badge monitor">Charging</span>';
+  if(a.includes('ROUTE'))return'<span class="action-badge monitor">Route</span>';
+  if(a.includes('MAINTENANCE'))return'<span class="action-badge balance">Service</span>';
+  if(a==='NO_ACTION')return'<span class="action-badge no-action">OK</span>';
+  return'<span class="action-badge no-action">OK</span>';
+}
+
+function toggleOEM(oem){
+  const scrollTop=$('#hierarchy').scrollTop;
+  if(_openOEM===oem){_openOEM=null;_openPack=null}
+  else{_openOEM=oem;_openPack=null}
+  renderHierarchy($('#hierSearch').value||null);
+  $('#hierarchy').scrollTop=scrollTop;
+}
+function togglePack(oem,pack){
+  const scrollTop=$('#hierarchy').scrollTop;
+  _openOEM=oem;
+  _openPack=(_openPack===pack)?null:pack;
+  renderHierarchy($('#hierSearch').value||null);
+  $('#hierarchy').scrollTop=scrollTop;
+}
+function filterHierarchy(q){renderHierarchy(q||null)}
+
+// ═══════════════════════════════════════════════════════════════
+// Battery selection (PHASE 6 fix)
+// ═══════════════════════════════════════════════════════════════
+function selectBattery(b){
+  const bid=typeof b==='object'?(b.battery_id||b.id||String(b)):String(b);
+  window.currentBattery=bid;
+  E.contextBar.battery_id=bid;
+
+  // Keep group open, re-render to show selected state
+  renderHierarchy($('#hierSearch').value||null);
+
+  // Update right panel context badge
+  const badge=$('#contextBadge');
+  if(badge){badge.textContent='Contextual \u00B7 '+bid;badge.style.display='inline-block'}
+
+  // Fetch consequence chain → render in center
+  fetchBatteryIntelligence(bid);
+
+  // Fetch suggested questions
+  loadSuggestedQuestions(bid);
+}
+
+async function fetchBatteryIntelligence(bid){
+  try{
+    const d=await api(E.config.DB_URL+'/api/battery/'+bid+'/consequence-chain');
+    if(d&&!d.error){
+      // Show in chat as auto-message
+      if(!E.currentThread)E.currentThread={id:Date.now(),title:bid,created:new Date().toISOString(),messages:[]};
+      const chainText=formatChainForChat(d,bid);
+      E.currentThread.messages.push({role:'bot',content:chainText,artifacts:[],pills:[]});
+      $('#empty-state').style.display='none';
+      const _mw=$('#messages-wrapper');if(_mw)_mw.style.display='block';
+      renderMessages();
+    }
+  }catch(e){console.warn('Intelligence fetch failed:',e)}
+}
+const ACTION_LABELS={'REPLACE_URGENT':'Replace immediately','REPLACE_PLAN':'Plan replacement','CELL_BALANCE':'Balance cells','MONITOR_WEEKLY':'Monitor weekly','NO_ACTION':'No action needed','SCORE_SUSPENDED':'Score suspended','EOL_IMMINENT':'End of life imminent','CHARGING_DISCIPLINE':'Improve charging','ROUTE_SHORTEN':'Optimise route','MAINTENANCE_OVERDUE':'Schedule service'};
+function formatChainForChat(d,bid){
+  if(!d||!d.battery_id)return`No intelligence chain available for ${bid}.`;
+  const parts=[];
+  // Integrated summary (best single field)
+  if(d.integrated_chain_sentence)parts.push(d.integrated_chain_sentence);
+  else if(d.asset_impact_sentence)parts.push(d.asset_impact_sentence);
+  // Attribution
+  if(d.operator_attribution_sentence)parts.push('\nCause: '+d.operator_attribution_sentence);
+  // Action
+  const action=d.action_primary;
+  if(action)parts.push('Action: '+(ACTION_LABELS[action]||action));
+  if(d.action_remark)parts.push(d.action_remark);
+  // NBFC
+  if(d.nbfc_summary_sentence)parts.push('\nNBFC: '+d.nbfc_summary_sentence);
+  // Key stats
+  const stats=[];
+  if(d.capacity_state)stats.push('Capacity: '+d.capacity_state);
+  if(d.fault_severity)stats.push('Fault: '+d.fault_severity);
+  if(d.intervention_window)stats.push('Window: '+d.intervention_window);
+  if(stats.length)parts.push('\n'+stats.join(' \u00B7 '));
+  return parts.join('\n')||`Intelligence chain loaded for ${bid}.`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Suggested questions
+// ═══════════════════════════════════════════════════════════════
+async function loadSuggestedQuestions(batteryId){
+  const el=$('#suggested-battery-pills');
+  if(!el||!batteryId)return;
+  try{
+    const data=await api(E.config.RAG_URL+'/enerlyst/battery/'+batteryId+'/suggested-questions');
+    if(data&&data.suggested_questions&&data.suggested_questions.length){
+      let h='<div style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin-bottom:6px">Suggested for '+esc(batteryId)+'</div>';
+      h+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+      data.suggested_questions.slice(0,3).forEach(q=>{
+        h+=`<button onclick="document.getElementById('chat-input').value='${q.replace(/'/g,"\\'")}';sendMessage()" style="background:#f4f3f0;border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-family:'Inter',sans-serif;color:#374151;cursor:pointer;transition:all .15s" onmouseover="this.style.background='#f97316';this.style.color='#fff'" onmouseout="this.style.background='#f4f3f0';this.style.color='#374151'">${esc(q)}</button>`;
+      });
+      h+='</div>';
+      el.innerHTML=h;el.style.display='block';
+    }
+  }catch(e){console.warn('Suggested questions failed:',e)}
+}
+function hideSuggestedPills(){const el=$('#suggested-battery-pills');if(el)el.style.display='none'}
+
+// ═══════════════════════════════════════════════════════════════
+// Messages + rendering
+// ═══════════════════════════════════════════════════════════════
+const SUGGESTIONS={
+  operator:["How is my fleet performing this week?","Which batteries need attention?","What's causing range loss?"],
+  nbfc:["What is my portfolio risk?","Which borrowers have batteries at risk?","Show batteries where RUL < tenure"],
+  oem:["What is the attribution split for Pack3401?","Which batteries show mfg-origin degradation?","Fleet attribution analysis"]
+};
+function updatePlaceholder(){
+  const ph={operator:'Ask enerlyst about your fleet...',nbfc:'Ask about your portfolio...',oem:'Ask about your batteries...'};
+  const inp=$('#chat-input');if(inp)inp.placeholder=ph[E.currentAudience]||ph.operator;
+}
+function quickSend(q){$('#chat-input').value=q;sendMessage()}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+
+function renderMessages(){
+  const t=E.currentThread;if(!t)return;
+  const _hasM=t.messages.length>0;$('#empty-state').style.display=_hasM?'none':'block';const _mwr=$('#messages-wrapper');if(_mwr)_mwr.style.display=_hasM?'block':'none';
+  const el=$('#messages');
+  el.innerHTML=t.messages.map((m,i)=>{
+    if(m.role==='user')return`<div class="msg-user">${esc(m.content)}</div>`;
+    let h=`<div class="msg-bot"><div class="bot-label">enerlyst</div>`;
+    h+=`<div style="font-family:'Crimson Pro',serif;font-size:16px;line-height:1.65;color:var(--text-primary)" class="whitespace-pre-wrap">${linkifyBatteryIds(esc(m.content))}</div>`;
+    if(m.artifacts&&m.artifacts.length){m.artifacts.forEach((art,ai)=>{h+=renderInlineArtifact(art,i,ai)})}
+    if(m.resultCard)h+=m.resultCard;
+    if(m.pills&&m.pills.length){h+=`<div class="flex flex-wrap gap-2 mt-3">`;m.pills.forEach(p=>{h+=`<button class="follow-pill" onclick="quickSend('${esc(p)}')">${esc(p)}</button>`});h+=`</div>`}
+    if(m.discovery)h+=`<div class="discovery-callout"><span class="discovery-icon">&#128161;</span><span>${esc(m.discovery)}</span></div>`;
+    if(m.confidence){const c=m.confidence;const _dotCol=c.tier==='HIGH'||c.level==='high'?'#22c55e':c.tier==='MEDIUM'||c.level==='medium'?'#3b82f6':'#f59e0b';h+=`<div style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:#6b7280"><span style="width:8px;height:8px;border-radius:50%;background:${_dotCol};display:inline-block"></span>${esc(c.label||'')}</div>`}
+    h+=`<div style="display:flex;gap:8px;margin-top:8px"><button onclick="sendFeedback(${i},1)" style="background:transparent;border:none;cursor:pointer;color:var(--text-label);font-size:15px;padding:4px;border-radius:4px" title="Helpful">&#128077;</button><button onclick="sendFeedback(${i},-1)" style="background:transparent;border:none;cursor:pointer;color:var(--text-label);font-size:15px;padding:4px;border-radius:4px" title="Not helpful">&#128078;</button></div>`;
+    h+=`</div>`;
+    return h;
+  }).join('');
+  const _sc=$('#chat-container');if(_sc)_sc.scrollTop=_sc.scrollHeight;
+  const lastBot=t.messages.filter(m=>m.role==='bot').slice(-1)[0];
+  if(lastBot&&lastBot.content){const lastEl=el.lastElementChild;if(lastEl)injectSparklines(lastEl,lastBot.content)}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// E2E chain visualization
+// ═══════════════════════════════════════════════════════════════
+function renderE2EChain(data,container){
+  const layers=[
+    {id:'signal',label:'SIGNAL',icon:'\ud83d\udce1',color:'#3b82f6',items:[{k:'Range',v:(data.Signal||'').split(',')[0]||'\u2014'},{k:'Quality',v:(data.Signal||'').split('Quality ')[1]||'\u2014'}]},
+    {id:'physics',label:'PHYSICS',icon:'\u269b\ufe0f',color:'#8b5cf6',items:[{k:'State',v:(data.Physics||'').split(' \u00B7 ')[0]||'\u2014'},{k:'Corroboration',v:(data.Physics||'').split(' \u00B7 ')[1]||'\u2014'}]},
+    {id:'ml',label:'ML ENGINE',icon:'\ud83e\udde0',color:'#C96A2A',items:[{k:'Score',v:(data.ML||'').split(' \u00B7 ')[0]||'\u2014'},{k:'Driver',v:(data.ML||'').split('driver: ')[1]||'\u2014'}]},
+    {id:'decision',label:'DECISION',icon:'\ud83c\udfaf',color:'#16a34a',items:[{k:'Action',v:data.Decision||'\u2014'}]}
+  ];
+  container.innerHTML=`<div class="e2e-chain">${layers.map((l,i)=>`<div class="e2e-layer" style="--layer-color:${l.color};--delay:${i*.15}s"><div class="e2e-layer-header"><span class="e2e-layer-icon">${l.icon}</span><span class="e2e-layer-label">${l.label}</span></div><div class="e2e-layer-body">${l.items.map(it=>`<div class="e2e-item"><span class="e2e-item-key">${it.k}</span><span class="e2e-item-val">${esc(it.v)}</span></div>`).join('')}</div></div>${i<layers.length-1?`<div class="e2e-connector" style="--delay:${i*.15+.1}s"><div class="e2e-connector-arrow">&#9654;</div></div>`:''}`).join('')}</div>`;
+  setTimeout(()=>{container.querySelectorAll('.e2e-layer,.e2e-connector').forEach(el=>el.classList.add('animated'))},100);
+}
+
+// Sparkline injection
+async function injectSparklines(container,text){
+  const matches=[...new Set((text||'').match(/BAT_(?:LFP|NMC)_\d+/g)||[])].slice(0,3);
+  for(const bid of matches){
+    try{
+      const d=await api(E.config.DB_URL+'/api/battery/'+bid+'/trend/km_per_soc_pct');
+      const vals=(d.values||[]).slice(-8).map(v=>v!=null?Math.round(v*80):null).filter(Boolean);
+      if(vals.length<2)continue;
+      const cur=vals[vals.length-1];const slope=cur-vals[0];
+      const dir=slope<-3?'declining':slope>3?'improving':'stable';
+      const lbl=dir==='declining'?Math.abs(slope)+'km lost':dir==='improving'?'+'+slope+'km gained':'stable';
+      const sid='spark-'+bid+'-'+Date.now();
+      const div=document.createElement('div');div.className='inline-sparkline';
+      div.innerHTML=`<div class="spark-header"><span class="spark-bid">${bid}</span><span class="spark-range">${cur}km now</span><span class="spark-trend ${dir}">${dir==='declining'?'\u2193':dir==='stable'?'\u2192':'\u2191'} ${lbl}</span></div><canvas id="${sid}" height="48" style="width:100%;display:block"></canvas>`;
+      container.appendChild(div);
+      setTimeout(()=>{const c=document.getElementById(sid);if(!c)return;new Chart(c,{type:'line',data:{labels:vals.map((_,i)=>'W'+(i+1)),datasets:[{data:vals,borderColor:'#C96A2A',borderWidth:1.5,pointRadius:0,fill:true,backgroundColor:'rgba(201,106,42,0.08)',tension:.3}]},options:{responsive:true,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:true,position:'right',grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:9},color:'#B0A69C',maxTicksLimit:3}}},animation:{duration:400}}})},100);
+    }catch(e){}
+  }
+}
+
+function renderInlineArtifact(art,msgIdx,artIdx){
+  const id=`art-${msgIdx}-${artIdx}`;
+  const batId=art.battery_id||window.currentBattery||'';
+  const passUrl=batId?`http://localhost:5001/passport-v2?battery_id=${batId}`:'http://localhost:5001/passport-v2';
+  let h=`<div class="artifact-card"><div class="artifact-header"><span>${esc(art.title||art.type)}</span><div style="display:flex;gap:4px">${batId?`<a href="${passUrl}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;padding:2px 6px;border-radius:4px;border:1px solid var(--accent-border,#F0C8A0);transition:all .15s" onmouseover="this.style.background='var(--accent-light)'" onmouseout="this.style.background='transparent'">Passport</a>`:''}</div></div>`;
+  if(art.type==='e2e_chain'&&art.chain_data){
+    const eid='e2e-'+msgIdx+'-'+artIdx+'-'+Date.now();
+    h+=`<div id="${eid}" style="padding:4px"></div></div>`;
+    setTimeout(()=>{const c=document.getElementById(eid);if(c)renderE2EChain(art.chain_data,c)},150);
+    return h;
+  } else if(art.type==='table'&&art.data){
+    const d=art.data;
+    h+=`<div style="overflow-x:auto;padding:8px"><table><tr>${(d.headers||[]).map(hd=>`<th>${esc(hd)}</th>`).join('')}</tr>`;
+    (d.rows||[]).slice(0,5).forEach(row=>{h+=`<tr>${row.map(c=>`<td>${esc(String(c??''))}</td>`).join('')}</tr>`});
+    h+=`</table></div>`;
+  } else if(art.type==='chart'&&art.data){
+    h+=`<div style="padding:12px"><canvas id="${id}" height="180"></canvas></div>`;
+    setTimeout(()=>{renderChartCanvas(id,art.data)},100);
+  } else if(art.type==='doc'){
+    const text=art.data?.text||art.data||'';
+    h+=`<div style="padding:12px;font-size:13px;color:var(--text-secondary);line-height:1.6">${esc(String(text).slice(0,300))}</div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+function renderChartCanvas(canvasId,data){
+  const canvas=document.getElementById(canvasId);if(!canvas||!window.Chart)return;
+  const chartType=data.chart_type||'bar';
+  const ds=(data.datasets||[]).map((d,i)=>{
+    const o={...d};
+    if(!o.backgroundColor)o.backgroundColor=i===0?'#C96A2A':'#E8A06A';
+    if(!o.borderColor&&chartType==='line')o.borderColor=i===0?'#C96A2A':i===1?'#E8A06A':'#dc2626';
+    if(chartType==='bar')o.borderRadius=4;
+    return o;
+  });
+  new Chart(canvas,{type:chartType,data:{labels:data.labels||[],datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},
+    plugins:{legend:{display:ds.length>1,labels:{font:{size:11,family:'Inter'},boxWidth:10,color:'#8A7E74'}}},
+    scales:{x:{grid:{display:false},ticks:{font:{size:10,family:'Inter'},color:'#8A7E74'}},
+            y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10,family:'Inter'},color:'#8A7E74'}}},
+    ...(data.options||{})}});
+}
+
+// Cross-link: BAT_xxx IDs clickable
+function linkifyBatteryIds(html){
+  return html.replace(/(BAT_(?:LFP|NMC)_\d{3})/g,
+    '<span style="color:#f97316;font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px" onclick="window.open(\'http://localhost:5001/passport-v2?battery=$1\',\'_blank\')">$1</span>');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Send message
+// ═══════════════════════════════════════════════════════════════
+async function sendMessage(){
+  const input=$('#chat-input');
+  const q=input.value.trim();if(!q)return;
+  input.value='';input.style.height='auto';
+  hideSuggestedPills();
+
+  if(!E.currentThread)E.currentThread={id:Date.now(),title:shortT(q,40),created:new Date().toISOString(),messages:[]};
+  if(E.currentThread.messages.length===0)E.currentThread.title=shortT(q,40);
+
+  E.currentThread.messages.push({role:'user',content:q});
+  $('#empty-state').style.display='none';const _mw=$('#messages-wrapper');if(_mw)_mw.style.display='block';
+  renderMessages();
+
+  const recentMsgs=E.currentThread.messages.slice(-6).map(m=>`${m.role==='user'?'User':'enerlyst'}: ${(m.content||'').substring(0,200)}`).join('\n');
+  const bat=window.currentBattery||null;
+  const mainP=ragApi('/enerlyst/query',{method:'POST',body:JSON.stringify({question:q,audience:E.currentAudience,battery_id:bat,context_summary:recentMsgs})});
+
+  const botMsg={role:'bot',content:'',artifacts:[],pills:[]};
+  E.currentThread.messages.push(botMsg);
+  renderMessages();
+  const msgEl=$('#messages').lastElementChild;
+  if(msgEl){const tEl=msgEl.querySelector('.whitespace-pre-wrap');if(tEl)tEl.innerHTML='<span style="color:var(--text-label)">Thinking...</span>'}
+
+  const data=await mainP;
+  botMsg.content=data.answer||data.error||'No response';
+  botMsg.artifacts=data.artifacts||[];
+  botMsg.discovery=data.discovery||'';
+  botMsg.confidence=data.confidence||null;
+
+  const suggestData=await ragApi('/enerlyst/suggest',{method:'POST',body:JSON.stringify({answer:(data.answer||'').slice(0,400),audience:E.currentAudience,battery_id:bat})}).catch(()=>({suggestions:[]}));
+  let pills=(suggestData.suggestions||[]).slice(0,4);
+  if(!pills.length){
+    const fb={operator:["Which batteries need service?","What caused the range drop?","How is the fleet trending?"],
+      nbfc:["Which loans are at risk?","Show grade distribution","What is average RUL?"],
+      oem:["What is the attribution split?","Which packs perform worst?","Show commissioning quality"]};
+    pills=fb[E.currentAudience]||fb.operator;
+  }
+  botMsg.pills=pills;
+
+  // Streaming effect
+  const fullText=botMsg.content;botMsg.content='';renderMessages();
+  const textEl=$('#messages').lastElementChild?.querySelector('.whitespace-pre-wrap');
+  if(textEl){
+    let ci=0;
+    const stream=()=>{
+      if(ci<fullText.length){const chunk=fullText.slice(ci,ci+3);ci+=3;botMsg.content+=chunk;textEl.textContent=botMsg.content;requestAnimationFrame(stream)}
+      else{botMsg.content=fullText;renderMessages()}
+    };
+    stream();
+  } else {botMsg.content=fullText;renderMessages()}
+
+  const threads=getThreads();const idx=threads.findIndex(t=>t.id===E.currentThread.id);
+  if(idx>=0)threads[idx]=E.currentThread;else threads.unshift(E.currentThread);
+  saveThreads(threads);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Context battery helpers (NO prompt/alert/confirm)
+// ═══════════════════════════════════════════════════════════════
+function getContextBattery(){return window.currentBattery||null}
+
+function requireBattery(skillName){
+  const bid=getContextBattery();
+  if(bid)return bid;
+  // Show inline search card in chat
+  if(!E.currentThread)E.currentThread={id:Date.now(),title:'Select battery',created:new Date().toISOString(),messages:[]};
+  const botMsg={role:'bot',content:'',artifacts:[],pills:[]};
+  botMsg.content=`Select a battery to run ${skillName}`;
+  botMsg.resultCard=`<div class="context-request"><div class="cr-label">Select a battery to run ${esc(skillName)}</div><div class="cr-search-wrap"><input type="text" class="cr-search" placeholder="Search battery ID, pack, OEM..." oninput="contextSearch(this.value)" id="cr-search-input" autocomplete="off"/><div class="cr-results" id="cr-results"></div></div></div>`;
+  botMsg._pendingSkill=skillName;
+  E.currentThread.messages.push(botMsg);
+  $('#empty-state').style.display='none';const _mw=$('#messages-wrapper');if(_mw)_mw.style.display='block';
+  renderMessages();
+  setTimeout(()=>{const inp=document.getElementById('cr-search-input');if(inp)inp.focus()},100);
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Smart search (unified for left panel + inline + topbar)
+// ═══════════════════════════════════════════════════════════════
+function contextSearch(query){
+  if(!query||query.length<1){showSearchResults([],query);return}
+  const all=window._batteryCache||[];
+  const q=query.toLowerCase();
+  const results=all.filter(b=>
+    (b.battery_id||'').toLowerCase().includes(q)||
+    (b.oem_name||'').toLowerCase().includes(q)||
+    (b.pack_model||'').toLowerCase().includes(q)||
+    (b.health_tier||'').toLowerCase().includes(q)||
+    (b.tier_label||'').toLowerCase().includes(q)||
+    (b.action_primary||'').toLowerCase().includes(q)||
+    (b.scoring_mode||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  showSearchResults(results,query);
+}
+function contextSearchLeft(query){
+  // Also filter hierarchy
+  filterHierarchy(query);
+  contextSearch(query);
+}
+function showSearchResults(results,query){
+  const containers=[document.getElementById('left-search-results'),document.getElementById('cr-results')].filter(Boolean);
+  const actionColors={'REPLACE_URGENT':'#ef4444','REPLACE_PLAN':'#f97316','MONITOR_WEEKLY':'#f59e0b','CELL_BALANCE':'#3b82f6','NO_ACTION':'#22c55e','SCORE_SUSPENDED':'#9ca3af','EOL_IMMINENT':'#ef4444','CHARGING_DISCIPLINE':'#f59e0b','ROUTE_SHORTEN':'#f59e0b','MAINTENANCE_OVERDUE':'#3b82f6'};
+  const actionLabels={'REPLACE_URGENT':'Replace now','REPLACE_PLAN':'Plan replace','MONITOR_WEEKLY':'Monitor','CELL_BALANCE':'Balance','NO_ACTION':'No action','SCORE_SUSPENDED':'Suspended','EOL_IMMINENT':'End of life','CHARGING_DISCIPLINE':'Charging','ROUTE_SHORTEN':'Route','MAINTENANCE_OVERDUE':'Service'};
+  const html=results.length===0&&query&&query.length>0
+    ?'<div class="cr-result-item" style="color:var(--text-muted)">No batteries found</div>'
+    :results.map(b=>{
+      const ac=b.action_primary||'';
+      const tierColors={'PRIME':'#22c55e','STABLE':'#22c55e','WATCH':'#f59e0b','STRESSED':'#f97316','CRITICAL':'#ef4444'};
+      const color=ac?actionColors[ac]||'#9ca3af':tierColors[b.health_tier]||'#9ca3af';
+      const label=ac?(actionLabels[ac]||ac):b.health_tier||b.scoring_mode||'--';
+      const range=b.range_est_km?Math.round(b.range_est_km)+'km':'--';
+      return`<div class="cr-result-item" onclick="selectBatteryFromSearch('${esc(b.battery_id)}')"><div><div class="cr-result-id">${esc(b.battery_id)}</div><div class="cr-result-meta">${esc(b.oem_name||'')} \u00B7 ${esc(b.pack_model||'')} \u00B7 ${range}</div></div><div><span class="cr-result-action" style="background:${color}20;color:${color}">${esc(label)}</span><div style="font-size:10px;margin-top:2px"><a href="http://localhost:5001/passport-v2?battery=${esc(b.battery_id)}" target="_blank" style="color:#f97316;text-decoration:none" onclick="event.stopPropagation()">Open Passport \u2197</a></div></div></div>`;
+    }).join('');
+  containers.forEach(c=>{c.innerHTML=html;c.style.display=(results.length>0||(query&&query.length>0))?'block':'none'});
+}
+function selectBatteryFromSearch(batteryId){
+  document.querySelectorAll('.cr-results,#left-search-results').forEach(el=>{el.style.display='none';el.innerHTML=''});
+  document.querySelectorAll('.cr-search,#hierSearch').forEach(el=>{if(el)el.value=''});
+  selectBattery(batteryId);
+}
+// Close search on click-outside
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#left-search-wrap')&&!e.target.closest('.context-request')){
+    const lr=document.getElementById('left-search-results');if(lr)lr.style.display='none';
+    const cr=document.getElementById('cr-results');if(cr)cr.style.display='none';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// Chat actions (New / Clear)
+// ═══════════════════════════════════════════════════════════════
+function newChat(){
+  window.currentBattery=null;E.contextBar.battery_id=null;
+  const msgs=$('#messages');if(msgs)msgs.innerHTML='';
+  const pills=$('#suggested-pills');if(pills)pills.innerHTML='';
+  const badge=$('#contextBadge');if(badge){badge.textContent='Select a battery';badge.style.display='none'}
+  newThread();
+}
+function clearChat(){
+  const msgs=$('#messages');if(msgs)msgs.innerHTML='';
+  if(E.currentThread)E.currentThread.messages=[];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Skills: load from API with fallback
+// ═══════════════════════════════════════════════════════════════
+window._skills=[
+  {id:'e2e-trace',name:'E2E Trace',desc:'Full session trace',icon:'\ud83d\udd04'},
+  {id:'range-forecast',name:'Range Forecast',desc:'4/8/12wk projection',icon:'\ud83d\udcc8'},
+  {id:'attribution-waterfall',name:'Attribution',desc:'Cause breakdown',icon:'\ud83c\udfed'},
+  {id:'charging-health',name:'Charging Health',desc:'Charge pattern analysis',icon:'\u26a1'},
+  {id:'driver-behaviour',name:'Driver Behaviour',desc:'Usage pattern',icon:'\ud83d\ude97'},
+  {id:'external-conditions',name:'Thermal Impact',desc:'Heat risk',icon:'\ud83d\udd25'},
+  {id:'pack-comparison',name:'Pack Compare',desc:'vs cohort',icon:'\ud83d\udcca'},
+  {id:'portfolio-risk',name:'Financial Risk',desc:'NBFC exposure',icon:'\ud83d\udcb0'},
+  {id:'cell-balance',name:'Cell Health',desc:'Spread delta + outcome',icon:'\ud83d\udd2c'},
+  {id:'fault-severity',name:'Fault Severity',desc:'HIGH/MED/LOW',icon:'\ud83d\udea8'},
+  {id:'event-timeline',name:'Event Timeline',desc:'Fault history',icon:'\ud83d\udcc5'},
+  {id:'intervention-outcome',name:'Intervention',desc:'Did last service work?',icon:'\u2705'}
+];
+
+async function loadSkills(){
+  try{
+    const r=await fetch(E.config.RAG_URL+'/skills',{headers:{'Authorization':E.config.TOKEN}});
+    if(r.ok){const d=await r.json();if(d.skills||Array.isArray(d))window._skills=d.skills||d}
+  }catch(e){}
+  renderSkillCards();
+}
+function renderSkillCards(){
+  const grid=document.getElementById('skill-grid');if(!grid)return;
+  grid.innerHTML=window._skills.map(s=>`<div class="skill-card" data-skill="${esc(s.id)}" onclick="runSkill('${esc(s.id)}','${esc(s.name)}')"><div class="skill-icon">${s.icon||'\u25c6'}</div><div class="skill-name">${esc(s.name)}</div><div class="skill-desc">${esc(s.desc||'')}</div></div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Skill execution (NO prompt — uses context battery)
+// ═══════════════════════════════════════════════════════════════
+async function runSkill(skillId,skillName){
+  // Highlight card
+  $$('.skill-card').forEach(c=>c.classList.remove('active-skill'));
+  const card=document.querySelector(`[data-skill="${skillId}"]`);
+  if(card)card.classList.add('active-skill');
+
+  const batId=getContextBattery();
+  if(!batId){requireBattery(skillName);setTimeout(()=>{$$('.skill-card').forEach(c=>c.classList.remove('active-skill'))},3000);return}
+
+  // Battery known — run
+  if(!E.currentThread)E.currentThread={id:Date.now(),title:skillName+' \u00B7 '+batId,created:new Date().toISOString(),messages:[]};
+  E.currentThread.messages.push({role:'user',content:`Run ${skillName} for ${batId}`});
+  const botMsg={role:'bot',content:'Analysing...',artifacts:[],pills:[],resultCard:''};
+  E.currentThread.messages.push(botMsg);
+  $('#empty-state').style.display='none';const _mw=$('#messages-wrapper');if(_mw)_mw.style.display='block';
+  renderMessages();
+
+  const isBatterySkill=['range-forecast','external-conditions','driver-behaviour','charging-health','attribution-waterfall','e2e-trace','pack-comparison','cell-balance','fault-severity','event-timeline','intervention-outcome'].includes(skillId);
+  let data;
+  try{
+    if(isBatterySkill){
+      data=await ragApi('/enerlyst/skill/battery/'+skillId,{method:'POST',body:JSON.stringify({battery_id:batId,audience:E.currentAudience})});
+    }else{
+      data=await ragApi('/enerlyst/skill/'+skillId,{method:'POST',body:JSON.stringify({audience:E.currentAudience,battery_id:batId})});
+    }
+  }catch(e){data={answer:'Analysis failed \u2014 check that all services are running.'}}
+
+  const answer=data.answer||data.response||data.result||'No data returned';
+  botMsg.content=answer;
+  botMsg.artifacts=data.artifacts||[];
+  botMsg.discovery=data.discovery||'';
+  botMsg.confidence=data.confidence||null;
+
+  // Confidence
+  const conf=data.confidence_tier||data.confidence?.tier||'ESTIMATED';
+  const confColors={HIGH:'#22c55e',MEDIUM:'#3b82f6',ESTIMATED:'#f59e0b'};
+  const confLabels={HIGH:'Physics-validated',MEDIUM:'Platform data',ESTIMATED:'Estimated'};
+
+  // Build skill result card
+  const ts=new Date().toLocaleTimeString();
+  const resultData={skill:skillName,battery_id:batId,timestamp:new Date().toISOString(),audience:E.currentAudience,answer:answer,artifacts:botMsg.artifacts};
+  const blobUrl=URL.createObjectURL(new Blob([JSON.stringify(resultData,null,2)],{type:'application/json'}));
+  const fname=`${batId}_${skillId}_${new Date().toISOString().slice(0,10)}.json`;
+
+  botMsg.resultCard=`<div class="skill-result-card"><div class="src-header"><span class="src-badge">${esc(skillName)}</span><span class="src-battery">${esc(batId)}</span><span class="src-time">${esc(ts)}</span></div><div class="src-body">${esc(answer.slice(0,500))}</div><div class="src-confidence"><span style="width:6px;height:6px;border-radius:50%;background:${confColors[conf]||'#f59e0b'};display:inline-block"></span><span style="font-size:10px;color:var(--text-muted)">${confLabels[conf]||'Estimated'}</span></div><div class="src-actions"><button class="src-btn" onclick="drillDown('${esc(skillId)}','${esc(batId)}')">Drill deeper \u2193</button><button class="src-btn" onclick="followUpThread('${esc(skillId)}','${esc(batId)}','${esc(skillName)}')">Ask follow-up \u2192</button><a href="${blobUrl}" download="${fname}" class="src-btn" style="text-decoration:none">\u2B07 Download</a></div></div>`;
+
+  const suggestData=await ragApi('/enerlyst/suggest',{method:'POST',body:JSON.stringify({answer:answer.slice(0,400),audience:E.currentAudience,battery_id:batId})}).catch(()=>({suggestions:[]}));
+  botMsg.pills=(suggestData.suggestions||[]).slice(0,4);
+
+  renderMessages();
+  setTimeout(()=>{$$('.skill-card').forEach(c=>c.classList.remove('active-skill'))},3000);
+
+  const threads=getThreads();const idx=threads.findIndex(t=>t.id===E.currentThread.id);
+  if(idx>=0)threads[idx]=E.currentThread;else threads.unshift(E.currentThread);
+  saveThreads(threads);
+}
+
+function followUpThread(skillId,batteryId,skillName){
+  const input=$('#chat-input');
+  if(input){input.value=`Tell me more about the ${skillName} findings for ${batteryId}`;input.focus()}
+}
+function drillDown(skillId,batteryId){
+  const next={'attribution-waterfall':'e2e-trace','range-forecast':'charging-health','charging-health':'driver-behaviour','external-conditions':'cell-balance','cell-balance':'intervention-outcome','e2e-trace':'attribution-waterfall','fault-severity':'event-timeline','event-timeline':'intervention-outcome'}[skillId]||'e2e-trace';
+  const name=(window._skills||[]).find(s=>s.id===next)?.name||next;
+  runSkill(next,name);
+}
+function downloadResult(skillId,batteryId,data){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${batteryId}_${skillId}_${new Date().toISOString().slice(0,10)}.json`;a.click();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Feedback
+// ═══════════════════════════════════════════════════════════════
+async function sendFeedback(msgIdx,rating){
+  const t=E.currentThread;if(!t)return;
+  const msg=t.messages[msgIdx];if(!msg)return;
+  await ragApi('/enerlyst/feedback',{method:'POST',body:JSON.stringify({query_id:t.id+'-'+msgIdx,rating:rating>0?5:1,comment:rating>0?'helpful':'not helpful'})}).catch(()=>{});
+  toast(rating>0?'Thanks for the feedback!':'Issue logged for review');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Fleet footer
+// ═══════════════════════════════════════════════════════════════
+async function loadFleetFooter(){
+  try{
+    const d=await api(E.config.DB_URL+'/api/fleet/summary?chemistry=LFP');
+    if(d.error)return;
+    const rd=d.rul_action_dist||{};
+    const total=d.total_batteries||183;
+    const h=Object.keys(rd).length?(rd.NO_ACTION||0)+(rd.MONITOR_WEEKLY||0)+(rd.MONITOR||0):total;
+    const a=Object.keys(rd).length?(rd.CELL_BALANCE||0)+(rd.REPLACE_PLAN||0):0;
+    const u=Object.keys(rd).length?(rd.REPLACE_URGENT||0)+(rd.EOL_IMMINENT||0):0;
+    const t=h+a+u||1;
+    const fs=document.getElementById('fleet-score');if(fs)fs.textContent=d.eehi?Math.round(d.eehi):'--';
+    const fh=document.getElementById('fb-healthy');if(fh)fh.style.flex=h/t;
+    const fa=document.getElementById('fb-action');if(fa)fa.style.flex=a/t;
+    const fu=document.getElementById('fb-urgent');if(fu)fu.style.flex=u/t;
+    const ch=document.getElementById('fc-healthy');if(ch)ch.textContent=h;
+    const ca=document.getElementById('fc-action');if(ca)ca.textContent=a;
+    const cu=document.getElementById('fc-urgent');if(cu)cu.textContent=u;
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Thermal badge
+// ═══════════════════════════════════════════════════════════════
+async function loadThermalBadge(){
+  try{
+    const d=await api(E.config.DB_URL+'/api/fleet/summary?chemistry=LFP');
+    if(d&&d.thermal_max_fleet!=null&&d.thermal_max_fleet>35){
+      const badge=$('#thermalBadge');
+      const txt=$('#thermalText');
+      if(badge&&txt){
+        txt.textContent=Math.round(d.thermal_max_fleet)+'\u00B0C \u00B7 Thermal active \u00B7 +8% risk';
+        badge.style.display='flex';
+      }
+    }
+  }catch(e){}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Demo mode
+// ═══════════════════════════════════════════════════════════════
+function checkDemoMode(){
+  const params=new URLSearchParams(window.location.search);
+  const demo=params.get('demo');
+  const batParam=params.get('battery');
+  if(batParam&&!demo){setTimeout(()=>{selectBattery(batParam)},500);return}
+  if(!demo)return;
+  const demoMap={
+    nbfc:{battery:'BAT_LFP_053',question:'What is the financial risk exposure for BAT_LFP_053?',audience:'nbfc'},
+    operator:{battery:'BAT_LFP_034',question:'What should I do with BAT_LFP_034 this week?',audience:'operator'},
+    oem:{battery:'BAT_LFP_044',question:'Is the degradation on BAT_LFP_044 a design issue or charging?',audience:'oem'},
+  };
+  const cfg=demoMap[demo];if(!cfg)return;
+  setTimeout(()=>{
+    setAudience(cfg.audience);selectBattery(cfg.battery);
+    $('#chat-input').value=cfg.question;sendMessage();
+  },800);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Scroll demo charts
+// ═══════════════════════════════════════════════════════════════
+function initScrollDemo(){
+  const secs=['opening','transition','operator','nbfc','oem','cta'];
+  const dotsEl=document.createElement('div');dotsEl.className='scroll-dots';dotsEl.id='scrollDots';
+  dotsEl.innerHTML=secs.map((_,i)=>`<div class="scroll-dot" id="dot-${i}" onclick="document.getElementById('section-${secs[i]}')?.scrollIntoView({behavior:'smooth'})"></div>`).join('');
+  document.getElementById('empty-state')?.appendChild(dotsEl);
+  const els=secs.map(s=>document.getElementById('section-'+s)).filter(Boolean);
+  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){const idx=els.indexOf(e.target);document.querySelectorAll('.scroll-dot').forEach((d,i)=>d.classList.toggle('active',i===idx))}})},{threshold:0.5});
+  els.forEach(el=>obs.observe(el));
+  setTimeout(renderDemoCharts,500);
+}
+function renderDemoCharts(){
+  const fc=document.getElementById('forecastMiniChart');
+  if(fc&&window.Chart){new Chart(fc.getContext('2d'),{type:'line',data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],datasets:[{data:[78,77.8,77.2,76.5,76,75.2,74.8,74,73.5,72.8,72,71.2],borderColor:'#C96A2A',borderWidth:2,pointRadius:0,fill:false,tension:.3,label:'P50'},{data:[78,77,76,74.8,74,72.8,72,70.8,70,68.8,68,66.8],borderColor:'#dc2626',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,tension:.3,label:'P10'},{data:[78,78.2,78,77.5,77.2,76.8,76.5,76,75.8,75.2,75,74.5],borderColor:'#16a34a',borderWidth:1,borderDash:[3,3],pointRadius:0,fill:false,tension:.3,label:'P90'}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:true,position:'right',ticks:{font:{size:9},color:'#B0A69C',maxTicksLimit:3},grid:{color:'rgba(0,0,0,0.04)'}}},animation:{duration:800}}})}
+  // Grade donut removed — replaced with inline bar
+  const pc=document.getElementById('packCompareChart');
+  if(pc&&window.Chart){new Chart(pc.getContext('2d'),{type:'bar',data:{labels:['Pack3401','Fleet median','Pack3001'],datasets:[{data:[79.3,86.5,88.2],backgroundColor:['#dc2626','#C96A2A','#E8A06A'],borderRadius:6,borderSkipped:false}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10,family:'Inter'},color:'#8A7E74'}},y:{display:true,ticks:{font:{size:9},color:'#B0A69C'},grid:{color:'rgba(0,0,0,0.04)'},min:74}},animation:{duration:800}}})}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Boot
+// ═══════════════════════════════════════════════════════════════
+function boot(){
+  // Set audience tabs
+  $$('.aud-tab').forEach(b=>b.classList.toggle('active',b.dataset.aud===E.currentAudience));
+  updatePlaceholder();
+  newThread();
+  // Load data
+  loadFilterData().then(()=>loadHierarchy());
+  loadFleetFooter();
+  loadThermalBadge();
+  loadSkills();
+  initScrollDemo();
+  setInterval(loadFleetFooter,300000);
+  // Demo mode
+  checkDemoMode();
+}
+window.onload=boot;
+</script>
+</body>
+</html>

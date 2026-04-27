@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>enerlytik · Battery Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --canvas:  #FAFAF8;
+  --panel:   #FFFFFF;
+  --border:  #E5E7EB;
+  --muted:   #6B7280;
+  --text:    #1F2937;
+  --orange:  #E8500A;
+  --amber:   #F59E0B;
+  --green:   #10B981;
+  --teal:    #0D9488;
+  --red:     #EF4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--canvas);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+.mono { font-family: 'DM Mono', monospace; }
+a { color: inherit; text-decoration: none; }
+
+/* Sidebar */
+#sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: 200px; background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 20px 14px; display: flex; flex-direction: column; gap: 4px;
+}
+#sidebar .brand {
+  font-weight: 700; color: var(--orange); font-size: 18px;
+  margin-bottom: 24px;
+}
+.side-link {
+  display: block; padding: 10px 12px; border-radius: 6px;
+  color: var(--muted); font-weight: 500; font-size: 13px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.side-link:hover { background: #F3F4F6; color: var(--text); }
+.side-link.active { background: #FFF7ED; color: var(--orange); }
+
+#main { margin-left: 200px; padding: 24px 28px; max-width: 1100px; }
+
+.topbar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border);
+}
+.topbar h1 { font-size: 22px; font-weight: 600; color: var(--text); }
+.topbar input {
+  padding: 6px 10px; border: 1px solid var(--border);
+  border-radius: 5px; background: #fff; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 13px; min-width: 200px;
+}
+.topbar button {
+  padding: 6px 14px; background: var(--orange); color: #fff;
+  border: 0; border-radius: 5px; font-size: 13px; font-weight: 500;
+  cursor: pointer;
+}
+
+.section { margin-bottom: 30px; scroll-margin-top: 18px; }
+.section-title {
+  font-size: 18px; font-weight: 600; color: var(--text);
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--orange);
+  display: inline-block;
+}
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 16px; margin-bottom: 14px;
+}
+.card-title {
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+}
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.stat-tile {
+  background: #F9FAFB; border-radius: 5px; padding: 10px 12px;
+  border-left: 3px solid var(--orange);
+}
+.stat-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-val { font-size: 20px; font-weight: 600; margin-top: 2px; color: var(--text); }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.amber-card {
+  background: #FFFBEB; border-left: 3px solid var(--amber);
+  padding: 12px; border-radius: 5px; font-size: 13px; margin-bottom: 10px;
+}
+.teal-card {
+  background: #ECFEFF; border-left: 3px solid var(--teal);
+  padding: 10px 12px; border-radius: 5px; font-size: 12px; color: #134E4A; margin-bottom: 10px;
+}
+.grey-card {
+  background: #F3F4F6; padding: 12px; border-radius: 5px;
+  color: var(--muted); font-size: 12px; margin-bottom: 10px;
+}
+
+.attr-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.attr-label { flex: 0 0 160px; font-size: 12px; color: var(--text); }
+.attr-track {
+  flex: 1; height: 10px; background: #E5E7EB;
+  border-radius: 4px; overflow: hidden;
+}
+.attr-fill { height: 100%; transition: width 0.4s ease; }
+.attr-pct {
+  flex: 0 0 60px; text-align: right; font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text);
+}
+
+.dpp-toggle {
+  display: inline-block; margin-top: 10px; font-size: 12px;
+  color: var(--orange); cursor: pointer; user-select: none;
+}
+.dpp-body {
+  display: none; margin-top: 8px; padding: 10px;
+  background: #F9FAFB; border-radius: 5px; font-size: 11px;
+  color: var(--muted); line-height: 1.6; font-family: 'DM Mono', monospace;
+}
+.dpp-body.open { display: block; }
+
+.footnote { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+/* DEKF SOC panel */
+.dekf-card-grid {
+  display: grid; grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 12px; margin-top: 10px;
+}
+.dekf-card {
+  background: #F9FAFB; border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 14px;
+}
+.dekf-card.primary { background: #FFF7ED; border-color: #FFD9B8; }
+.dekf-val { font-family: 'DM Mono', monospace; color: var(--text); }
+.dekf-val.xl { font-size: 28px; color: var(--orange); }
+.dekf-val.l  { font-size: 24px; color: var(--muted); }
+.dekf-val.red   { color: var(--red); }
+.dekf-val.green { color: var(--green); }
+.dekf-lbl { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.dekf-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: 'DM Mono', monospace; }
+.dekf-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 10px;
+  font-size: 10px; font-weight: 600; margin-top: 8px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+}
+.dekf-badge.high    { background: #D1FAE5; color: #065F46; }
+.dekf-badge.medium  { background: #FEF3C7; color: #92400E; }
+.dekf-badge.low     { background: #FEE2E2; color: #991B1B; }
+.dekf-badge.insuff  { background: #E5E7EB; color: #374151; }
+.dekf-note-card {
+  margin-top: 12px; padding: 12px 14px;
+  background: #FAFAF8; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 13px; color: var(--text);
+}
+.dekf-note-card.alert {
+  border-left: 3px solid var(--orange);
+}
+.dekf-chart-wrap {
+  margin-top: 14px; padding: 12px;
+  background: #FFFFFF; border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.dekf-chart-title {
+  font-size: 12px; color: var(--muted); margin-bottom: 8px;
+  font-family: 'DM Mono', monospace;
+}
+.dekf-chart-empty {
+  padding: 18px; text-align: center; color: var(--muted); font-size: 12px;
+}
+.dekf-disclosure {
+  margin-top: 12px; padding: 10px 12px;
+  background: #F3F4F6; border-radius: 5px; font-size: 11px;
+  color: var(--muted); line-height: 1.6;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<!-- Sprint E UX polish (shared) -->
+<style>
+/* Tooltip wrapper */
+.tooltip-wrap { position:relative; display:inline-block; cursor:help; }
+.tooltip-wrap::after {
+  content: "ⓘ"; font-size: 10px; color: #9CA3AF; margin-left: 4px;
+  vertical-align: middle;
+}
+.tooltip-wrap > .tip {
+  visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 6px);
+  left:50%; transform:translateX(-50%); background:#0F172A; color:#F8FAFC;
+  font-size:11px; line-height:1.5; padding:8px 12px; border-radius:6px;
+  white-space:normal; width:max-content; max-width:260px;
+  pointer-events:none; z-index:10000; transition:opacity 0.15s;
+  text-transform:none; font-weight:400; letter-spacing:0;
+}
+.tooltip-wrap:hover > .tip { visibility:visible; opacity:1; }
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ux-shimmer 1.5s infinite;
+  border-radius: 4px; min-height: 16px;
+}
+@keyframes ux-shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+/* Error card */
+.ux-error-card {
+  background:#FEF3C7; border:1px solid #F59E0B; border-radius:8px;
+  padding:14px 16px; display:flex; gap:12px; align-items:flex-start; font-size:13px;
+}
+.ux-error-card .ico { font-size:20px; line-height:1; }
+.ux-error-card .title { font-weight:600; color:#92400E; }
+.ux-error-card .detail { font-size:12px; color:#B45309; margin-top:4px; }
+.ux-error-card button {
+  margin-top:6px; padding:3px 10px; border:1px solid #B45309; border-radius:4px;
+  background:none; color:#B45309; cursor:pointer; font-size:11px;
+}
+/* Week freshness pill (injected top-right) */
+#ux-week-pill {
+  position:fixed; top:14px; right:18px; z-index:9500;
+  font-family: 'DM Mono', monospace; font-size:11px; color:#6B7280;
+  background:#FFFFFF; border:1px solid #E5E7EB; border-radius:999px;
+  padding:4px 12px; letter-spacing:0.04em; cursor:help;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+#ux-week-pill.dark { background:#1A1A1A; border-color:#333; color:#9CA3AF; }
+</style>
+<script>
+(function(){
+  // Inject Week N freshness pill once per page
+  document.addEventListener('DOMContentLoaded', async function(){
+    if (document.getElementById('ux-week-pill')) return;
+    const pill = document.createElement('div');
+    pill.id = 'ux-week-pill';
+    const isDark = getComputedStyle(document.body).backgroundColor.match(/^rgb\((\d+)/);
+    if (isDark && Number(isDark[1]) < 80) pill.classList.add('dark');
+    pill.textContent = 'Week —';
+    pill.title = 'Platform runs on a frozen weekly snapshot.';
+    document.body.appendChild(pill);
+    // Fetch freshness — try dedicated endpoint, then fallback to fleet/summary
+    try {
+      let week = null;
+      try {
+        const r = await fetch('/api/fleet/status');
+        if (r.ok) { const d = await r.json(); week = d.current_week || d.last_scored; }
+      } catch(e){}
+      if (!week) {
+        try {
+          const r2 = await fetch('/api/fleet/summary');
+          if (r2.ok) { const d2 = await r2.json(); week = d2.latest_week || d2.current_week; }
+        } catch(e){}
+      }
+      pill.textContent = week ? ('Week ' + week) : 'Week 65';
+      pill.title = 'Platform runs on Week ' + (week || 65) + ' frozen snapshot.';
+    } catch(e) { pill.textContent = 'Week 65'; }
+  });
+  // Global helper for error cards
+  window.uxErrorCard = function(name) {
+    return '<div class="ux-error-card"><span class="ico">⚠</span><div>'
+      + '<div class="title">' + name + ' unavailable</div>'
+      + '<div class="detail">Check server connection.'
+      + '<button onclick="location.reload()">Retry</button></div>'
+      + '</div></div>';
+  };
+})();
+</script>
+<!-- /Sprint E UX polish -->
+</head>
+
+<body>
+<aside id="sidebar">
+  <div class="brand">enerlytik</div>
+  <a href="#sox" class="side-link" data-nav="sox">SOX</a>
+  <a href="#soh" class="side-link active" data-nav="soh">SOH</a>
+  <a href="#soc" class="side-link" data-nav="soc">SOC</a>
+  <a href="#rul" class="side-link" data-nav="rul">RUL</a>
+</aside>
+
+<main id="main">
+  <div class="topbar">
+    <h1>Battery Analytics</h1>
+    <span style="flex:1"></span>
+    <input id="bat-input" list="bat-list" placeholder="battery_id" value="BAT_LFP_109">
+    <datalist id="bat-list"></datalist>
+    <button onclick="loadBattery()">Load</button>
+  </div>
+
+  <!-- SOX -->
+  <section class="section" id="sox">
+    <div class="section-title">SOX · Stress-of-Experience</div>
+    <div class="card">
+      <div class="card-title">Summary</div>
+      <div class="stat-row">
+        <div class="stat-tile"><div class="stat-lbl">SOX tier</div><div class="stat-val" id="sox-tier">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Events (2 weeks)</div><div class="stat-val" id="sox-events">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Warnings (4 weeks)</div><div class="stat-val amber" id="sox-warnings">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Event trend</div><div class="stat-val" id="sox-trend">—</div></div>
+      </div>
+      <div class="footnote" id="sox-footer">—</div>
+    </div>
+  </section>
+
+  <!-- SOH -->
+  <section class="section" id="soh">
+    <div class="section-title">SOH · State-of-Health</div>
+    <div class="card">
+      <div class="card-title">Capacity and range</div>
+      <div class="stat-row">
+        <div class="stat-tile"><div class="stat-lbl"><span class="tooltip-wrap">SoH (coulomb)<span class="tip">Coulomb-counted state of health — cumulative Ah throughput vs commissioned capacity. Most accurate method when swing ≥40%.</span></span></div><div class="stat-val" id="soh-coulomb">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl"><span class="tooltip-wrap">SoH (conservative)<span class="tip">Conservative SOH — lower of Coulomb and KPS methods with 15-point spike guard. BMS SOH excluded: unreliable for LFP chemistry.</span></span></div><div class="stat-val" id="soh-cons">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Range (km)</div><div class="stat-val" id="soh-range">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl"><span class="tooltip-wrap">Warranty status<span class="tip">Claim eligibility: degradation pace exceeds manufacturer warranty floor for this battery's age.</span></span></div><div class="stat-val" id="soh-warranty">—</div></div>
+      </div>
+      <div class="footnote" id="soh-footer">—</div>
+    </div>
+
+    <!-- Attribution sub-panel (OEM audience) -->
+    <div class="card" id="soh-attr-card">
+      <div class="card-title">
+        Degradation attribution
+        <span class="mono" style="float:right;font-weight:400;color:var(--muted);font-size:11px" id="soh-attr-meta">—</span>
+      </div>
+
+      <div class="amber-card" id="soh-attr-pack-gap" style="display:none">
+        <strong>Pack3401 · PACK_GAP_EXCEPTION</strong><br>
+        <span id="soh-attr-pack-gap-text">—</span>
+      </div>
+      <div class="grey-card" id="soh-attr-incomplete" style="display:none">
+        <span id="soh-attr-incomplete-text">—</span>
+      </div>
+      <div class="teal-card" id="soh-attr-vehicle" style="display:none">
+        <strong>Vehicle signal:</strong> <span id="soh-attr-vehicle-text">—</span>
+      </div>
+
+      <div id="soh-attr-bars" style="margin-bottom:12px"></div>
+
+      <div id="soh-attr-narrative" style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:10px">—</div>
+
+      <div class="stat-row" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-tile"><div class="stat-lbl">Operator share</div><div class="stat-val" id="soh-attr-op">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">OEM share</div><div class="stat-val" id="soh-attr-oem">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Warranty eligible</div><div class="stat-val" id="soh-attr-warr">—</div></div>
+      </div>
+
+      <span class="dpp-toggle" onclick="document.getElementById('soh-dpp').classList.toggle('open')">Data provenance ▾</span>
+      <div id="soh-dpp" class="dpp-body">
+        Source: battery_degradation_attribution (RULE_BASED_V1) and battery_health_scores_v2 (coulomb SoH).<br>
+        Engine: fleet physics model, rule-based 5-factor attribution.<br>
+        Normalisation: LFP factors sum to 100. NMC / LCV / FGHHL excluded — separate methodology.<br>
+        Vehicle-issue detection: coulomb/range divergence &gt; 1.15 for 3+ consecutive weeks in last 8.<br>
+        Pack3401: design-gap exception applied — operator attribution suppressed.<br>
+        RUL action surfaced from the current RUL model.
+      </div>
+    </div>
+  </section>
+
+  <!-- SOC -->
+  <section class="section" id="soc">
+    <div class="section-title">SOC · State-of-Charge behaviour</div>
+
+    <div class="card">
+      <div class="card-title">DEKF-corrected state of charge</div>
+      <div class="dekf-card-grid">
+        <div class="dekf-card primary">
+          <div class="dekf-val xl" id="dekf-soc-val">—</div>
+          <div class="dekf-lbl">DEKF-corrected estimate</div>
+          <span class="dekf-badge insuff" id="dekf-soc-badge">—</span>
+        </div>
+        <div class="dekf-card">
+          <div class="dekf-val l" id="dekf-bms-val">—</div>
+          <div class="dekf-lbl">BMS-reported (uncorrected)</div>
+          <div class="dekf-sub" id="dekf-bms-sub">—</div>
+        </div>
+        <div class="dekf-card">
+          <div class="dekf-val l" id="dekf-corr-val">—</div>
+          <div class="dekf-lbl">BMS calibration bias</div>
+        </div>
+      </div>
+      <div class="dekf-note-card" id="dekf-note">DEKF SOC estimate not available for this battery.</div>
+      <div class="dekf-chart-wrap" id="dekf-chart-wrap" style="display:none">
+        <div class="dekf-chart-title">DEKF vs BMS SOC — last 8 weeks</div>
+        <canvas id="dekf-chart" height="120"></canvas>
+      </div>
+      <div class="dekf-chart-empty" id="dekf-chart-empty" style="display:none">Weekly trajectory builds after 4 weeks of data.</div>
+      <div class="dekf-disclosure">
+        DEKF SOC corrects for BMS firmware bias measured from fleet telemetry.
+        GE batteries: BMS overreads SOC by 4.44% (SIGNED convention).
+        SG batteries: BMS overreads by 1.0% (MAG_ONLY convention).
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-title">Usage pattern</div>
+      <div class="stat-row">
+        <div class="stat-tile"><div class="stat-lbl">DoD (avg)</div><div class="stat-val" id="soc-dod">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Sessions / day</div><div class="stat-val" id="soc-sess">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Charge start SoC (avg)</div><div class="stat-val" id="soc-start">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">KPS (km per SoC %)</div><div class="stat-val" id="soc-kps">—</div></div>
+      </div>
+      <div class="footnote" id="soc-footer">DoD calculated from DEKF SOC, not raw BMS value.</div>
+    </div>
+  </section>
+
+  <!-- RUL -->
+  <section class="section" id="rul">
+    <div class="section-title">RUL · Remaining-Useful-Life</div>
+    <div class="card">
+      <div class="card-title">Forecast and action</div>
+      <div class="stat-row">
+        <div class="stat-tile"><div class="stat-lbl">Floor breach · 4 wk</div><div class="stat-val amber" id="rul-fb4">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Floor breach · 8 wk</div><div class="stat-val amber" id="rul-fb8">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl">Floor breach · 12 wk</div><div class="stat-val red" id="rul-fb12">—</div></div>
+        <div class="stat-tile"><div class="stat-lbl"><span class="tooltip-wrap">Action<span class="tip">Remaining Useful Life tier — directional estimate only. Not for contractual use. 9 of 30 field outcomes confirmed.</span></span></div><div class="stat-val" id="rul-action">—</div></div>
+      </div>
+      <div class="footnote" id="rul-footer">—</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const DB_API = 'http://localhost:3001';
+
+async function apiGet(path) {
+  try {
+    const r = await fetch(DB_API + path);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) { return null; }
+}
+
+function $(id) { return document.getElementById(id); }
+function setText(id, v) { const el = $(id); if (el) el.textContent = (v == null || v === '') ? '—' : v; }
+function setHTML(id, v) { const el = $(id); if (el) el.innerHTML = v; }
+function show(id, v) { const el = $(id); if (el) el.style.display = v ? '' : 'none'; }
+
+function getQueryParam(k) {
+  const p = new URLSearchParams(window.location.search);
+  return p.get(k);
+}
+
+async function populateDatalist() {
+  const r = await apiGet('/api/batteries/ids');
+  const ids = Array.isArray(r) ? r : (r && r.ids ? r.ids : []);
+  const dl = $('bat-list');
+  if (dl) dl.innerHTML = ids.slice(0, 400).map(id => '<option value="' + id + '">').join('');
+}
+
+async function renderAttribution(bid) {
+  const r = await apiGet('/api/battery/' + encodeURIComponent(bid) + '/attribution?audience=oem');
+  show('soh-attr-pack-gap', false);
+  show('soh-attr-incomplete', false);
+  show('soh-attr-vehicle', false);
+  setHTML('soh-attr-bars', '');
+
+  if (!r || r.error) {
+    setText('soh-attr-narrative', 'Attribution unavailable for ' + bid + '.');
+    setText('soh-attr-meta', '');
+    return;
+  }
+  setText('soh-attr-meta',
+    (r.pack_model ? r.pack_model + ' · ' : '') +
+    (r.age_months ? r.age_months + ' mo · ' : '') +
+    (r.attribution_quality || r.attribution_mode || ''));
+  setText('soh-attr-warr', Number(r.warranty_claim_eligible) === 1 ? 'YES' : 'NO');
+
+  if (r.attribution_mode === 'PACK_GAP_EXCEPTION') {
+    setText('soh-attr-pack-gap-text', r.pack_gap_note || '');
+    show('soh-attr-pack-gap', true);
+    setText('soh-attr-narrative', r.oem_narrative || '');
+    setText('soh-attr-op', '—'); setText('soh-attr-oem', '—');
+    return;
+  }
+  if (r.attribution_quality === 'INCOMPLETE') {
+    setText('soh-attr-incomplete-text', r.incomplete_note || 'Attribution signal incomplete.');
+    show('soh-attr-incomplete', true);
+    setText('soh-attr-narrative', r.oem_narrative || '');
+    setText('soh-attr-op', '—'); setText('soh-attr-oem', '—');
+    return;
+  }
+  if (r.vehicle_issue) {
+    setText('soh-attr-vehicle-text', r.vehicle_context || '');
+    show('soh-attr-vehicle', true);
+  }
+  const order = ['charging', 'usage', 'thermal', 'maintenance', 'calendar'];
+  const labels = { charging:'Charging pattern', usage:'Usage intensity', thermal:'Thermal exposure', maintenance:'Cell maintenance', calendar:'Calendar aging' };
+  const f = r.factors || {};
+  const primary = (function(){
+    let mx = -1, k = 'calendar';
+    for (const key of order) if ((f[key]||0) > mx) { mx = f[key]||0; k = key; }
+    return k;
+  })();
+  const html = order.map(key => {
+    const val = Number(f[key]) || 0;
+    const width = Math.max(3, Math.min(100, val));
+    const color = key === primary ? 'var(--orange)' : '#D1D5DB';
+    return (
+      '<div class="attr-row">' +
+        '<span class="attr-label">' + labels[key] + '</span>' +
+        '<div class="attr-track"><div class="attr-fill" style="width:' + width + '%;background:' + color + '"></div></div>' +
+        '<span class="attr-pct">' + val.toFixed(1) + '%</span>' +
+      '</div>');
+  }).join('');
+  setHTML('soh-attr-bars', html);
+  setText('soh-attr-narrative', r.oem_narrative || '');
+  setText('soh-attr-op', r.operator_attribution_pct == null ? '—' : r.operator_attribution_pct.toFixed(1) + '%');
+  setText('soh-attr-oem', r.oem_attribution_pct == null ? '—' : r.oem_attribution_pct.toFixed(1) + '%');
+}
+
+async function renderSOH(bid) {
+  const p = await apiGet('/api/battery/' + encodeURIComponent(bid) + '/passport');
+  if (!p || p.error || !p.battery_id) {
+    setText('soh-footer', 'No telemetry data for ' + bid + '. Check IoT connection.');
+    setText('soh-coulomb', '—'); setText('soh-cons', '—'); setText('soh-range', '—'); setText('soh-warranty', '—');
+    return;
+  }
+  setText('soh-coulomb', p.soh_coulomb == null ? '—' : Math.round(p.soh_coulomb) + '%');
+  setText('soh-cons', p.soh_conservative == null ? '—' : Math.round(p.soh_conservative) + '%');
+  setText('soh-range', p.range_km == null ? '—' : Math.round(p.range_km) + ' km');
+  setText('soh-warranty', p.warranty_status || '—');
+  setText('soh-footer', 'Pack ' + (p.pack_model || '—') + ' · ' + (p.tier_label_v2 || '—'));
+  await renderAttribution(bid);
+}
+
+async function renderSOX(bid) {
+  const p = await apiGet('/api/battery/' + encodeURIComponent(bid) + '/passport');
+  if (!p || p.error || !p.battery_id) {
+    setText('sox-footer', 'No telemetry data for ' + bid + '. Check IoT connection.');
+    setText('sox-tier', '—'); setText('sox-events', '—'); setText('sox-warnings', '—'); setText('sox-trend', '—');
+    return;
+  }
+  setText('sox-tier', p.sox_tier || p.driver_stress_tier || '—');
+  setText('sox-events', p.event_count_recent == null ? '—' : p.event_count_recent);
+  setText('sox-warnings', p.warning_count_recent == null ? '—' : p.warning_count_recent);
+  setText('sox-trend', p.event_trend || '—');
+  setText('sox-footer', p.sox_note || 'Stress-of-Experience tier from recent event density.');
+}
+
+let dekfChart = null;
+
+function setBadge(id, confidence) {
+  const el = $(id); if (!el) return;
+  const map = {
+    'HIGH':              { cls: 'high',    label: 'HIGH confidence' },
+    'MEDIUM':            { cls: 'medium',  label: 'MEDIUM confidence' },
+    'LOW':               { cls: 'low',     label: 'LOW confidence' },
+    'INSUFFICIENT_DATA': { cls: 'insuff',  label: 'Insufficient data' },
+  };
+  const v = map[confidence] || map['INSUFFICIENT_DATA'];
+  el.className = 'dekf-badge ' + v.cls;
+  el.textContent = v.label;
+}
+
+async function renderSOC(bid) {
+  // Usage pattern block (passport source)
+  const p = await apiGet('/api/battery/' + encodeURIComponent(bid) + '/passport');
+  if (!p || p.error || !p.battery_id) {
+    setText('soc-footer', 'No telemetry data for ' + bid + '. Check IoT connection.');
+    setText('soc-dod', '—'); setText('soc-sess', '—'); setText('soc-start', '—'); setText('soc-kps', '—');
+    setText('dekf-soc-val', '—'); setBadge('dekf-soc-badge', 'INSUFFICIENT_DATA');
+    show('dekf-chart-wrap', false); show('dekf-chart-empty', true);
+    return;
+  }
+  if (p) {
+    setText('soc-dod', p.dod_corrected == null ? '—' : (p.dod_corrected * 100).toFixed(0) + '%');
+    setText('soc-sess', p.charge_sessions_per_day == null ? '—' : p.charge_sessions_per_day.toFixed(2));
+    setText('soc-start', p.charge_start_soc_mean == null ? '—' : Math.round(p.charge_start_soc_mean) + '%');
+    setText('soc-kps', p.km_per_soc_pct == null ? '—' : p.km_per_soc_pct.toFixed(2));
+  }
+
+  // DEKF SOC block
+  const s = await apiGet('/api/battery/' + encodeURIComponent(bid) + '/soc-profile');
+  if (!s) {
+    setText('dekf-soc-val', '—');
+    setText('dekf-bms-val', '—');
+    setText('dekf-corr-val', '—');
+    setBadge('dekf-soc-badge', 'INSUFFICIENT_DATA');
+    setText('dekf-note', 'DEKF SOC estimate not available for this battery.');
+    show('dekf-chart-wrap', false);
+    show('dekf-chart-empty', true);
+    return;
+  }
+
+  const available = s.soc_dekf_available === 1;
+  const dekf = s.soc_dekf_latest;
+  const bms  = s.bms_soc_reconstructed;
+  const corr = s.soc_bms_correction_pct;
+  const conv = s.bms_current_convention || '—';
+  const delta = s.soc_dekf_vs_bms_delta_pp;
+
+  if (available && dekf != null) {
+    setText('dekf-soc-val', dekf.toFixed(0) + '%');
+  } else {
+    setText('dekf-soc-val', 'Pending');
+  }
+  setBadge('dekf-soc-badge', s.soc_dekf_confidence || 'INSUFFICIENT_DATA');
+
+  setText('dekf-bms-val', bms == null ? '—' : bms.toFixed(0) + '%');
+  if (corr != null) {
+    setText('dekf-bms-sub',
+      'Overreads by ' + Math.abs(corr).toFixed(1) + '% (' + conv + ')');
+  } else {
+    setText('dekf-bms-sub', '—');
+  }
+
+  const corrEl = $('dekf-corr-val');
+  if (corr == null) {
+    corrEl.textContent = '—';
+    corrEl.className = 'dekf-val l';
+  } else {
+    corrEl.textContent = (corr >= 0 ? '+' : '') + corr.toFixed(2) + '%';
+    corrEl.className = 'dekf-val l ' + (corr < 0 ? 'red' : 'green');
+  }
+
+  const noteEl = $('dekf-note');
+  noteEl.textContent = s.soc_dekf_vs_bms_note || '—';
+  noteEl.className = 'dekf-note-card' + (delta != null && delta > 4 ? ' alert' : '');
+
+  const trend = Array.isArray(s.soc_weekly_trend) ? s.soc_weekly_trend : [];
+  if (trend.length >= 4) {
+    show('dekf-chart-wrap', true);
+    show('dekf-chart-empty', false);
+    const labels = trend.map(r => 'W' + r.week_number);
+    const dekfLine = trend.map(r => r.soc_dekf_weekly);
+    const bmsLine  = trend.map(r =>
+      (r.soc_dekf_weekly != null && r.soc_dekf_vs_bms_delta != null)
+        ? r.soc_dekf_weekly - r.soc_dekf_vs_bms_delta
+        : null);
+    if (dekfChart) dekfChart.destroy();
+    const ctx = document.getElementById('dekf-chart').getContext('2d');
+    dekfChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'DEKF SOC', data: dekfLine, borderColor: '#E8500A',
+            backgroundColor: 'rgba(232,80,10,0.1)', tension: 0.2,
+            pointRadius: 3, borderWidth: 2 },
+          { label: 'BMS SOC', data: bmsLine, borderColor: '#6B7280',
+            borderDash: [6, 4], tension: 0.2,
+            pointRadius: 2, borderWidth: 1.5, fill: false },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+        scales: {
+          y: { min: 0, max: 100, ticks: { font: { size: 10 }, callback: v => v + '%' } },
+          x: { ticks: { font: { size: 10 } } },
+        },
+      },
+    });
+  } else {
+    show('dekf-chart-wrap', false);
+    show('dekf-chart-empty', true);
+  }
+}
+
+async function renderRUL(bid) {
+  const p = await apiGet('/api/battery/' + encodeURIComponent(bid) + '/passport');
+  if (!p || p.error || !p.battery_id) {
+    setText('rul-footer', 'No telemetry data for ' + bid + '. Check IoT connection.');
+    setText('rul-fb4', '—'); setText('rul-fb8', '—'); setText('rul-fb12', '—'); setText('rul-action', '—');
+    return;
+  }
+  setText('rul-fb4', p.p_floor_breach_4w == null ? '—' : (p.p_floor_breach_4w * 100).toFixed(0) + '%');
+  setText('rul-fb8', p.p_floor_breach_8w == null ? '—' : (p.p_floor_breach_8w * 100).toFixed(0) + '%');
+  setText('rul-fb12', p.p_floor_breach_12w == null ? '—' : (p.p_floor_breach_12w * 100).toFixed(0) + '%');
+  setText('rul-action', p.rul_action_v2 || '—');
+  setText('rul-footer', 'Forecast directional — not for contractual use. Conformal calibration 9/30 confirmed.');
+}
+
+async function loadBattery() {
+  const bid = ($('bat-input').value || 'BAT_LFP_109').trim();
+  await Promise.all([ renderSOX(bid), renderSOH(bid), renderSOC(bid), renderRUL(bid) ]);
+}
+
+function setupNav() {
+  document.querySelectorAll('.side-link').forEach(a => {
+    a.addEventListener('click', () => {
+      document.querySelectorAll('.side-link').forEach(x => x.classList.remove('active'));
+      a.classList.add('active');
+    });
+  });
+  window.addEventListener('scroll', () => {
+    const sections = ['sox','soh','soc','rul'];
+    const y = window.scrollY + 80;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const el = $(sections[i]);
+      if (el && el.offsetTop <= y) {
+        document.querySelectorAll('.side-link').forEach(x => x.classList.toggle('active', x.dataset.nav === sections[i]));
+        break;
+      }
+    }
+  });
+}
+
+(async function init() {
+  // Query params
+  const qBat = getQueryParam('battery');
+  if (qBat) $('bat-input').value = qBat;
+  await populateDatalist();
+  await loadBattery();
+  setupNav();
+  const qSec = getQueryParam('section');
+  if (qSec) {
+    const tgt = $(qSec);
+    if (tgt) tgt.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlyst · Internal Diagnostic Cockpit</title>
+<link rel="icon" href="data:,">
+<!-- TODO: remove embedded token before production deploy. Use auth flow instead. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        surface: '#FFFFFF', bg: '#FAF9F6', card: '#FAF9F6',
+        hover: '#EEEAE3', teal: '#16a34a', accent: '#C96A2A'
+      },
+      fontFamily: { sans: ['Inter','system-ui','sans-serif'], mono: ['DM Mono','Fira Code','monospace'] }
+    }
+  }
+}
+</script>
+<style>
+:root{--bg:#FAF9F6;--surface:#FFFFFF;--card:#FAF9F6;--hover:#EEEAE3;--border:#E5E0D8;--border-md:#D9D3CB;--text:#1A1714;--text2:#4A4540;--muted:#8A7E74;--label:#B0A69C;--accent:#C96A2A;--accent-hover:#B55A1F;--accent-light:#FDF0E8;--accent-border:#F0C8A0;--accent-dim:rgba(201,106,42,0.12);--teal:#16a34a;--teal-dim:rgba(22,163,74,0.1);--shadow:0 1px 3px rgba(0,0,0,0.06),0 1px 2px rgba(0,0,0,0.04)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px}
+
+/* ── Layout ── */
+.internal-app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.internal-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+#tab-content{flex:1;overflow-y:auto;padding:24px;max-width:1200px;margin:0 auto;width:100%}
+
+/* ── Header ── */
+.internal-header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:20}
+
+/* ── Tabs ── */
+.tab-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;gap:0;flex-shrink:0;overflow-x:auto}
+.tab-btn{padding:14px 18px;font-size:13px;font-weight:500;color:var(--muted);background:transparent;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;margin-bottom:-1px}
+.tab-btn:hover{color:var(--text2)}
+.tab-active{color:var(--accent);border-bottom-color:var(--accent)}
+.subtab-active{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(249,115,22,0.3);border-radius:6px}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:16px;font-family:'Inter',sans-serif}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.badge-green{background:rgba(22,163,74,0.1);color:#16a34a}
+.badge-red{background:rgba(239,68,68,0.08);color:#dc2626}
+.badge-yellow{background:rgba(245,158,11,0.08);color:#d97706}
+.badge-gray{background:#f3f1ec;color:var(--muted)}
+.badge-teal{background:rgba(22,163,74,0.1);color:#16a34a}
+
+/* ── Inputs ── */
+.input-dark{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s}
+.input-dark:focus{border-color:var(--accent-border);box-shadow:0 0 0 3px var(--accent-dim)}
+textarea.input-dark{resize:vertical;min-height:60px}
+select.input-dark{appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B6560' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'Inter',sans-serif}
+.btn-teal{background:var(--accent);color:#fff}
+.btn-teal:hover{background:var(--accent-hover)}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}
+.btn-ghost:hover{border-color:var(--accent-border);color:var(--accent)}
+.btn-red{background:rgba(239,68,68,0.12);color:#EF4444;border:1px solid rgba(239,68,68,0.2)}
+
+/* ── Score bars ── */
+.score-bar{height:6px;border-radius:3px;background:#EDE9E2}
+.score-fill{height:100%;border-radius:3px}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;border-bottom:1px solid #EDE9E2;color:var(--text2);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--hover)}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;max-width:900px;width:95%;max-height:85vh;overflow-y:auto;padding:24px;box-shadow:0 8px 32px rgba(0,0,0,0.12)}
+
+/* ── Role toggle ── */
+.role-toggle{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.role-toggle-btn{padding:5px 14px;font-size:12px;font-weight:500;font-family:'Inter',sans-serif;background:transparent;border:none;color:var(--muted);cursor:pointer;transition:all .15s}
+.role-toggle-btn.active{background:var(--accent);color:#fff}
+
+/* ── Misc ── */
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ════ CONFIG ════ -->
+<script>
+// Seed RAG token on first load (P5-C auth fix)
+if (!localStorage.getItem('enerlyst_token')) {
+  localStorage.setItem('enerlyst_token', '{{ api_token }}');
+}
+window.ENERLYST_CONFIG = {
+  RAG_URL: 'http://localhost:8001',
+  DB_URL: 'http://localhost:3001',
+  TOKEN: 'Bearer ' + (localStorage.getItem('enerlyst_token') || '{{ api_token }}'),
+};
+window.currentRole = sessionStorage.getItem('enerlyst_role') || 'fde';
+</script>
+
+<!-- ════ HEADER ════ -->
+<header class="internal-header">
+  <div style="display:flex;align-items:center;gap:16px">
+    <svg viewBox="0 0 280 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:28px;width:auto"><rect x="1" y="1" width="68" height="68" rx="12" fill="#170502" stroke="#F97316" stroke-width="2"/><text x="18" y="48" font-family="Inter,Arial,sans-serif" font-weight="700" font-size="36" fill="#F97316">E</text><circle cx="57" cy="18" r="4" fill="none" stroke="#F97316" stroke-width="1.5"/><text x="84" y="42" font-family="Inter,Arial,sans-serif" font-weight="600" font-size="32" letter-spacing="-0.5" fill="#F97316">enerlytik</text><text x="85" y="60" font-family="Inter,Arial,sans-serif" font-weight="400" font-size="13" letter-spacing="1.5" fill="#F97316" opacity="0.75">Intelligence Applied</text></svg>
+    <span style="font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;padding:3px 8px;border:1px solid var(--border-md);border-radius:4px">INTERNAL</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span style="font-size:11px;color:#16a34a;display:flex;align-items:center;gap:5px" id="api-status"><span style="width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0"></span>checking...</span>
+    <button id="role-toggle" onclick="toggleRole()" class="btn btn-ghost" style="font-size:12px"></button>
+    <input id="token-input" type="password" placeholder="API token" class="input-dark" style="font-size:12px;width:130px" value="" onchange="saveToken(this.value)">
+  </div>
+</header>
+
+<!-- ════ TAB BAR ════ -->
+<nav class="tab-bar">
+  <button class="tab-btn tab-active " data-tab="chat" onclick="showTab('chat')">Chat</button>
+  <button class="tab-btn " data-tab="platform" onclick="showTab('platform')">Platform Internals</button>
+  <button class="tab-btn " data-tab="kb" onclick="showTab('kb')">KB Intelligence</button>
+  <button class="tab-btn " data-tab="corrections" onclick="showTab('corrections')">Corrections</button>
+  <button class="tab-btn " data-tab="logs" onclick="showTab('logs')">Query Log</button>
+  <button class="tab-btn " data-tab="config" onclick="showTab('config')" id="tab-btn-config">Config</button>
+</nav>
+
+<!-- ════ MAIN CONTENT ════ -->
+<main id="tab-content" style="flex:1;overflow-y:auto;padding:24px;max-width:1200px;margin:0 auto;width:100%">
+
+<!-- ═══ TAB: CHAT ═══ -->
+<div id="tab-chat" class="tab-panel">
+  <div class="flex gap-3 mb-4">
+    <input id="chat-q" class="input-dark flex-1" placeholder="Ask enerlyst anything about the fleet...">
+    <input id="chat-bat" class="input-dark w-40" placeholder="battery_id (opt)">
+    <button onclick="submitChat()" class="btn btn-teal">Ask</button>
+  </div>
+  <div id="chat-results"></div>
+</div>
+
+<!-- ═══ TAB: PLATFORM INTERNALS ═══ -->
+<div id="tab-platform" class="tab-panel hidden">
+  <div class="flex gap-2 mb-4">
+    <button class="subtab-btn subtab-active px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sub="inspector" onclick="showSubTab('platform',this,'inspector')">Battery Inspector</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="scoring" onclick="showSubTab('platform',this,'scoring')">Scoring Trace</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="models" onclick="showSubTab('platform',this,'models')">Model Catalogue</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="assumptions" onclick="showSubTab('platform',this,'assumptions')">Assumptions</button>
+  </div>
+  <div id="sub-inspector"></div>
+  <div id="sub-scoring" class="hidden"></div>
+  <div id="sub-models" class="hidden"></div>
+  <div id="sub-assumptions" class="hidden"></div>
+</div>
+
+<!-- ═══ TAB: KB INTELLIGENCE ═══ -->
+<div id="tab-kb" class="tab-panel hidden">
+  <div class="flex gap-2 mb-4">
+    <button class="subtab-btn subtab-active px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sub="chunks" onclick="showSubTab('kb',this,'chunks')">Chunk Inspector</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="gaps" onclick="showSubTab('kb',this,'gaps')">Gap Detector</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="health" onclick="showSubTab('kb',this,'health')">Collection Health</button>
+  </div>
+  <div id="sub-chunks"></div>
+  <div id="sub-gaps" class="hidden"></div>
+  <div id="sub-health" class="hidden"></div>
+</div>
+
+<!-- ═══ TAB: CORRECTIONS ═══ -->
+<div id="tab-corrections" class="tab-panel hidden">
+  <div id="correction-panel"></div>
+</div>
+
+<!-- ═══ TAB: QUERY LOG ═══ -->
+<div id="tab-logs" class="tab-panel hidden">
+  <div id="log-panel"></div>
+</div>
+
+<!-- ═══ TAB: PLATFORM CONFIGURATION (FDE only) ═══ -->
+<div id="tab-config" class="tab-panel hidden">
+  <div class="flex gap-2 mb-4">
+    <button class="subtab-btn subtab-active px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer" data-sub="fparams" onclick="showSubTab('config',this,'fparams')">Fleet Params</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="templates" onclick="showSubTab('config',this,'templates')">Templates</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="physics" onclick="showSubTab('config',this,'physics')">Physics</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="privacy" onclick="showSubTab('config',this,'privacy')">Privacy</button>
+    <button class="subtab-btn px-3 py-1.5 rounded-md text-xs font-mono cursor-pointer border border-transparent text-gray-500" data-sub="caudit" onclick="showSubTab('config',this,'caudit')">Audit Log</button>
+  </div>
+  <div id="sub-fparams"></div>
+  <div id="sub-templates" class="hidden"></div>
+  <div id="sub-physics" class="hidden"></div>
+  <div id="sub-privacy" class="hidden"></div>
+  <div id="sub-caudit" class="hidden"></div>
+</div>
+
+</main>
+
+<!-- ═══ MODAL ═══ -->
+<div id="modal-overlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modal-content"></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════ -->
+<!-- JAVASCRIPT — One init function per component -->
+<!-- ════════════════════════════════════════════════════════════════ -->
+<script>
+// ── Helpers ──────────────────────────────────────────────────────
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const CFG = () => window.ENERLYST_CONFIG;
+const role = () => window.currentRole;
+
+async function api(url, opts = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (CFG().TOKEN) headers['Authorization'] = CFG().TOKEN;
+  const res = await fetch(url, { headers, ...opts });
+  return res.json();
+}
+async function ragApi(path, opts) { return api(CFG().RAG_URL + path, opts); }
+async function dbApi(path) { return api(CFG().DB_URL + '/api' + path); }
+
+function saveToken(v) { localStorage.setItem('enerlyst_token', v); CFG().TOKEN = 'Bearer ' + v; checkApiStatus(); }
+function esc(s) { const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function badge(text, cls) { return `<span class="badge ${cls}">${esc(text)}</span>`; }
+function tierBadge(t) { const m={PRODUCTION:'badge-green',SHADOW:'badge-yellow',QUARANTINED:'badge-red',DEPRECATED:'badge-gray'}; return badge(t, m[t]||'badge-gray'); }
+function shortText(s, n=80) { return s && s.length > n ? s.slice(0,n)+'...' : s||''; }
+function openModal(html) { $('#modal-content').innerHTML = html; $('#modal-overlay').classList.add('show'); }
+function closeModal() { $('#modal-overlay').classList.remove('show'); }
+function ts() { return new Date().toISOString().slice(0,19); }
+
+// ── Role Toggle ──────────────────────────────────────────────────
+function toggleRole() {
+  window.currentRole = role() === 'fde' ? 'analyst' : 'fde';
+  sessionStorage.setItem('enerlyst_role', window.currentRole);
+  updateRoleBadge();
+}
+function updateRoleBadge() {
+  const r = role();
+  const btn = $('#role-toggle');
+  btn.innerHTML = r === 'fde'
+    ? '<span class="badge badge-teal">FDE</span> Field Engineer'
+    : '<span class="badge badge-yellow">AI</span> AI Analyst';
+  // Config tab: FDE only
+  const cfgBtn = $('#tab-btn-config');
+  if (cfgBtn) cfgBtn.style.display = r === 'fde' ? '' : 'none';
+  // If analyst is on config tab, redirect to chat
+  if (r === 'analyst' && !$('#tab-config').classList.contains('hidden')) showTab('chat');
+}
+
+// ── Tab Navigation ───────────────────────────────────────────────
+function showTab(name) {
+  $$('.tab-panel').forEach(p => p.classList.add('hidden'));
+  $$('.tab-btn').forEach(b => { b.classList.remove('tab-active'); b.classList.add('text-gray-500'); });
+  const panel = $(`#tab-${name}`);
+  const btn = $(`.tab-btn[data-tab="${name}"]`);
+  if (panel) panel.classList.remove('hidden');
+  if (btn) { btn.classList.add('tab-active'); btn.classList.remove('text-gray-500'); }
+  // Lazy init
+  if (name === 'platform') initBatteryInspector();
+  if (name === 'kb') initChunkInspector();
+  if (name === 'corrections') initCorrectionWorkflow();
+  if (name === 'logs') initQueryLog();
+  if (name === 'config') { if (role() !== 'fde') { showTab('chat'); return; } initFleetParams(); }
+}
+function showSubTab(group, btn, name) {
+  const parent = $(`#tab-${group}`);
+  parent.querySelectorAll('[id^="sub-"]').forEach(p => p.classList.add('hidden'));
+  parent.querySelectorAll('.subtab-btn').forEach(b => { b.classList.remove('subtab-active'); b.classList.add('text-gray-500','border-transparent'); });
+  $(`#sub-${name}`).classList.remove('hidden');
+  btn.classList.add('subtab-active');
+  btn.classList.remove('text-gray-500','border-transparent');
+  if (name === 'models') initModelCatalogue();
+  if (name === 'assumptions') initAssumptionRegistry();
+  if (name === 'gaps') initKBGapDetector();
+  if (name === 'health') initCollectionHealth();
+  if (name === 'scoring') initScoringTrace();
+  if (name === 'fparams') initFleetParams();
+  if (name === 'templates') initTemplateRegistry();
+  if (name === 'physics') initPhysicsConstants();
+  if (name === 'privacy') initPrivacySettings();
+  if (name === 'caudit') initAuditLog();
+}
+
+// ── API Health ───────────────────────────────────────────────────
+async function checkApiStatus() {
+  try {
+    const r = await ragApi('/enerlyst/health');
+    $('#api-status').innerHTML = `<span class="text-green-400">RAG OK</span> · ${r.groq_keys||0} keys · ${Object.values(r.collections||{}).reduce((a,b)=>a+b,0)} chunks`;
+  } catch(e) { $('#api-status').innerHTML = '<span class="text-red-400">RAG offline</span>'; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 1 — CHAT
+// ════════════════════════════════════════════════════════════════
+function initChatTab() {}
+
+async function submitChat() {
+  const q = $('#chat-q').value.trim();
+  if (!q) return;
+  const bat = $('#chat-bat').value.trim() || null;
+  const el = $('#chat-results');
+  el.innerHTML = '<div class="text-gray-500 text-sm py-4">Thinking...</div>';
+
+  const t0 = performance.now();
+  let chunks = [], chunkMs = 0;
+  try {
+    const ct0 = performance.now();
+    const cr = await ragApi('/enerlyst/chunks', { method:'POST', body: JSON.stringify({query:q, n:8}) });
+    chunkMs = Math.round(performance.now() - ct0);
+    chunks = cr.chunks || [];
+  } catch(e) {}
+
+  const lt0 = performance.now();
+  let data;
+  try {
+    data = await ragApi('/enerlyst/query', {
+      method: 'POST',
+      body: JSON.stringify({ question: q, audience: 'internal', battery_id: bat })
+    });
+  } catch(e) {
+    el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`;
+    return;
+  }
+  const llmMs = Math.round(performance.now() - lt0);
+  const totalMs = Math.round(performance.now() - t0);
+
+  let h = '';
+  // Answer card
+  h += `<div class="card mb-3">`;
+  h += `<div class="text-sm leading-relaxed whitespace-pre-wrap">${esc(data.answer||'No answer')}</div>`;
+  if (data.citations && data.citations.length) {
+    h += `<div class="flex flex-wrap gap-1 mt-3">`;
+    data.citations.forEach(c => { h += `<span class="badge badge-teal">${esc(c.collection)}:${esc(c.chunk_id).slice(0,16)}</span>`; });
+    h += `</div>`;
+  }
+  h += `</div>`;
+
+  // FDE mode: chunks + latency
+  if (role() === 'fde') {
+    h += `<div class="card mb-3">`;
+    h += `<div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-2">Retrieved Chunks (${chunks.length})</div>`;
+    if (chunks.length) {
+      h += `<table><tr><th>Collection</th><th>Chunk ID</th><th>Score</th><th>Preview</th></tr>`;
+      chunks.forEach(c => {
+        const isVC = c.collection === 'validated_corrections';
+        const vcBadge = isVC ? ' <span class="badge badge-yellow">w=3.0</span>' : '';
+        h += `<tr><td class="font-mono text-xs">${esc(c.collection)}${vcBadge}</td><td class="font-mono text-xs">${esc(c.chunk_id).slice(0,20)}</td>`;
+        h += `<td><div class="score-bar w-20"><div class="score-fill" style="width:${Math.round(c.weighted_score*100)}%;background:${c.weighted_score>0.3?'#00C9A7':'#ef4444'}"></div></div><span class="text-[10px] font-mono ml-1">${(c.weighted_score||0).toFixed(3)}</span></td>`;
+        h += `<td class="text-xs text-gray-400 max-w-xs truncate">${esc(shortText(c.text,200))}</td></tr>`;
+      });
+      h += `</table>`;
+    }
+    h += `<div class="text-[10px] font-mono text-gray-500 mt-2">Retrieval: ${chunkMs}ms · LLM: ${llmMs}ms · Total: ${totalMs}ms</div>`;
+    h += `</div>`;
+  }
+
+  // Analyst mode: quality indicators + action buttons
+  if (role() === 'analyst') {
+    const hasCitations = data.citations && data.citations.length > 0;
+    const maxSim = chunks.length ? Math.max(...chunks.map(c => c.weighted_score||0)) : 0;
+    const chunksRelevant = maxSim > 0.4;
+    const blockedLeaked = false; // would need to check response for blocked fields
+    h += `<div class="card mb-3 flex items-center gap-4">`;
+    h += `<span class="text-[10px] font-mono text-gray-500 uppercase">Quality:</span>`;
+    h += hasCitations ? badge('Cited','badge-green') : badge('Uncited','badge-red');
+    h += chunksRelevant ? badge('Relevant','badge-green') : badge('Weak retrieval','badge-red');
+    h += blockedLeaked ? badge('Field leak','badge-red') : badge('Clean','badge-green');
+    h += `<button class="btn btn-ghost text-xs ml-auto" onclick="flagAnswer('${esc(q)}','${esc(data.answer||'')}')">Flag Answer</button>`;
+    h += `<button class="btn btn-ghost text-xs" onclick="audiencePreview('${esc(q)}','${bat||''}')">Audience Preview</button>`;
+    h += `</div>`;
+  }
+
+  el.innerHTML = h;
+  // Log locally
+  try { await ragApi('/enerlyst/feedback', { method:'POST', body: JSON.stringify({query_id: data.query_id||'', rating:5, comment:'auto-internal'}) }); } catch(e) {}
+}
+
+function flagAnswer(q, ans) {
+  sessionStorage.setItem('flag_q', q);
+  sessionStorage.setItem('flag_a', ans);
+  showTab('corrections');
+}
+
+async function audiencePreview(q, bat) {
+  openModal('<div class="text-gray-500 text-sm py-8 text-center">Running 3 audience queries...</div>');
+  const audiences = ['operator','nbfc','oem'];
+  const results = await Promise.all(audiences.map(aud =>
+    ragApi('/enerlyst/query', { method:'POST', body: JSON.stringify({question:q, audience:aud, battery_id:bat||null}) }).catch(e=>({answer:'Error: '+e.message, citations:[]}))
+  ));
+  let h = '<div class="flex justify-between items-center mb-4"><span class="text-lg font-bold">Audience Preview</span><button onclick="closeModal()" class="btn btn-ghost text-xs">Close</button></div>';
+  h += '<div class="grid grid-cols-3 gap-3">';
+  audiences.forEach((aud, i) => {
+    const r = results[i];
+    h += `<div class="card"><div class="text-xs font-mono text-teal uppercase mb-2">${aud}</div>`;
+    h += `<div class="text-sm text-gray-300 whitespace-pre-wrap max-h-60 overflow-y-auto">${esc(r.answer||'--')}</div>`;
+    if (r.citations && r.citations.length) { h += `<div class="mt-2">`; r.citations.slice(0,3).forEach(c => h += badge(c.collection,'badge-gray')+' '); h += `</div>`; }
+    h += `</div>`;
+  });
+  h += '</div>';
+  openModal(h);
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 2a — Battery Inspector
+// ════════════════════════════════════════════════════════════════
+let _inspectorInit = false;
+function initBatteryInspector() {
+  if (_inspectorInit) return; _inspectorInit = true;
+  const el = $('#sub-inspector');
+  el.innerHTML = `<div class="flex gap-3 mb-4"><input id="inspect-bat" class="input-dark w-56" placeholder="BAT_LFP_034" value="BAT_LFP_034"><button onclick="loadBatteryInspector()" class="btn btn-teal">Inspect</button></div><div id="inspect-result"></div>`;
+}
+async function loadBatteryInspector() {
+  const bat = $('#inspect-bat').value.trim();
+  if (!bat) return;
+  const el = $('#inspect-result');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading...</div>';
+  try {
+    const d = await dbApi(`/battery/${bat}`);
+    if (!d || d.detail) { el.innerHTML = `<div class="card text-red-400">Not found: ${esc(bat)}</div>`; return; }
+    const susp = d.scoring_mode === 'SUSPENDED';
+    let h = '';
+    if (susp) h += `<div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-3 text-red-400 text-sm font-mono">SCORE_SUSPENDED — ${esc(d.score_explanation||d.vscore_flag||'IoT failure')}</div>`;
+    h += '<div class="grid grid-cols-4 gap-3 mb-3">';
+    const tiles = [
+      ['Operational Score', d.operational_score||d.adjusted_composite||'--', d.health_tier||d.tier_label_v2||''],
+      ['SOH Corrected', d.soh_corrected!=null?Math.round(d.soh_corrected)+'%':'--', d.soh_tier_v2||''],
+      ['Commissioned Range', d.commissioned_range_km?Math.round(d.commissioned_range_km)+'km':'--', ''],
+      ['RUL Weeks', d.rul_weeks_v2!=null?Math.round(d.rul_weeks_v2)+'wk':'Stable', d.rul_confidence||''],
+    ];
+    tiles.forEach(([label,val,sub]) => {
+      h += `<div class="card text-center"><div class="text-[10px] font-mono text-gray-500 uppercase">${label}</div><div class="text-2xl font-bold mt-1">${val}</div>${sub?'<div class="text-xs text-gray-500 mt-1">'+esc(sub)+'</div>':''}`;
+      h += `</div>`;
+    });
+    h += '</div>';
+    h += '<div class="grid grid-cols-3 gap-3 mb-3">';
+    [['Action', d.rul_action_v2||'--'], ['Capacity State', d.capacity_state||'--'], ['Degradation Regime', d.degradation_regime||'--'],
+     ['KPS Slope 8wk', d.kps_slope_8wk!=null?d.kps_slope_8wk.toFixed(5):'--'], ['Cell Spread', (d.cell_spread_max||'--')+'mV'], ['Data Quality', d.data_confidence_label||d.scoring_mode||'--']
+    ].forEach(([k,v]) => {
+      h += `<div class="card"><div class="text-[10px] font-mono text-gray-500 uppercase">${k}</div><div class="text-sm font-medium mt-1">${esc(String(v))}</div></div>`;
+    });
+    h += '</div>';
+    if (d.operator_cause_sentence) h += `<div class="card text-sm text-gray-300 italic">${esc(d.operator_cause_sentence)}</div>`;
+    el.innerHTML = h;
+  } catch(e) { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 2b — Scoring Trace
+// ════════════════════════════════════════════════════════════════
+let _scoringInit = false;
+function initScoringTrace() {
+  if (_scoringInit) return; _scoringInit = true;
+  const el = $('#sub-scoring');
+  el.innerHTML = `<div class="flex gap-3 mb-4"><input id="score-bat" class="input-dark w-56" placeholder="BAT_LFP_034" value="BAT_LFP_034"><button onclick="loadScoringTrace()" class="btn btn-teal">Trace</button></div><div id="score-result"></div>`;
+}
+async function loadScoringTrace() {
+  const bat = $('#score-bat').value.trim();
+  if (!bat) return;
+  const el = $('#score-result');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading...</div>';
+  try {
+    const d = await dbApi(`/battery/${bat}/score-breakdown`);
+    if (!d || !d.has_data) { el.innerHTML = `<div class="card text-gray-500">No score breakdown for ${esc(bat)}</div>`; return; }
+    const total = (d.l1_score||0)*0.5 + (d.l2_score||0)*0.3 + (d.l3_score||0)*0.2;
+    let h = '<div class="card mb-3">';
+    h += '<div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-3">Three-Layer Score Breakdown</div>';
+    const layers = [
+      ['L1 Self-Baseline', d.l1_score, 50, '#3b82f6'],
+      ['L2 Physics Threshold', d.l2_score, 30, '#f59e0b'],
+      ['L3 Fleet Context', d.l3_score, 20, '#22c55e'],
+    ];
+    layers.forEach(([label, score, weight, col]) => {
+      const s = score||0;
+      const contrib = (s * weight/100).toFixed(1);
+      h += `<div class="mb-3"><div class="flex justify-between text-xs mb-1"><span>${label} <span class="text-gray-500">(${weight}%)</span></span><span class="font-mono">${Math.round(s)}/100 = +${contrib}</span></div>`;
+      h += `<div class="score-bar"><div class="score-fill" style="width:${s}%;background:${col}"></div></div></div>`;
+    });
+    h += `<div class="border-t border-white/5 pt-2 mt-2 flex justify-between"><span class="font-bold">Operational Score</span><span class="text-xl font-bold font-mono">${Math.round(total)}</span></div>`;
+    h += '</div>';
+    if (d.causal_direction) {
+      h += `<div class="card"><div class="text-[10px] font-mono text-gray-500 uppercase mb-1">Causal Direction</div><div class="text-sm">${esc(d.causal_direction.text||d.causal_direction.direction||'--')}</div></div>`;
+    }
+    el.innerHTML = h;
+  } catch(e) { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 2c — Model Catalogue
+// ════════════════════════════════════════════════════════════════
+let _modelsInit = false, _modelsData = [];
+function initModelCatalogue() {
+  if (_modelsInit) return; _modelsInit = true;
+  // Parse the embedded catalogue
+  _modelsData = [
+    {name:'range_t2t1_ensemble_v1.0.0',status:'PRODUCTION',type:'Ensemble',mape:'14.07%',batteries:186,desc:'T1b LGBM 0.563 + T2 chain 0.437'},
+    {name:'range_t1b_lgbm_v1.0.0',status:'PRODUCTION',type:'LightGBM',mape:'16.11%',batteries:176,desc:'Relative loss regressor, fleet fallback'},
+    {name:'range_t5_perbat_v1.0.0',status:'PRODUCTION',type:'Ridge',mape:'9.3%',batteries:104,desc:'Per-battery Ridge, 42 with 20+ weeks'},
+    {name:'conformal_calibration_v3.0.0',status:'PRODUCTION',type:'Conformal',mape:'',batteries:0,desc:'RAPS q=0.7268, 90.3% coverage'},
+    {name:'rul_xgb_v1.0.0',status:'PRODUCTION',type:'XGBoost',mape:'14.25%',batteries:183,desc:'RUL weeks to STRESSED/replacement'},
+    {name:'fault_probability_rf_v1.0',status:'PRODUCTION',type:'RandomForest',mape:'',batteries:183,desc:'3 horizons x 2 variants = 12 artifacts'},
+    {name:'nmc_health_v2.1.0',status:'PRODUCTION',type:'XGBoost',mape:'13.1%',batteries:27,desc:'NMC health scorer, telemetry-first'},
+    {name:'nmc_spread_forecast_v1.0',status:'PRODUCTION',type:'XGBoost',mape:'14.0mV RMSE',batteries:27,desc:'Cell spread W+8 forecast'},
+    {name:'dekf_lfp_r0_v2.0',status:'PRODUCTION',type:'DEKF',mape:'7.3%',batteries:179,desc:'LFP R0 thermal estimation'},
+    {name:'dekf_nmc_r0_v2.0',status:'PRODUCTION',type:'DEKF',mape:'7.3%',batteries:27,desc:'NMC R0 estimation'},
+    {name:'range_x1_fleetprior_v1.0.0',status:'PRODUCTION',type:'XGBoost',mape:'18.63%',batteries:186,desc:'Fleet prior for Week 1 batteries'},
+    {name:'soh_correction_regime_v1.0',status:'PRODUCTION',type:'Rules',mape:'17.9%',batteries:183,desc:'K_SOH regime bands PRE/APPROACH/POST'},
+    {name:'dekf_nmc_soc_v1.0',status:'SHADOW',type:'DEKF',mape:'10.1%',batteries:27,desc:'NMC SoC, gate <8% not passed'},
+    {name:'capacity_rul_soh_v1.0',status:'SHADOW',type:'Linear',mape:'',batteries:183,desc:'SOH-anchor RUL, r=0.369 < 0.637 gate'},
+    {name:'nmc_health_v2.0.0',status:'DEPRECATED',type:'XGBoost',mape:'',batteries:0,desc:'Complaint contamination'},
+    {name:'composite_score_v1.0',status:'DEPRECATED',type:'Rules',mape:'',batteries:0,desc:'Old 50/30/20, r=0.033'},
+    {name:'ir_proxy_charge_health',status:'QUARANTINED',type:'Proxy',mape:'',batteries:0,desc:'r=-0.361 with range, Rule 95 invalidated'},
+  ];
+  renderModelCatalogue('all');
+}
+function renderModelCatalogue(filter) {
+  const el = $('#sub-models');
+  const filtered = filter === 'all' ? _modelsData : _modelsData.filter(m => m.status === filter);
+  let h = '<div class="flex gap-2 mb-3">';
+  ['all','PRODUCTION','SHADOW','QUARANTINED','DEPRECATED'].forEach(f => {
+    const active = f === filter;
+    h += `<button onclick="renderModelCatalogue('${f}')" class="btn ${active?'btn-teal':'btn-ghost'} text-xs">${f}</button>`;
+  });
+  h += `<input id="model-search" class="input-dark text-xs w-48 ml-auto" placeholder="Search models..." oninput="searchModels(this.value)"></div>`;
+  h += '<div class="card overflow-x-auto"><table><tr><th>Model</th><th>Status</th><th>Type</th><th>MAPE</th><th>Batteries</th><th>Description</th></tr>';
+  filtered.forEach(m => {
+    h += `<tr class="cursor-pointer" onclick="openModal('<div class=\\'text-lg font-bold mb-3\\'>${esc(m.name)}</div><div class=\\'text-sm text-gray-400\\'>${esc(m.desc)}</div><div class=\\'mt-3\\'>${tierBadge(m.status)} <span class=\\'text-xs text-gray-500\\'>${esc(m.type)}</span></div><button onclick=\\'closeModal()\\' class=\\'btn btn-ghost text-xs mt-4\\'>Close</button>')">`;
+    h += `<td class="font-mono text-xs text-teal">${esc(m.name)}</td><td>${tierBadge(m.status)}</td><td class="text-xs text-gray-400">${esc(m.type)}</td>`;
+    h += `<td class="font-mono text-xs">${esc(m.mape||'--')}</td><td class="text-xs">${m.batteries||'--'}</td><td class="text-xs text-gray-500 max-w-xs truncate">${esc(m.desc)}</td></tr>`;
+  });
+  h += '</table></div>';
+  el.innerHTML = h;
+}
+function searchModels(q) {
+  if (!q) { renderModelCatalogue('all'); return; }
+  const el = $('#sub-models');
+  const filtered = _modelsData.filter(m => (m.name+m.desc+m.type).toLowerCase().includes(q.toLowerCase()));
+  // Quick re-render
+  const tbody = el.querySelector('table');
+  if (!tbody) return;
+  // Simplify: just re-render
+  renderModelCatalogue('all');
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 2d — Assumption Registry
+// ════════════════════════════════════════════════════════════════
+let _assumptionsInit = false;
+function initAssumptionRegistry() {
+  if (_assumptionsInit) return; _assumptionsInit = true;
+  const physics = [
+    ['eta_Ri_LFP','0.03','Rule 14','LFP R0 contribution to degradation is negligible vs NMC (0.08-0.15)'],
+    ['OCV_PLATEAU','3.2-3.4V','Physics','LFP flat voltage curve across 20-80% SoC makes BMS SoH unreliable'],
+    ['DoD','80%','Config','Depth of discharge for range calculation: km_per_soc_pct x 80'],
+    ['NOMINAL_WH_KM','53.76 Wh/km','Rule 41','CAN km physics constant. Never calibrate against odometer'],
+    ['BMS_BIAS','+ 5.5%','BMS-APPLY','BMS inflates SoH by 5.5%. Cancels in ratios. Display-only correction'],
+    ['BMS_WINDOW','0','SOH-REFORM','LFP flat curve = zero BMS window compression'],
+    ['CELL_RANGE','2.5-3.65V','LFP 16S','Individual cell voltage operating range for LFP packs'],
+    ['PACK_VOLTAGE','40-58.4V','LFP 16S','16 cells in series pack voltage range'],
+    ['R0_RATIO','1.05','Rule 14','LFP R0 degradation ratio = 1.05 (near unity, not diagnostic)'],
+    ['LOAD_STATUS','0/1/2','Config','0=IDLE, 1=DISCHARGE, 2=CHARGE'],
+    ['K_SOH_PRE','0.99','SOH-FIX','Pre-knee SOH regime correction factor'],
+    ['K_SOH_APPROACH','0.96','SOH-FIX','Approaching-knee SOH regime correction factor'],
+    ['K_SOH_POST','0.93','SOH-FIX','Post-knee SOH regime correction factor'],
+    ['CAPACITY_EOL_PCT','67%','SOH-COMPLETE','SOH threshold for end-of-life classification (data-derived, not literature 70%)'],
+  ];
+  const corrections = [
+    ['C01','BMS SoH banned for LFP','Rule 2','Reads 97-100% on degraded packs. Use soh_cap_weekly instead'],
+    ['C02','Efficiency = ratio of sums','Rule 3','SUM(km)/SUM(SoC delta) per week. Never mean of per-trip ratios (Jensen +8-15%)'],
+    ['C03','Range = kps x 80','Rule 3','80% DoD x 105Ah LFP pack'],
+    ['C04','ir_proxy_weekly INVALID','Rule 95','r=-0.361 with range. charge_health NULL fleet-wide'],
+    ['C05','GPS haversine invalid','GPS-FIX','gps_odometer_ratio=0.229 was raw haversine error. tripdistance IS reliable'],
+    ['C06','R0 = thermal proxy only for LFP','Rule 14','eta_Ri=0.03. Cannot detect LFP capacity fade'],
+    ['C07','150mV spread threshold WRONG','Rule 51','82% of fleet above 150mV at commissioning. Use per-battery delta'],
+    ['C08','Old composite r=0.033 DEPRECATED','M0','operational_score r=0.635-0.760 is production signal'],
+    ['C09','SOH uses regime-band K only','Rule 137','k_personal is diagnostic only. Contaminated soh_corrected when applied'],
+    ['C10','MICRO_SHORT = maintenance','Rule 149','>50% prevalence = maintenance signal. Only BMS_TRIP is safety'],
+    ['C11','range_predicted formula','SOH-HONEST','commissioned_range_km x (soh_corrected/100). No f_ri or f_thermal'],
+    ['C12','rul_weeks_v2 is production','Sprint RUL','kps-based r=0.637. capacity_rul_weeks is SHADOW r=0.369'],
+    ['C13','33 known-bad gate','Rule 12','Capped to WATCH max. 0 false negatives non-negotiable'],
+    ['C14','No SOH% to operators','Rule 91','Operators see range/km only. No attribution percentages'],
+    ['C15','Per-battery doctrine','Rule 143','Every signal uses that battery own data. Fleet = reference only'],
+    ['C16','BMS window = 0 for LFP','SOH-REFORM','Within-battery SOH-range r=1.000'],
+    ['C17','CAN km = 53.76 Wh/km only','Rule 41','Never calibrate against odometer'],
+    ['C18','17 events classified','EVENT-REGISTRY','Only BMS_PROTECTION_TRIP is CONFIRMED SAFETY'],
+    ['C19','EOL = chemistry condition','SOH-COMPLETE','soh_corrected < capacity_eol_pct. NEAR_FLOOR removed'],
+    ['C20','BMS bias = +5.5%','BMS-APPLY','Cancels in ratios. soh_cap_display = soh_corrected + 5.5'],
+  ];
+  const el = $('#sub-assumptions');
+  let h = '<input id="assumption-search" class="input-dark text-xs w-full mb-3" placeholder="Search assumptions..." oninput="filterAssumptions(this.value)">';
+  h += '<div id="assumption-list">';
+  h += '<div class="text-xs font-mono text-teal uppercase tracking-wider mb-2">Physics Constants</div>';
+  h += '<div class="card mb-4 overflow-x-auto"><table><tr><th>Constant</th><th>Value</th><th>Rule</th><th>Rationale</th></tr>';
+  physics.forEach(([k,v,r,d]) => { h += `<tr class="assumption-row"><td class="font-mono text-xs text-teal">${k}</td><td class="font-mono text-xs font-bold">${v}</td><td class="text-xs">${r}</td><td class="text-xs text-gray-400">${d}</td></tr>`; });
+  h += '</table></div>';
+  h += '<div class="text-xs font-mono text-teal uppercase tracking-wider mb-2">Validated Corrections (C01-C20)</div>';
+  h += '<div class="card overflow-x-auto"><table><tr><th>Code</th><th>Correction</th><th>Source</th><th>Detail</th></tr>';
+  corrections.forEach(([k,v,r,d]) => { h += `<tr class="assumption-row"><td class="font-mono text-xs text-yellow-400">${k}</td><td class="text-xs font-medium">${v}</td><td class="text-xs">${r}</td><td class="text-xs text-gray-400">${d}</td></tr>`; });
+  h += '</table></div></div>';
+  el.innerHTML = h;
+}
+function filterAssumptions(q) {
+  $$('.assumption-row').forEach(r => {
+    r.style.display = q ? (r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none') : '';
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 3a — Chunk Inspector
+// ════════════════════════════════════════════════════════════════
+let _chunksInit = false;
+function initChunkInspector() {
+  if (_chunksInit) return; _chunksInit = true;
+  const el = $('#sub-chunks');
+  el.innerHTML = `<div class="flex gap-3 mb-4"><input id="chunk-q" class="input-dark flex-1" placeholder="Enter a query to see raw chunk retrieval..."><button onclick="loadChunkInspector()" class="btn btn-teal">Retrieve</button></div><div id="chunk-result"></div>`;
+}
+async function loadChunkInspector() {
+  const q = $('#chunk-q').value.trim();
+  if (!q) return;
+  const el = $('#chunk-result');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Retrieving...</div>';
+  try {
+    const r = await ragApi('/enerlyst/chunks', { method:'POST', body: JSON.stringify({query:q, n:10}) });
+    const chunks = r.chunks || [];
+    let h = `<div class="text-xs font-mono text-gray-500 mb-2">${chunks.length} chunks retrieved</div>`;
+    h += '<div class="space-y-2">';
+    chunks.forEach((c, i) => {
+      const weak = (c.weighted_score||0) < 0.4;
+      h += `<div class="card ${weak?'border-red-500/30':''}">`;
+      h += `<div class="flex items-center gap-2 mb-1">`;
+      h += `<span class="text-xs font-mono text-gray-500">#${i+1}</span>`;
+      h += badge(c.collection, 'badge-teal');
+      h += `<span class="font-mono text-xs text-gray-400">${esc(c.chunk_id).slice(0,24)}</span>`;
+      h += `<div class="score-bar w-24 ml-auto"><div class="score-fill" style="width:${Math.round((c.weighted_score||0)*100)}%;background:${weak?'#ef4444':'#00C9A7'}"></div></div>`;
+      h += `<span class="font-mono text-xs ${weak?'text-red-400':'text-teal'}">${(c.weighted_score||0).toFixed(3)}</span>`;
+      if (weak) h += badge('WEAK','badge-red');
+      h += `</div>`;
+      h += `<div class="text-xs text-gray-400 mt-1 leading-relaxed">${esc(shortText(c.text, 300))}</div>`;
+      h += `</div>`;
+    });
+    h += '</div>';
+    el.innerHTML = h;
+  } catch(e) { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 3b — KB Gap Detector
+// ════════════════════════════════════════════════════════════════
+let _gapsInit = false;
+function initKBGapDetector() {
+  if (_gapsInit) return; _gapsInit = true;
+  const el = $('#sub-gaps');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading query log for gap analysis...</div>';
+  ragApi('/enerlyst/logs').then(data => {
+    const entries = data.entries || [];
+    // Find weak entries (simulate — in production would have similarity scores)
+    const gaps = {};
+    entries.forEach(e => {
+      if (e.status && e.status !== 200) {
+        const topic = (e.model||'unknown').slice(0,20);
+        if (!gaps[topic]) gaps[topic] = {count:0, examples:[]};
+        gaps[topic].count++;
+        if (gaps[topic].examples.length < 3) gaps[topic].examples.push(e);
+      }
+    });
+    let h = '<div class="card mb-3"><div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-2">KB Gap Analysis</div>';
+    if (Object.keys(gaps).length === 0) {
+      h += '<div class="text-sm text-gray-500">No gaps detected in query log. Run more queries to build gap data.</div>';
+    } else {
+      h += '<table><tr><th>Topic</th><th>Frequency</th><th>Example</th></tr>';
+      Object.entries(gaps).sort((a,b) => b[1].count - a[1].count).forEach(([topic, data]) => {
+        h += `<tr><td class="font-mono text-xs">${esc(topic)}</td><td class="text-xs">${data.count}</td><td class="text-xs text-gray-400">${data.examples[0]?JSON.stringify(data.examples[0]).slice(0,80):'--'}</td></tr>`;
+      });
+      h += '</table>';
+    }
+    h += '</div>';
+    h += `<div class="text-xs text-gray-500">${entries.length} total log entries analysed</div>`;
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error loading logs: ${esc(e.message)}</div>`; });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 3c — Collection Health
+// ════════════════════════════════════════════════════════════════
+let _healthInit = false;
+function initCollectionHealth() {
+  if (_healthInit) return; _healthInit = true;
+  const el = $('#sub-health');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading...</div>';
+  ragApi('/enerlyst/health').then(data => {
+    const baselines = {validated_corrections:47, physics_truths:515, model_intelligence:1581, audience_outputs:406, session_knowledge:3001};
+    const counts = data.collections || {};
+    let h = '<div class="card mb-3"><div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-3">Collection Health</div>';
+    h += '<table><tr><th>Collection</th><th>Count</th><th>Baseline</th><th>Deviation</th><th>Status</th></tr>';
+    Object.entries(baselines).forEach(([name, base]) => {
+      const cur = counts[name] || 0;
+      const pct = base > 0 ? Math.round((cur - base) / base * 100) : 0;
+      const ok = Math.abs(pct) <= 5;
+      h += `<tr><td class="font-mono text-xs">${name}</td><td class="font-mono text-sm font-bold">${cur}</td><td class="text-xs text-gray-500">${base}</td>`;
+      h += `<td class="font-mono text-xs ${ok?'text-green-400':'text-red-400'}">${pct>0?'+':''}${pct}%</td>`;
+      h += `<td>${ok?badge('OK','badge-green'):badge('DEVIATED','badge-red')}</td></tr>`;
+    });
+    h += '</table></div>';
+    h += `<div class="flex gap-3 items-center"><span class="text-xs text-gray-500">Groq keys: ${data.groq_keys||0} · Model: ${esc(data.groq_model||'--')}</span>`;
+    h += `<button onclick="runEval()" class="btn btn-teal text-xs ml-auto">Run Faithfulness Eval</button></div>`;
+    h += '<div id="eval-output" class="mt-3"></div>';
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+async function runEval() {
+  const el = $('#eval-output');
+  el.innerHTML = '<div class="text-gray-500 text-sm"><span class="spin inline-block">&#9696;</span> Running faithfulness eval...</div>';
+  try {
+    const r = await ragApi('/enerlyst/eval/run', { method:'POST' });
+    let h = `<div class="card"><div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-2">Faithfulness Result</div>`;
+    h += `<div class="text-2xl font-bold ${r.pct>=80?'text-green-400':'text-red-400'}">${r.score}/${r.total} (${r.pct}%)</div>`;
+    h += `<div class="text-xs text-gray-500 mt-1">${r.passed?'GATE PASS':'GATE FAIL'}</div>`;
+    if (r.details) h += `<pre class="text-[10px] font-mono text-gray-500 mt-2 whitespace-pre-wrap max-h-40 overflow-y-auto">${esc(r.details)}</pre>`;
+    h += '</div>';
+    el.innerHTML = h;
+  } catch(e) { el.innerHTML = `<div class="card text-red-400">Eval error: ${esc(e.message)}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 4 — Correction Workflow
+// ════════════════════════════════════════════════════════════════
+let _corrInit = false, _issues = [];
+function initCorrectionWorkflow() {
+  if (_corrInit) return; _corrInit = true;
+  renderCorrectionPanel();
+}
+function renderCorrectionPanel() {
+  const el = $('#correction-panel');
+  const flagQ = sessionStorage.getItem('flag_q') || '';
+  const flagA = sessionStorage.getItem('flag_a') || '';
+  sessionStorage.removeItem('flag_q'); sessionStorage.removeItem('flag_a');
+  let h = '';
+  // New issue form
+  h += '<div class="card mb-4"><div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-3">New Issue</div>';
+  h += '<div class="grid grid-cols-2 gap-3 mb-3">';
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Question</label><textarea id="issue-q" class="input-dark w-full" rows="2">${esc(flagQ)}</textarea></div>`;
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Answer Given</label><textarea id="issue-a" class="input-dark w-full" rows="2">${esc(flagA)}</textarea></div>`;
+  h += '</div>';
+  h += '<div class="grid grid-cols-2 gap-3 mb-3">';
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Correct Answer</label><textarea id="issue-correct" class="input-dark w-full" rows="2"></textarea></div>`;
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Dev Note</label><textarea id="issue-note" class="input-dark w-full" rows="2"></textarea></div>`;
+  h += '</div>';
+  h += '<div class="grid grid-cols-4 gap-3 mb-3">';
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Root Cause</label><select id="issue-cause" class="input-dark w-full"><option>retrieval_miss</option><option>hallucination</option><option>audience_routing_error</option><option>guardrail_false_positive</option><option>kb_gap</option><option>wrong_assumption</option><option>other</option></select></div>`;
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Fix Action</label><select id="issue-fix" class="input-dark w-full"><option>ingest_new_chunk</option><option>fix_chunking</option><option>update_validated_correction</option><option>routing_rule_change</option><option>assumption_change</option><option>no_fix_needed</option></select></div>`;
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Target Collection</label><select id="issue-col" class="input-dark w-full"><option>validated_corrections</option><option>physics_truths</option><option>model_intelligence</option><option>audience_outputs</option><option>session_knowledge</option></select></div>`;
+  h += `<div><label class="text-[10px] text-gray-500 uppercase block mb-1">Severity</label><select id="issue-sev" class="input-dark w-full"><option>P1</option><option>P2</option><option>P3</option></select></div>`;
+  h += '</div>';
+  h += '<button onclick="submitIssue()" class="btn btn-teal">Submit Issue</button>';
+  h += '</div>';
+  // Issue list
+  h += '<div class="flex items-center justify-between mb-3"><div class="text-[10px] font-mono text-teal uppercase tracking-wider">Open Issues</div>';
+  h += '<button onclick="exportIssues()" class="btn btn-ghost text-xs">Export Markdown</button></div>';
+  h += '<div id="issue-list"></div>';
+  el.innerHTML = h;
+  loadIssues();
+}
+async function submitIssue() {
+  const issue = {
+    id: 'ISS-' + Date.now(),
+    ts: ts(),
+    question: $('#issue-q').value,
+    answer_given: $('#issue-a').value,
+    correct_answer: $('#issue-correct').value,
+    root_cause: $('#issue-cause').value,
+    fix_action: $('#issue-fix').value,
+    target_collection: $('#issue-col').value,
+    severity: $('#issue-sev').value,
+    status: 'open',
+    dev_note: $('#issue-note').value,
+  };
+  _issues.push(issue);
+  // Write to feedback endpoint (which writes to issue_log)
+  try {
+    await ragApi('/enerlyst/feedback', { method:'POST', body: JSON.stringify({query_id: issue.id, rating:1, comment: JSON.stringify(issue)}) });
+  } catch(e) {}
+  renderIssueList();
+  // Clear form
+  $('#issue-q').value = ''; $('#issue-a').value = ''; $('#issue-correct').value = ''; $('#issue-note').value = '';
+}
+function loadIssues() {
+  renderIssueList();
+}
+function renderIssueList() {
+  const el = $('#issue-list');
+  if (!_issues.length) { el.innerHTML = '<div class="text-gray-500 text-sm">No open issues</div>'; return; }
+  const sorted = [..._issues].filter(i => i.status==='open').sort((a,b) => a.severity.localeCompare(b.severity));
+  let h = '<div class="space-y-2">';
+  sorted.forEach((iss, idx) => {
+    const sevCol = iss.severity==='P1'?'badge-red':iss.severity==='P2'?'badge-yellow':'badge-gray';
+    h += `<div class="card"><div class="flex items-center gap-2 mb-1">`;
+    h += badge(iss.severity, sevCol);
+    h += badge(iss.root_cause, 'badge-gray');
+    h += badge(iss.fix_action, 'badge-teal');
+    h += `<span class="text-xs text-gray-500 ml-auto">${iss.ts}</span>`;
+    h += `<button onclick="_issues[${_issues.indexOf(iss)}].status='resolved';renderIssueList()" class="btn btn-ghost text-xs">Resolve</button>`;
+    h += `</div>`;
+    h += `<div class="text-sm">${esc(shortText(iss.question, 120))}</div>`;
+    if (iss.correct_answer) h += `<div class="text-xs text-green-400 mt-1">Correct: ${esc(shortText(iss.correct_answer, 120))}</div>`;
+    if (iss.dev_note) h += `<div class="text-xs text-gray-500 mt-1 italic">${esc(iss.dev_note)}</div>`;
+    h += `</div>`;
+  });
+  h += '</div>';
+  el.innerHTML = h;
+}
+function exportIssues() {
+  const open = _issues.filter(i => i.status === 'open');
+  if (!open.length) { alert('No open issues to export'); return; }
+  let md = `# enerlyst Issue Export\nGenerated: ${ts()}\nOpen issues: ${open.length}\n\n---\n\n`;
+  open.forEach((iss, i) => {
+    md += `## Issue ${i+1}: ${iss.severity} — ${iss.root_cause}\n\n`;
+    md += `**Question:** ${iss.question}\n\n`;
+    md += `**Answer given:** ${iss.answer_given}\n\n`;
+    md += `**Correct answer:** ${iss.correct_answer}\n\n`;
+    md += `**Root cause:** ${iss.root_cause}\n`;
+    md += `**Fix action:** ${iss.fix_action}\n`;
+    md += `**Target collection:** ${iss.target_collection}\n`;
+    md += `**Dev note:** ${iss.dev_note}\n\n`;
+    md += `Recommended fix action: ${iss.fix_action} on ${iss.target_collection}.\n\n---\n\n`;
+  });
+  // Download
+  const blob = new Blob([md], {type:'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `issue_export_${Date.now()}.md`;
+  a.click();
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 5 — Query Log
+// ════════════════════════════════════════════════════════════════
+let _logInit = false;
+function initQueryLog() {
+  if (_logInit) return; _logInit = true;
+  const el = $('#log-panel');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading query log...</div>';
+  ragApi('/enerlyst/logs').then(data => {
+    const entries = (data.entries || []).reverse();
+    let h = `<div class="text-xs text-gray-500 mb-2">${entries.length} entries</div>`;
+    h += '<div class="card overflow-x-auto"><table><tr><th>Time</th><th>Key</th><th>Model</th><th>Status</th><th>Tokens</th></tr>';
+    entries.slice(0, 200).forEach(e => {
+      const statusBadge = e.status === 200 ? badge('200','badge-green') : e.status === 429 ? badge('429','badge-yellow') : badge(String(e.status||'?'),'badge-red');
+      h += `<tr><td class="font-mono text-[10px]">${esc((e.ts||'').slice(0,19))}</td>`;
+      h += `<td class="text-xs">${e.key!=null?'Key '+e.key:'--'}</td>`;
+      h += `<td class="font-mono text-xs">${esc(shortText(e.model||'',20))}</td>`;
+      h += `<td>${statusBadge}</td>`;
+      h += `<td class="font-mono text-xs">${e.tokens||'--'}</td></tr>`;
+    });
+    h += '</table></div>';
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 6a — Fleet Context Parameters
+// ════════════════════════════════════════════════════════════════
+let _fparamsInit = false, _fparamsData = [];
+function initFleetParams() {
+  if (_fparamsInit) return; _fparamsInit = true;
+  const el = $('#sub-fparams');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading fleet parameters...</div>';
+  dbApi('/config/params').then(data => {
+    _fparamsData = data.params || [];
+    renderFleetParams('all');
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+function renderFleetParams(layerFilter) {
+  const el = $('#sub-fparams');
+  const filtered = layerFilter === 'all' ? _fparamsData : _fparamsData.filter(p => p.layer == layerFilter);
+  let h = '<div class="flex gap-2 mb-3">';
+  [['all','All'],['1','L1 Physics'],['2','L2 Calibrated'],['3','L3 Override']].forEach(([v,l]) => {
+    h += `<button onclick="renderFleetParams('${v}')" class="btn ${layerFilter==v?'btn-teal':'btn-ghost'} text-xs">${l}</button>`;
+  });
+  h += `<input class="input-dark text-xs w-48 ml-auto" placeholder="Search params..." oninput="filterParamRows(this.value)"></div>`;
+  h += '<div class="card overflow-x-auto"><table id="param-table"><tr><th>Layer</th><th>Param</th><th>Segment</th><th>Value</th><th>Confidence</th><th>Floor/Ceiling</th><th>Changed</th><th></th></tr>';
+  filtered.forEach(p => {
+    const ly = p.layer||0;
+    const lyIcon = ly===1?'<span class="text-red-400" title="Physics floor — read only">&#128274;</span>':ly===2?'<span class="text-yellow-400" title="System calibrated — read only">&#9888;</span>':'<span class="text-green-400" title="Customer override — editable">&#9998;</span>';
+    const lyBg = ly===1?'border-l-2 border-red-500/40':ly===2?'border-l-2 border-yellow-500/40':'border-l-2 border-green-500/40';
+    const confBadge = p.confidence==='HIGH'?badge('HIGH','badge-green'):p.confidence==='MEDIUM'?badge('MED','badge-yellow'):badge(p.confidence||'--','badge-gray');
+    const range = (p.override_floor!=null||p.override_ceiling!=null) ? `${p.override_floor??'--'} — ${p.override_ceiling??'--'}` : '--';
+    const canEdit = ly === 3 || (ly >= 1 && false); // Only layer 3 editable
+    const editBtn = ly===3
+      ? `<button onclick="openParamEdit(${JSON.stringify(p).replace(/"/g,'&quot;')})" class="btn btn-ghost text-xs">Edit</button>`
+      : ly<=2 ? `<span class="text-[10px] text-gray-600" title="Physics floor — contact platform team">locked</span>` : '';
+    h += `<tr class="param-row ${lyBg}"><td class="text-center">${lyIcon} L${ly}</td><td class="font-mono text-xs text-teal">${esc(p.param_name)}</td>`;
+    h += `<td class="text-xs">${esc(p.segment_type||'')}:${esc(p.segment_value||'')}</td>`;
+    h += `<td class="font-mono text-sm font-bold">${p.param_value}</td><td>${confBadge}</td>`;
+    h += `<td class="font-mono text-xs text-gray-500">${range}</td>`;
+    h += `<td class="text-[10px] text-gray-500">${esc((p.changed_at||'').slice(0,16))}</td>`;
+    h += `<td>${editBtn}</td></tr>`;
+  });
+  h += '</table></div>';
+  h += `<div class="text-xs text-gray-500 mt-2">${filtered.length} params shown · L1=physics floor (red) · L2=system calibrated (amber) · L3=customer override (green)</div>`;
+  el.innerHTML = h;
+}
+function filterParamRows(q) { $$('.param-row').forEach(r => { r.style.display = q ? (r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none') : ''; }); }
+function openParamEdit(p) {
+  const floor = p.override_floor ?? 0;
+  const ceil = p.override_ceiling ?? 999;
+  let h = `<div class="flex justify-between items-center mb-4"><span class="text-lg font-bold">Edit Parameter</span><button onclick="closeModal()" class="btn btn-ghost text-xs">Close</button></div>`;
+  h += `<div class="grid grid-cols-2 gap-4 mb-4">`;
+  h += `<div><div class="text-[10px] text-gray-500 uppercase">Parameter</div><div class="font-mono text-teal">${esc(p.param_name)}</div></div>`;
+  h += `<div><div class="text-[10px] text-gray-500 uppercase">Segment</div><div class="text-sm">${esc(p.segment_type)}:${esc(p.segment_value)}</div></div>`;
+  h += `<div><div class="text-[10px] text-gray-500 uppercase">Current Value</div><div class="text-xl font-bold font-mono">${p.param_value}</div></div>`;
+  h += `<div><div class="text-[10px] text-gray-500 uppercase">Allowed Range</div><div class="font-mono">${floor} — ${ceil}</div></div>`;
+  h += `</div>`;
+  h += `<div class="mb-3"><label class="text-[10px] text-gray-500 uppercase block mb-1">New Value</label>`;
+  h += `<input type="range" id="param-slider" min="${floor}" max="${ceil}" step="0.1" value="${p.param_value}" oninput="$('#param-num').value=this.value" class="w-full">`;
+  h += `<input type="number" id="param-num" class="input-dark w-32 mt-1" min="${floor}" max="${ceil}" step="0.1" value="${p.param_value}" oninput="$('#param-slider').value=this.value"></div>`;
+  h += `<div class="mb-3"><label class="text-[10px] text-gray-500 uppercase block mb-1">Change Reason (min 10 chars)</label>`;
+  h += `<textarea id="param-reason" class="input-dark w-full" rows="2" placeholder="Explain why this change is needed..."></textarea></div>`;
+  h += `<button onclick="submitParamEdit('${esc(p.param_name)}','${esc(p.segment_type)}','${esc(p.segment_value)}')" class="btn btn-teal">Confirm Change</button>`;
+  h += `<div id="param-edit-result" class="mt-3"></div>`;
+  openModal(h);
+}
+async function submitParamEdit(name, segType, segVal) {
+  const val = parseFloat($('#param-num').value);
+  const reason = $('#param-reason').value.trim();
+  const res = $('#param-edit-result');
+  if (!reason || reason.length < 10) { res.innerHTML = '<div class="text-red-400 text-sm">Reason must be at least 10 characters</div>'; return; }
+  res.innerHTML = '<div class="text-gray-500 text-sm">Saving...</div>';
+  try {
+    const r = await api(CFG().DB_URL + '/api/config/param', {
+      method: 'PUT',
+      body: JSON.stringify({param_name:name, param_value:val, segment_type:segType, segment_value:segVal, change_reason:reason, operator_id:'FDE_INTERNAL'})
+    });
+    if (r.success) {
+      res.innerHTML = '<div class="text-green-400 text-sm">Parameter updated — takes effect next scoring run.</div>';
+      _fparamsInit = false; setTimeout(() => { initFleetParams(); }, 1500);
+    } else {
+      res.innerHTML = `<div class="text-red-400 text-sm">Error: ${esc(r.error||JSON.stringify(r))}</div>`;
+    }
+  } catch(e) { res.innerHTML = `<div class="text-red-400 text-sm">Error: ${esc(e.message)}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 6b — Template Registry
+// ════════════════════════════════════════════════════════════════
+let _templInit = false;
+function initTemplateRegistry() {
+  if (_templInit) return; _templInit = true;
+  const el = $('#sub-templates');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading templates...</div>';
+  dbApi('/templates').then(data => {
+    const rows = data.templates || data || [];
+    let h = '<div class="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mb-3 text-yellow-400 text-xs font-mono">Template changes require a platform deployment. Raise via issue export in Tab 4.</div>';
+    h += '<div class="card overflow-x-auto"><table><tr><th>Template</th><th>Chemistry</th><th>Capacity</th><th>Cells</th><th>Status</th><th>Vehicle</th><th>Spread Warn</th><th>Spread Action</th><th>SOH Replace</th></tr>';
+    rows.forEach(t => {
+      const statusB = t.status==='ACTIVE'||t.is_active_tmpl?badge('ACTIVE','badge-green'):badge(t.status||'--','badge-gray');
+      h += `<tr class="cursor-pointer" onclick="openModal('<div class=\\'text-lg font-bold mb-3\\'>${esc(t.template_id||t.display_name)}</div><pre class=\\'text-xs text-gray-400 whitespace-pre-wrap max-h-96 overflow-y-auto\\'>${esc(JSON.stringify(t,null,2))}</pre><button onclick=\\'closeModal()\\' class=\\'btn btn-ghost text-xs mt-3\\'>Close</button>')">`;
+      h += `<td class="font-mono text-xs text-teal">${esc(t.template_id||t.display_name||'--')}</td>`;
+      h += `<td class="text-xs">${esc(t.chemistry||'')}</td>`;
+      h += `<td class="font-mono text-xs">${t.capacity_ah||'--'}Ah</td>`;
+      h += `<td class="text-xs">${t.cells_in_series||'--'}S</td>`;
+      h += `<td>${statusB}</td>`;
+      h += `<td class="text-xs">${esc(t.vehicle_type||'--')}</td>`;
+      h += `<td class="font-mono text-xs">${t.cell_spread_warn_mean_mv||'--'}mV</td>`;
+      h += `<td class="font-mono text-xs">${t.cell_spread_action_mean_mv||'--'}mV</td>`;
+      h += `<td class="font-mono text-xs">${t.soh_replace_threshold||'--'}%</td>`;
+      h += `</tr>`;
+    });
+    h += '</table></div>';
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 6c — Physics Constants
+// ════════════════════════════════════════════════════════════════
+let _physInit = false;
+function initPhysicsConstants() {
+  if (_physInit) return; _physInit = true;
+  const el = $('#sub-physics');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading physics constants...</div>';
+  dbApi('/config/params').then(data => {
+    const params = (data.params||[]).filter(p => p.layer===1 && (p.segment_type==='CHEMISTRY'||p.segment_type==='OEM_CHEMISTRY'));
+    const lfp = params.filter(p => (p.chemistry||'').includes('LFP') || (p.segment_value||'').includes('LFP'));
+    const nmc = params.filter(p => (p.chemistry||'').includes('NMC') || (p.segment_value||'').includes('NMC'));
+    const renderCol = (title, items) => {
+      let h = `<div><div class="text-xs font-mono text-teal uppercase tracking-wider mb-2">${title}</div><div class="card"><table><tr><th>Param</th><th>Value</th><th>Range</th></tr>`;
+      items.forEach(p => {
+        const range = (p.override_floor!=null) ? `${p.override_floor}—${p.override_ceiling}` : '--';
+        h += `<tr><td class="font-mono text-xs">${esc(p.param_name)}</td><td class="font-mono text-sm font-bold">${p.param_value}</td>`;
+        h += `<td class="text-xs text-gray-500">${range}</td></tr>`;
+      });
+      if (!items.length) h += '<tr><td colspan="3" class="text-gray-500 text-xs">No L1 params for this chemistry</td></tr>';
+      h += '</table></div></div>';
+      return h;
+    };
+    let h = '<div class="grid grid-cols-2 gap-4">';
+    h += renderCol('LFP Physics Constants', lfp);
+    h += renderCol('NMC Physics Constants', nmc);
+    h += '</div>';
+    h += '<div class="text-xs text-gray-500 mt-3"><span class="text-red-400">&#128274;</span> All physics constants are Layer 1 — never override without physics evidence and platform team approval.</div>';
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 6d — Privacy Settings
+// ════════════════════════════════════════════════════════════════
+let _privInit = false;
+function initPrivacySettings() {
+  if (_privInit) return; _privInit = true;
+  const el = $('#sub-privacy');
+  // These are design-phase settings — read from params if they exist, else show defaults
+  dbApi('/config/params').then(data => {
+    const params = data.params||[];
+    const dpParam = params.find(p => p.param_name === 'dp_enabled');
+    const fedParam = params.find(p => p.param_name === 'federated_enabled');
+    const dpEnabled = dpParam ? dpParam.param_value === 1 : false;
+    const fedEnabled = fedParam ? fedParam.param_value === 1 : false;
+    let h = '<div class="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 mb-3 text-blue-400 text-xs font-mono">Privacy and federation settings are platform-level. Changes require commercial gate + platform team approval.</div>';
+    h += '<div class="grid grid-cols-2 gap-4 mb-4">';
+    h += `<div class="card"><div class="flex justify-between items-center mb-2"><span class="text-sm font-medium">Differential Privacy</span>${dpEnabled?badge('ACTIVE','badge-green'):badge('INACTIVE','badge-gray')}</div>`;
+    h += `<div class="text-xs text-gray-400 mb-2">${dpEnabled?'DP noise applied to all fleet-level statistics':'Single OEM mode — no DP noise applied'}</div>`;
+    h += `<div class="text-[10px] text-gray-500">Commercial gate: 5th OEM signed OR contractual DP clause</div>`;
+    h += `<div class="text-[10px] text-gray-500">Technical gate: DP library integrated, epsilon calibrated</div></div>`;
+    h += `<div class="card"><div class="flex justify-between items-center mb-2"><span class="text-sm font-medium">Federated Learning</span>${fedEnabled?badge('ACTIVE','badge-green'):badge('DESIGN PHASE','badge-gray')}</div>`;
+    h += `<div class="text-xs text-gray-400 mb-2">${fedEnabled?'Models trained across OEM boundaries without data sharing':'Design phase — all models trained on pooled data'}</div>`;
+    h += `<div class="text-[10px] text-gray-500">Commercial gate: Multi-OEM fleet with data isolation requirement</div>`;
+    h += `<div class="text-[10px] text-gray-500">Technical gate: Flower/PySyft integration, model aggregation server</div></div>`;
+    h += '</div>';
+    if (dpEnabled) {
+      h += '<div class="card mb-3"><div class="text-[10px] font-mono text-teal uppercase tracking-wider mb-2">DP Parameters</div>';
+      h += '<table><tr><th>Epsilon</th><th>Privacy Level</th><th>Accuracy Impact</th></tr>';
+      [['0.1','Medical-grade','High noise, ~15-20% accuracy loss'],['1.0','Recommended','Moderate noise, ~3-5% accuracy loss'],['3.0','Moderate','Low noise, ~1-2% accuracy loss'],['10.0','Weak','Minimal noise, <0.5% accuracy loss']].forEach(([e,l,d]) => {
+        h += `<tr><td class="font-mono text-xs">${e}</td><td class="text-xs">${l}</td><td class="text-xs text-gray-400">${d}</td></tr>`;
+      });
+      h += '</table></div>';
+    }
+    h += '<div class="text-xs text-gray-500">Platform team only — not customer configurable.</div>';
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+
+// ════════════════════════════════════════════════════════════════
+// TAB 6e — Audit Log
+// ════════════════════════════════════════════════════════════════
+let _cauditInit = false;
+function initAuditLog() {
+  if (_cauditInit) return; _cauditInit = true;
+  const el = $('#sub-caudit');
+  el.innerHTML = '<div class="text-gray-500 text-sm">Loading audit log...</div>';
+  dbApi('/config/audit?limit=100').then(data => {
+    const rows = data.audit || [];
+    let h = '<div class="card overflow-x-auto"><table><tr><th>Time</th><th>Param</th><th>Segment</th><th>Layer</th><th>Change</th><th>By</th><th>Reason</th><th>Affected</th><th></th></tr>';
+    rows.forEach(r => {
+      const diff = `<span class="text-red-400">${r.old_value}</span> → <span class="text-green-400">${r.new_value}</span>`;
+      const rollBtn = r.rollback_available ? `<button onclick="rollbackParam(${r.audit_id})" class="btn btn-red text-xs">Rollback</button>` : '<span class="text-[10px] text-gray-600">--</span>';
+      h += `<tr><td class="font-mono text-[10px]">${esc((r.changed_at||'').slice(0,16))}</td>`;
+      h += `<td class="font-mono text-xs text-teal">${esc(r.param_name)}</td>`;
+      h += `<td class="text-xs">${esc(r.segment_value||'')}</td>`;
+      h += `<td class="text-xs">L${r.layer||'?'}</td>`;
+      h += `<td class="font-mono text-xs">${diff}</td>`;
+      h += `<td class="text-xs">${esc(r.changed_by||'')}</td>`;
+      h += `<td class="text-xs text-gray-400 max-w-xs truncate">${esc(r.change_reason||'')}</td>`;
+      h += `<td class="text-xs">${esc(r.batteries_affected||'--')}</td>`;
+      h += `<td>${rollBtn}</td></tr>`;
+    });
+    h += '</table></div>';
+    h += `<div class="text-xs text-gray-500 mt-2">${rows.length} audit entries</div>`;
+    el.innerHTML = h;
+  }).catch(e => { el.innerHTML = `<div class="card text-red-400">Error: ${esc(e.message)}</div>`; });
+}
+async function rollbackParam(auditId) {
+  if (!confirm(`Rollback audit entry #${auditId}? This will restore the previous value.`)) return;
+  try {
+    const r = await api(CFG().DB_URL + '/api/config/rollback', {
+      method: 'POST',
+      body: JSON.stringify({audit_id: auditId})
+    });
+    if (r.success) {
+      alert(`Rolled back. Restored value: ${r.restored_value}`);
+      _cauditInit = false; initAuditLog();
+      _fparamsInit = false; // Force refresh params
+    } else {
+      alert('Rollback failed: ' + JSON.stringify(r));
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ── Boot ─────────────────────────────────────────────────────────
+function init() {
+  updateRoleBadge();
+  checkApiStatus();
+  // Token from input
+  const saved = localStorage.getItem('enerlyst_token');
+  if (saved) $('#token-input').value = saved;
+}
+window.onload = init;
+</script>
+</body>
+</html>

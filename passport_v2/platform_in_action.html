@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik &middot; Platform in Action</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#FAFAF8;color:#111827;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#F9FAFB}::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:3px}
+.sidebar-left{width:240px;background:#FFFFFF;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
+.sidebar-left.closed{width:0}
+.reopen-left{width:0;background:#fff;border-right:1px solid #E5E7EB;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:width 0.2s ease;flex-shrink:0;overflow:hidden}
+.reopen-left.visible{width:28px}
+.sidebar-right{width:260px;background:#fff;border-left:1px solid #E5E7EB;display:flex;flex-direction:column;transition:width 0.2s ease;overflow:hidden;flex-shrink:0}
+.sidebar-right.closed{width:0}
+.reopen-right{width:0;background:#fff;border-left:1px solid #E5E7EB;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:width 0.2s ease;flex-shrink:0;overflow:hidden}
+.reopen-right.visible{width:28px}
+.hamburger{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;background:transparent;display:flex;align-items:center;justify-content:center}
+.hamburger:hover{background:#F3F4F6}
+.chain-item{transition:all 0.12s;border-left:2px solid transparent}
+.chain-item:hover{background:rgba(249,115,22,0.04);border-left-color:rgba(249,115,22,0.3)}
+.chain-item.active{background:#FFF7ED;border-left-color:#F97316}
+.chain-item.active .ci-label{color:#111827}
+</style>
+</head>
+<body>
+
+<!-- NAV BAR -->
+<div style="height:48px;background:#0F172A;border-bottom:2px solid rgba(249,115,22,0.4);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0">
+  <svg height="28" viewBox="0 0 453 72" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+    <defs><linearGradient id="ig" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/></linearGradient><linearGradient id="wg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FB923C"/><stop offset="100%" stop-color="#EA580C"/></linearGradient></defs>
+    <rect width="72" height="72" rx="14" fill="rgba(249,115,22,0.08)" stroke="#EA580C" stroke-width="2"/>
+    <g transform="translate(14,14) scale(1.375)"><rect x="6" y="6" width="16" height="3" rx="1.5" fill="url(#ig)"/><rect x="6" y="14.5" width="12" height="3" rx="1.5" fill="url(#ig)" opacity=".55"/><rect x="6" y="23" width="16" height="3" rx="1.5" fill="url(#ig)"/><rect x="6" y="6" width="3" height="20" rx="1.5" fill="url(#ig)"/><circle cx="25" cy="8" r="2.5" fill="url(#ig)" opacity=".4"/><circle cx="25" cy="8" r="1.2" fill="url(#ig)"/></g>
+    <text x="92" y="36" font-family="'Outfit',sans-serif" font-size="38" font-weight="700" letter-spacing="3.8" dominant-baseline="central" fill="url(#wg)">enerlytik</text>
+    <text x="94" y="36" font-family="'DM Sans',sans-serif" font-size="12" font-weight="400" letter-spacing="0.6" dominant-baseline="central" dy="27" fill="rgba(251,146,60,0.7)"><tspan font-weight="800" font-size="14" fill="#FB923C">I</tspan>ntelligence <tspan font-weight="800" font-size="14" fill="#FB923C">A</tspan>pplied</text>
+  </svg>
+  <div style="width:1px;height:24px;background:rgba(255,255,255,0.12)"></div>
+  <span style="color:rgba(255,255,255,0.35);font-size:12px">Platform in Action</span>
+  <span id="chain-counter" style="margin-left:auto;font-size:10px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.25)">Select a chain</span>
+</div>
+
+<!-- 3-PANEL BODY -->
+<div style="display:flex;flex:1;min-height:0;overflow:hidden">
+
+  <!-- REOPEN LEFT STRIP -->
+  <div class="reopen-left" id="reopen-left" onclick="openL()">
+    <div style="padding:12px 0"><div class="hamburger"><svg width="14" height="11" viewBox="0 0 14 11"><rect y="0" width="14" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="4.75" width="9" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="9.5" width="14" height="1.5" rx=".75" fill="#9CA3AF"/></svg></div></div>
+  </div>
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left" id="sidebar-left">
+    <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #E5E7EB;flex-shrink:0">
+      <span style="font-size:12px;font-weight:600;color:#374151">Intelligence Chains</span>
+      <button class="hamburger" onclick="closeL()"><svg width="14" height="11" viewBox="0 0 14 11"><rect y="0" width="14" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="4.75" width="9" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="9.5" width="14" height="1.5" rx=".75" fill="#9CA3AF"/></svg></button>
+    </div>
+    <div id="chain-selector" style="overflow-y:auto;flex:1"></div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="chain-canvas" style="background:#FAFAF8;overflow-y:auto;overflow-x:hidden;padding:20px;flex:1;display:flex;flex-direction:column;gap:12px;min-width:0">
+    <div id="chain-default" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#9CA3AF">
+      <div style="font-size:48px;margin-bottom:16px;color:#D1D5DB">&#9672;</div>
+      <div style="font-size:18px;font-weight:600;color:#6B7280;margin-bottom:8px">22 Intelligence Chains</div>
+      <div style="font-size:13px;line-height:1.6;max-width:320px;color:#9CA3AF">Select a chain from the left to see how enerlytik connects signals to decisions &mdash; with live fleet data in every node.</div>
+    </div>
+    <div id="chain-flow" style="display:none"></div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right" id="sidebar-right">
+    <div style="height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #E5E7EB;flex-shrink:0">
+      <button class="hamburger" onclick="closeR()"><svg width="14" height="11" viewBox="0 0 14 11"><rect y="0" width="14" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="4.75" width="9" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="9.5" width="14" height="1.5" rx=".75" fill="#9CA3AF"/></svg></button>
+      <span style="font-size:12px;font-weight:600;color:#374151">Stakeholder Impact</span>
+    </div>
+    <div id="stakeholder-panel" style="overflow-y:auto;flex:1;padding:12px">
+      <div id="stakeholder-default" style="color:#9CA3AF;font-size:12px;text-align:center;padding:40px 12px">Stakeholder impact cards appear here when a chain is selected.</div>
+      <div id="stakeholder-cards" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- REOPEN RIGHT STRIP -->
+  <div class="reopen-right" id="reopen-right" onclick="openR()">
+    <div style="padding:12px 0"><div class="hamburger"><svg width="14" height="11" viewBox="0 0 14 11"><rect y="0" width="14" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="4.75" width="9" height="1.5" rx=".75" fill="#9CA3AF"/><rect y="9.5" width="14" height="1.5" rx=".75" fill="#9CA3AF"/></svg></div></div>
+  </div>
+</div>
+
+<script>
+const API='';
+const TOKEN='{{ api_token }}';
+const H={Authorization:'Bearer '+TOKEN};
+const cache={};
+async function api(url){if(cache[url])return cache[url];try{const r=await fetch(API+url,{headers:H});const d=await r.json();cache[url]=d;return d;}catch(e){return null;}}
+
+// ── SIDEBAR COLLAPSE ──
+function closeL(){document.getElementById('sidebar-left').classList.add('closed');document.getElementById('reopen-left').classList.add('visible');}
+function openL(){document.getElementById('sidebar-left').classList.remove('closed');document.getElementById('reopen-left').classList.remove('visible');}
+function closeR(){document.getElementById('sidebar-right').classList.add('closed');document.getElementById('reopen-right').classList.add('visible');}
+function openR(){document.getElementById('sidebar-right').classList.remove('closed');document.getElementById('reopen-right').classList.remove('visible');}
+
+// ── CHAIN DEFINITIONS ──
+const CHAIN_GROUPS=[
+  {id:'attribution',label:'Attribution & Causation',chains:[1,6,11,12]},
+  {id:'early-warning',label:'Prediction & Early Warning',chains:[2,5,8,10]},
+  {id:'product',label:'Product Intelligence',chains:[3,9,13,14,20]},
+  {id:'financial',label:'Financial Intelligence',chains:[7,16,22]},
+  {id:'reliability',label:'Reliability & Quality',chains:[15,17,18,21]},
+  {id:'network',label:'Network & Learning',chains:[19]}
+];
+const CHAIN_META={
+  1:{label:'Same symptom, different cause',invisible:'Two batteries. Same range loss. Different action. Different cost.',demo:['BAT_LFP_278','BAT_LFP_013'],stakeholders:['operator','nbfc','oem','swap'],questions:['Why did BAT_LFP_278 get a charger fix instead of replacement?','What separates operator-caused from design-caused range loss?','How much did attribution save on this decision?']},
+  2:{label:'False alarm filtering',invisible:'BMS said alarm. Platform said wait. Platform was right.',demo:['BAT_LFP_122'],stakeholders:['operator','nbfc','oem'],questions:['How does the platform decide an alert is false?','What is the corroboration threshold?','How many false alarms has the fleet seen?']},
+  3:{label:'Pack design gap',invisible:'Pack3401 passes lab tests. In field: 6\u00D7 faster degradation.',demo:['GF_LFP_Pack3401'],stakeholders:['oem','nbfc','operator','swap'],questions:['What makes Pack3401 different from Pack3001?','Is the degradation design-driven or operator-driven?','Which routes should avoid Pack3401?']},
+  5:{label:'Event chain prediction',invisible:'Cell Clamp \u2192 Cell Leakage in 42% of cases within 8 weeks.',demo:['fleet'],stakeholders:['oem','operator','service','nbfc'],questions:['Which event sequences predict failure?','What is the transition probability for Cell Clamp?','How many batteries show this chain?']},
+  6:{label:'Driver behaviour loop',invisible:'Partial charging costs 6km/week. Recoverable in 4 weeks.',demo:['HIGH_STRESS'],stakeholders:['operator','nbfc','oem'],questions:['How does charging behaviour affect range?','What does HIGH stress mean for battery life?','Is the damage from partial charging reversible?']},
+  7:{label:'Portfolio heterogeneity',invisible:'334 batteries. 4 risk grades. Grade A breach: 5%. Grade D: 67%.',demo:['portfolio'],stakeholders:['nbfc','operator','oem'],questions:['How does enerlytik grade my portfolio?','What is the breach probability for Grade D?','How does grade affect collateral value?']},
+  8:{label:'Seasonal swing',invisible:'September failure rate: 1.52\u00D7. March: 0.54\u00D7.',demo:['fleet'],stakeholders:['operator','nbfc','oem'],questions:['Which months have the highest failure rate?','How does temperature affect degradation?','Should maintenance schedules be seasonal?']},
+  9:{label:'Micro-market cohorts',invisible:'12\u00D7 spread between best and worst cohort.',demo:['cohort'],stakeholders:['nbfc','oem','operator','swap'],questions:['Which city+pack combinations perform best?','What drives the 12x spread between cohorts?','How should lending terms vary by cohort?']},
+  10:{label:'Battery dies before loan',invisible:'Productive battery life < loan tenure = default on asset.',demo:['BAT_LFP_116'],stakeholders:['nbfc','operator'],questions:['Will BAT_LFP_116 last the full loan tenure?','What is the floor breach probability at 8 weeks?','Is the decline chemistry-driven or operational?']},
+  11:{label:'Behavioural fingerprint',invisible:'4D profile: drive \u00D7 charge \u00D7 load \u00D7 use case.',demo:['BAT_LFP_278'],stakeholders:['operator','nbfc','oem','swap'],questions:['What is this battery\'s usage profile?','How does use case affect degradation rate?','Which profile gets the longest battery life?']},
+  12:{label:'Degradation regime',invisible:'Same range. PRE_KNEE vs POST_KNEE. Four completely different actions.',demo:['regime'],stakeholders:['operator','nbfc','oem','service'],questions:['What regime is this battery in?','How many batteries are approaching the knee?','What action should I take for each regime?']},
+  13:{label:'Commissioning intelligence',invisible:'Born-weak at week 4. Confirmed at week 52.',demo:['GF_LFP_Pack3401'],stakeholders:['oem','operator','nbfc'],questions:['Which packs had high cell spread at delivery?','Does commissioning quality predict lifetime health?','What is the 200mV threshold significance?']},
+  14:{label:'Warranty intelligence',invisible:'LOW EFC + DEAD range = valid claim. HIGH EFC + DEAD = exhausted.',demo:['fleet'],stakeholders:['oem','nbfc','operator'],questions:['How do I know if a warranty claim is valid?','What does EFC consumed percentage mean?','How many batteries are in warranty exhausted state?']},
+  15:{label:'Service intelligence',invisible:'1,378 records. Cabinet \u2192 Leakage: 28%. NPF: 10.4%.',demo:['fleet'],stakeholders:['service','oem','operator'],questions:['What are the most common failure modes?','What percentage of service visits find no problem?','Which failure types lead to recurrence?']},
+  16:{label:'Intervention ROI',invisible:'Service costs INR 2K. Prevents INR 40K replacement.',demo:['BAT_LFP_278'],stakeholders:['operator','nbfc'],questions:['What is the ROI of a charger intervention?','How many batteries improved after intervention?','What is the average cost per prevented replacement?']},
+  17:{label:'Cohort positioning',invisible:'3 reference frames. 1 battery. Each tells a different story.',demo:['BAT_LFP_116'],stakeholders:['operator','oem','nbfc'],questions:['How does this battery compare to its cohort?','What are the 3 reference frames?','Is this battery underperforming for its age?']},
+  18:{label:'Data quality intelligence',invisible:'We know what we know. And what we don\'t.',demo:['BAT_LFP_278'],stakeholders:['operator','nbfc','oem'],questions:['What is the data completeness for this battery?','How does data quality affect scoring confidence?','Which batteries have the least reliable data?']},
+  19:{label:'Beehive learning loop',invisible:'Every node makes every other node smarter.',demo:['network'],stakeholders:['operator','nbfc','oem'],questions:['How does the platform improve over time?','What feedback loops exist between models?','How does one battery\'s outcome help others?']},
+  20:{label:'Field vs lab reality',invisible:'Lab: 25\u00B0C. Field: 42\u00B0C. The gap is the insight.',demo:['fleet'],stakeholders:['oem','operator'],questions:['How do field conditions differ from lab specs?','What is the thermal gap for Pack3401?','Does the lab rating predict field performance?']},
+  21:{label:'Equipment reliability',invisible:'Not always the battery. IoT. BMS. Charger.',demo:['fleet'],stakeholders:['operator','oem','nbfc'],questions:['How often is the problem not the battery?','What percentage of alerts are IoT-related?','How does equipment reliability affect scoring?']},
+  22:{label:'Economic pressure threshold',invisible:'62km range: fine for standard routes. Not for quick-commerce.',demo:['BAT_LFP_116'],stakeholders:['operator','nbfc','swap'],questions:['What is the minimum viable range for each route type?','When does range loss become economically unviable?','How does route assignment affect battery life?']}
+};
+const PRIORITY=[1,2,3,7,10,12];
+
+// ── STAKEHOLDER COLOURS ──
+const SC={
+  operator:{bg:'#FFF7ED',border:'#FED7AA',text:'#C2410C'},
+  lender:{bg:'#F0FDFA',border:'#99F6E4',text:'#0F766E'},
+  oem:{bg:'#F5F3FF',border:'#DDD6FE',text:'#6D28D9'},
+  swap:{bg:'#EFF6FF',border:'#BFDBFE',text:'#1D4ED8'},
+  service:{bg:'#FEF9C3',border:'#FDE047',text:'#854D0E'},
+  nbfc:{bg:'#F0FDFA',border:'#99F6E4',text:'#0F766E'}
+};
+const NC={signal:'#0D9488',physics:'#3B82F6',ml:'#7C3AED',cause:'#F97316',decision_ok:'#16A34A',decision_bad:'#EF4444'};
+
+// ── STAKEHOLDER CARDS ──
+const STAKEHOLDER_CARDS={
+  1:[{role:'OPERATOR',s:'operator',sees:'One action sentence per battery. In km.',decides:'Change charger on vehicle A. Replace battery B.',saving:'INR 37,000 saved vs replacing both.',link:'/passport-next?battery=BAT_LFP_278',linkLabel:'See BAT_LFP_278 \u2192'},{role:'LENDER',s:'lender',sees:'Grade B (recoverable) vs Grade D (provision).',decides:'Different collateral valuation per battery.',saving:'Accurate provisioning, not blanket Grade D.',link:'/nbfc',linkLabel:'See portfolio \u2192'},{role:'MANUFACTURER',s:'oem',sees:'Attribution split: design vs operation.',decides:'Pack3401: warranty applies. BAT_LFP_278: operator-caused.',saving:'Warranty liability separated by evidence.',link:'/oem',linkLabel:'See product intelligence \u2192'},{role:'SWAP',s:'swap',sees:'CONTINUE vs REMOVE_FROM_POOL.',decides:'Remove B immediately. A continues after charger fix.',saving:'Pool quality maintained.',link:'/swap',linkLabel:'See pool \u2192'}],
+  2:[{role:'OPERATOR',s:'operator',sees:'"No action needed." Corroboration 2/7.',decides:'Do NOT replace. Save INR 40,000.',saving:'14 false alarms caught fleet-wide = INR 5.6L saved.',link:'/passport-next?battery=BAT_LFP_122',linkLabel:'See BAT_LFP_122 \u2192'},{role:'LENDER',s:'lender',sees:'Grade unchanged. Not impaired.',decides:'Do not downgrade this battery.',saving:'Accurate portfolio \u2014 no false Grade D.',link:'/nbfc',linkLabel:'See portfolio \u2192'},{role:'MANUFACTURER',s:'oem',sees:'Service record: NPF (No Problem Found).',decides:'10.4% of visits are false alarms \u2014 BMS firmware.',saving:'Service cost reduction at scale.',link:'/oem',linkLabel:'See failure modes \u2192'}],
+  3:[{role:'MANUFACTURER',s:'oem',sees:'Pack3401: 1.5\u00D7 faster degradation in field.',decides:'Design investigation for partial discharge tolerance.',saving:'Finding invisible from lab. Only visible in field.',link:'/oem',linkLabel:'See product intelligence \u2192'},{role:'LENDER',s:'lender',sees:'Pack3401 batteries: 73% Grade C/D.',decides:'Risk-adjust pricing for Pack3401 loans.',saving:'Portfolio risk accurately priced.',link:'/nbfc',linkLabel:'See portfolio \u2192'},{role:'OPERATOR',s:'operator',sees:'27 vehicles: earlier replacement timeline.',decides:'Don\'t assign Pack3401 to quick-commerce routes.',saving:'Route optimisation extends life 8 weeks.',link:'/fleet-mis',linkLabel:'See fleet \u2192'},{role:'SWAP',s:'swap',sees:'Pack3401: RESTRICTED on high-frequency routes.',decides:'Depot-only use or retirement.',saving:'Pool quality maintained.',link:'/swap',linkLabel:'See pool \u2192'}],
+  7:[{role:'LENDER',s:'lender',sees:'A:41 \u00B7 B:84 \u00B7 C:105 \u00B7 D:104 batteries.',decides:'Reprice new loans by grade.',saving:'Grade A breach: 5%. Grade D: 67%.',link:'/nbfc',linkLabel:'See portfolio \u2192'},{role:'OPERATOR',s:'operator',sees:'Action queue. Grade improves when they act.',decides:'Fix charger \u2192 battery improves \u2192 grade improves.',saving:'The Lattice \u2014 operator actions affect loan terms.',link:'/fleet-mis',linkLabel:'See fleet \u2192'},{role:'MANUFACTURER',s:'oem',sees:'Pack3401 concentrates in Grade D.',decides:'This pack creates portfolio risk.',saving:'Pack choice affects financing cost.',link:'/oem',linkLabel:'See product intelligence \u2192'}],
+  10:[{role:'LENDER',s:'lender',sees:'RUL vs tenure comparison.',decides:'Restructure loan or trigger covenant review.',saving:'Early warning: asset-death before loan end.',link:'/nbfc',linkLabel:'See lender view \u2192'},{role:'OPERATOR',s:'operator',sees:'Replacement needed in 14-18 weeks.',decides:'Plan procurement now. Budget INR 40,000.',saving:'Planned capex vs emergency replacement.',link:'/passport-next?battery=BAT_LFP_116',linkLabel:'See BAT_LFP_116 \u2192'}],
+  12:[{role:'OPERATOR',s:'operator',sees:'APPROACHING_KNEE: 8-12 weeks to inflection.',decides:'Plan replacement before rapid decline.',saving:'Planned replacement vs breakdown.',link:'/fleet-mis',linkLabel:'See fleet \u2192'},{role:'LENDER',s:'lender',sees:'APPROACHING_KNEE: breach probability rising.',decides:'Reclassify Grade B \u2192 C proactively.',saving:'Grade adjustment before range drops.',link:'/nbfc',linkLabel:'See portfolio \u2192'},{role:'MANUFACTURER',s:'oem',sees:'58 batteries approaching knee in SR.',decides:'City \u00D7 thermal interaction suspected.',saving:'Design feedback: thermal management gap.',link:'/oem',linkLabel:'See product intelligence \u2192'}]
+};
+
+// ── CHAIN NODE DEFINITIONS ──
+const CHAIN_NODES={
+  1:{nodes:[{type:'signal',title:'Range loss',value:'-28km',sub:'vs commissioned'},{type:'physics',title:'Cell spread',value:'160mV',sub:'+128mV above baseline'},{type:'ml',title:'SHAP attribution',value:'R\u00B2=0.816',sub:'5 factors separated'},{type:'cause',title:'Charging pattern',value:'34.3%',sub:'Primary driver',s:'operator'},{type:'decision',title:'Change charger',value:'INR 3,000',sub:'Expected +6km/4wk',s:'operator',ok:true}],layer2:['30-sec CAN\n97M rows','DoD\u00B7temp\u00B7BMS\nbias corrected','SHAP \u00B7 204\nfeatures','vs 4 other\nfactors','Saves INR 37K\nvs replacement'],layer3:[{s:'operator',t:'Change charger not battery'},{s:'lender',t:'Grade B not D'},{s:'oem',t:'Operator-caused \u2014 not warranty'},{s:'swap',t:'Continue after charger fix'}],saving:'Same symptom. Different cause. Platform saved INR 37,000 on this decision.',demo:'BAT_LFP_278'},
+  2:{nodes:[{type:'signal',title:'BMS alert',value:'Range \u22128km',sub:'Single week drop'},{type:'physics',title:'Cell spread',value:'STABLE',sub:'No electrochemical change'},{type:'ml',title:'Corroboration',value:'2 of 7',sub:'Low signal agreement'},{type:'cause',title:'False alarm',value:'NOT CONFIRMED',sub:'Recovery detected',s:'operator'},{type:'decision',title:'No action',value:'Save INR 40K',sub:'Battery still running',s:'operator',ok:true}],layer2:['Week 39\nalert fired','Spread stable\n\u00B15mV only','Need 3+\nfor confirmed','Pattern:\nrecovering','8 weeks later\nstill running'],layer3:[{s:'operator',t:'Do NOT replace \u2014 battery is fine'},{s:'lender',t:'Grade unchanged \u2014 not impaired'},{s:'oem',t:'NPF \u2014 BMS firmware false positive'}],saving:'14 false alarms caught fleet-wide. 14 \u00D7 INR 40,000 = INR 5.6 lakhs saved.',demo:'BAT_LFP_122'},
+  3:{nodes:[{type:'signal',title:'Fleet telemetry',value:'334 batteries',sub:'4 packs \u00B7 3 cities'},{type:'physics',title:'Pack aggregation',value:'Avg slope',sub:'Per-pack cohort'},{type:'ml',title:'Survival analysis',value:'P50 curves',sub:'Pack3001 vs Pack3401'},{type:'cause',title:'Design gap',value:'1.5\u00D7 faster',sub:'Commissioning spread gap',s:'oem'},{type:'decision',title:'Investigation',value:'76 batteries',sub:'OEM action required',s:'oem',ok:false}],layer2:['4 pack models\n3 cities','Slope per pack\nper city','Months to 75%\nBHS threshold','282mV vs 193mV\nmedian spread','Avoid Pack3401\non QC routes'],layer3:[{s:'oem',t:'Design investigation needed'},{s:'lender',t:'Pack3401: 73% Grade C/D'},{s:'operator',t:'Route restriction for Pack3401'},{s:'swap',t:'Pack3401 restricted'}],saving:'Pack3401 design gap detected from field data \u2014 invisible in lab testing.',demo:null},
+  7:{nodes:[{type:'signal',title:'334 battery loans',value:'Same pricing',sub:'Same risk weight'},{type:'physics',title:'BHS scoring',value:'6 components',sub:'Failure-mode weighted'},{type:'ml',title:'Risk score',value:'Continuous',sub:'P15/P40/P70 cuts'},{type:'cause',title:'Grade separation',value:'4 grades',sub:'A=41 D=104',s:'lender'},{type:'decision',title:'Differential pricing',value:'A:5% D:67%',sub:'Breach probability',s:'lender',ok:true}],layer2:['Same product\nsame terms','6-component\ncomposite','0-100\ncontinuous','Grade A low risk\nGrade D high','Pricing by\nevidence'],layer3:[{s:'lender',t:'Reprice by grade \u2014 not blanket'},{s:'operator',t:'Grade improves when they act'},{s:'oem',t:'Pack3401 drives Grade D concentration'}],saving:'334 batteries, 4 grades. Same product, different risk. Now accurately priced.',demo:null},
+  10:{nodes:[{type:'signal',title:'BAT_LFP_116',value:'67km range',sub:'Current week'},{type:'physics',title:'Trajectory',value:'DECLINING',sub:'\u22120.011 km/SoC%/wk'},{type:'ml',title:'Floor breach',value:'45% prob',sub:'8-week horizon'},{type:'cause',title:'Life < tenure',value:'Ending early',sub:'Loan tenure unknown',s:'lender'},{type:'decision',title:'Grade D',value:'Early warning',sub:'Investigate cause',s:'lender',ok:false}],layer2:['Week 44\ntelemetry','8-week\nrolling slope','P(floor breach)\nin 8 weeks','Productive life\nvs loan term','Restructure\nor provision'],layer3:[{s:'lender',t:'Restructure loan or provision'},{s:'operator',t:'Plan replacement in 14-18 weeks'}],saving:'Early warning: productive battery life ending before loan tenure.',demo:'BAT_LFP_116'},
+  12:{nodes:[{type:'signal',title:'kps_slope_8wk',value:'Efficiency trend',sub:'8-week rolling'},{type:'physics',title:'Acceleration',value:'2nd derivative',sub:'Is decline speeding up?'},{type:'ml',title:'Regime classifier',value:'4 states',sub:'PRE/APPROACH/POST/RESIST'},{type:'cause',title:'Lifecycle position',value:'PRE_KNEE',sub:'From regime data',s:'operator'},{type:'decision',title:'Differentiated action',value:'POST\u2192Replace',sub:'PRE\u2192Service viable',s:'operator',ok:true}],layer2:['Slope from\nVWF features','Concavity of\ndecline curve','Statistical\nclassification','Where on the\nS-curve','Different regime\n= different action'],layer3:[{s:'operator',t:'Plan by regime, not by range'},{s:'lender',t:'Grade adjustment pre-knee'},{s:'oem',t:'Thermal management feedback'}],saving:'Same range. Four different situations. Four different optimal actions.',demo:null},
+  5:{nodes:[{type:'signal',title:'Event history',value:'E2\u2192E1 chain',sub:'Cell Clamp precedes Leakage'},{type:'physics',title:'Transition matrix',value:'42% prob',sub:'within 8 weeks'},{type:'ml',title:'Sequence model',value:'Markov chain',sub:'event-to-event transition'},{type:'cause',title:'Escalation path',value:'Cell Clamp\u2192Leak',sub:'predictable progression',s:'service'},{type:'decision',title:'Pre-empt leakage',value:'Service now',sub:'check seals at Cell Clamp visit',s:'service',ok:true}],layer2:['2,488 events\n16 types','Transition\nprobabilities','Markov\nchain model','42% within\n8 weeks','Service at\nCell Clamp'],layer3:[{s:'service',t:'Pre-emptive seal check'},{s:'oem',t:'Cell Clamp design investigation'},{s:'operator',t:'Escalation alert for fleet'}],saving:'Predictive event chains enable pre-emptive service before escalation.',demo:null},
+  6:{nodes:[{type:'signal',title:'Charge sessions',value:'29% irregular',sub:'of fleet charging'},{type:'physics',title:'SoC behaviour',value:'Avg min 18%',sub:'deep discharge pattern'},{type:'ml',title:'Driver stress',value:'HIGH tier',sub:'108 batteries (33%)'},{type:'cause',title:'Charging pattern',value:'24.5%',sub:'Operator-driven degradation',s:'operator'},{type:'decision',title:'Coach driver',value:'+6km recovery',sub:'Switch to overnight full',s:'operator',ok:true}],layer2:['CAN data\nSoC min/max','Behaviour\nfeatures','HIGH\u00B7MED\u00B7LOW\ntier split','Charging = 24.5%\nvs 4 other factors','Recoverable\nin 4 weeks'],layer3:[{s:'operator',t:'Coach driver on charging'},{s:'lender',t:'HIGH stress = 1.4\u00D7 degradation'},{s:'oem',t:'Operator-caused \u2014 not warranty'}],saving:'Behaviour correction recovers 6km/week. No hardware cost.',demo:'BAT_LFP_278'},
+  8:{nodes:[{type:'signal',title:'Service records',value:'1,378 records',sub:'Apr 2025 \u2013 Mar 2026'},{type:'physics',title:'Monthly analysis',value:'13 months',sub:'failure frequency'},{type:'ml',title:'Seasonal multipliers',value:'22% swing',sub:'Sep vs Mar'},{type:'cause',title:'Thermal stress',value:'Sep = 1.52\u00D7',sub:'Peak failure multiplier',s:'oem'},{type:'decision',title:'Pre-summer service',value:'Apr\u2013May window',sub:'50 batteries to service',s:'operator',ok:true}],layer2:['1,378 service\nevents','Monthly freq\nnormalized','Sep=1.52\u00D7\nMar=0.54\u00D7','Thermal\nacceleration','Pre-summer\nservice push'],layer3:[{s:'operator',t:'Pre-summer service saves Sep spike'},{s:'lender',t:'Q3 provisioning 1.5\u00D7 Q1'},{s:'oem',t:'Thermal design matters in India'}],saving:'Pre-summer service push reduces September failure spike by ~40%.',demo:null},
+  9:{nodes:[{type:'signal',title:'Fleet cross-tab',value:'4 dimensions',sub:'pack \u00D7 city \u00D7 use \u00D7 charge'},{type:'physics',title:'Cohort analysis',value:'Pack \u00D7 City',sub:'degradation per combo'},{type:'ml',title:'Cohort spread',value:'12\u00D7 difference',sub:'best vs worst'},{type:'cause',title:'Worst cohort',value:'Pack3401 + SR',sub:'QC + IRREGULAR',s:'oem'},{type:'decision',title:'Route restriction',value:'Avoid Pack3401',sub:'on QC routes',s:'swap',ok:false}],layer2:['pack \u00B7 city\nuse \u00B7 charge','4D cross-tab\nper cell','Best: Pack1201+CU\nOVERNIGHT','Worst: Pack3401+SR\nIRREGULAR','12\u00D7 spread\nsame pack'],layer3:[{s:'lender',t:'QC = 1.8\u00D7 risk premium'},{s:'oem',t:'Pack3401 fails under partial discharge'},{s:'operator',t:'Reassign Pack3401 to standard'},{s:'swap',t:'Restrict Pack3401 on high-freq'}],saving:'Cohort intelligence enables risk-based pricing and route optimisation.',demo:null},
+  11:{nodes:[{type:'signal',title:'CAN telemetry',value:'4 dimensions',sub:'drive \u00B7 charge \u00B7 load \u00B7 use'},{type:'physics',title:'Discharge C-rate',value:'Max 0.619C',sub:'no fast charging in fleet'},{type:'ml',title:'4D fingerprint',value:'Per battery/week',sub:'behavioural profile'},{type:'cause',title:'Fingerprint match',value:'AGG+IRREG+QC',sub:'worst degradation profile',s:'operator'},{type:'decision',title:'Targeted coaching',value:'3 changes needed',sub:'drive + charge + route',s:'operator',ok:true}],layer2:['AGG / MOD / CON\ndrive profile','OVERNIGHT / PARTIAL\n/ IRREGULAR','Load intensity\nproxy ratio','QUICK_COMMERCE\netc use case','4D fingerprint\nper battery/week'],layer3:[{s:'operator',t:'Change drive + charge + route'},{s:'lender',t:'AGG+IRREGULAR = 1.8\u00D7 risk'},{s:'oem',t:'Fingerprint \u00D7 pack interaction'}],saving:'4D fingerprint explains behaviour-caused degradation. All recoverable.',demo:'BAT_LFP_278'},
+  13:{nodes:[{type:'signal',title:'Week 1-4 baseline',value:'kps_commissioned',sub:'per battery at delivery'},{type:'physics',title:'Pack median',value:'vs pack siblings',sub:'same model same batch'},{type:'ml',title:'Born-weak detect',value:'< median \u2212 2\u03C3',sub:'BORN_WEAK flag'},{type:'cause',title:'Manufacturing',value:'6 batteries',sub:'flagged born-weak wk 4',s:'oem'},{type:'decision',title:'Warranty claim',value:'Immediate',sub:'or light-use assignment',s:'oem',ok:false}],layer2:['Weeks 1\u20134 avg\nkps_commissioned','Pack model\nmedian','< median \u2212 2\u03C3\nclassification','6 born-weak\n3\u00D7 faster to CRITICAL','Warranty claim\nor reassign'],layer3:[{s:'oem',t:'Batch investigation warranted'},{s:'operator',t:'Born-weak \u2192 light route'},{s:'lender',t:'Born-weak \u2192 faster Stage 3'}],saving:'Born-weak detection at week 4 enables warranty claims before range loss visible.',demo:null},
+  14:{nodes:[{type:'signal',title:'Coulomb counting',value:'ah_throughput',sub:'cumulative since commission'},{type:'physics',title:'EFC calculation',value:'EFC = AH/capacity',sub:'true warranty metric'},{type:'ml',title:'Warranty quadrant',value:'4-quadrant grid',sub:'EFC vs range health'},{type:'cause',title:'Quadrant assign',value:'LOW EFC + LOW range',sub:'= premature failure',s:'oem'},{type:'decision',title:'Valid claim',value:'Design defect',sub:'warranty applies',s:'oem',ok:false}],layer2:['ah_throughput\ncumulative','EFC / nominal\ncapacity_ah','HIGH/LOW EFC \u00D7\nGOOD/DEAD range','LOW EFC + DEAD\n= premature failure','HIGH EFC + DEAD\n= exhausted'],layer3:[{s:'oem',t:'Data-evidenced warranty decisions'},{s:'lender',t:'warranty_consumed_pct affects collateral'},{s:'operator',t:'Know when warranty applies'}],saving:'Warranty intelligence separates valid claims from exhausted batteries.',demo:null},
+  15:{nodes:[{type:'signal',title:'Service records',value:'1,378 events',sub:'51 failure categories'},{type:'physics',title:'Taxonomy analysis',value:'Top modes',sub:'Cell Unbalanced 20.6%'},{type:'ml',title:'Transition prob',value:'Cabinet\u2192Leak',sub:'28% in 8 weeks'},{type:'cause',title:'Failure chain',value:'Cell Clamp\u2192Leak',sub:'42% transition rate',s:'service'},{type:'decision',title:'Predictive dispatch',value:'Pre-empt leakage',sub:'check seals at service',s:'service',ok:true}],layer2:['1,378 events\nApr 25\u2013Mar 26','Cell Unbalanced\n20.6%','NPF rate\n10.4%','Cabinet\u2192Leakage\n28%','Cell Clamp\u2192Leak\n42%'],layer3:[{s:'service',t:'Pre-emptive check at each visit'},{s:'oem',t:'Cell Unbalanced top failure'},{s:'operator',t:'Intervention ROI per action'}],saving:'Predictive service dispatch reduces NPF rate and prevents escalation.',demo:null},
+  16:{nodes:[{type:'signal',title:'Battery state',value:'Range + trajectory',sub:'attribution + fault history'},{type:'physics',title:'Recovery prob',value:'P(service works)',sub:'from fleet outcomes'},{type:'ml',title:'ROI calculation',value:'P \u00D7 savings',sub:'intervention_score'},{type:'cause',title:'Service viable',value:'72% success',sub:'cell balance on WATCH',s:'operator'},{type:'decision',title:'Service battery',value:'INR 2,000',sub:'Expected +8km \u00B7 ROI 20\u00D7',s:'operator',ok:true}],layer2:['BHS + divergence\nattribution + fault','P(recovery)\nfrom outcomes','P \u00D7 (40K \u2212 2K)\n= expected value','Score > 0.3\n\u2192 service','Score < 0.3\n\u2192 replace'],layer3:[{s:'operator',t:'Correct action saves INR 38K'},{s:'lender',t:'Intervention improves recovery rate'}],saving:'Intervention ROI: service costs INR 2K, prevents INR 40K replacement.',demo:'BAT_LFP_278'},
+  17:{nodes:[{type:'signal',title:'Battery range',value:'67km current',sub:'BAT_LFP_116 this week'},{type:'physics',title:'3 reference frames',value:'vs OEM \u00B7 fleet \u00B7 self',sub:'each tells different story'},{type:'ml',title:'Cohort percentile',value:'Bottom 15%',sub:'pack + city peers'},{type:'cause',title:'Context matters',value:'\u221228% vs OEM',sub:'\u221224km vs fleet median',s:'operator'},{type:'decision',title:'Investigate',value:'Outlier in cohort',sub:'operational cause suspected',s:'operator',ok:false}],layer2:['118km spec \u2192 67km\n\u221243% vs design','93km \u2192 67km\n\u221228% vs fleet','67km \u2192 67km\nminimal own decline','Pack3401+SR peers\nbottom 15%','Investigate\noperational cause'],layer3:[{s:'operator',t:'Investigate route/load before service'},{s:'lender',t:'Grade D reflects range not chemistry'},{s:'oem',t:'Cohort outlier \u2192 design signal'}],saving:'3 reference frames give 3 different actions. Right frame = right decision.',demo:'BAT_LFP_116'},
+  18:{nodes:[{type:'signal',title:'Data inventory',value:'Per battery',sub:'n_weeks \u00B7 gps_pct \u00B7 can_pct'},{type:'physics',title:'Data grade',value:'FULL / PARTIAL',sub:'HEALTH_ONLY / STALE'},{type:'ml',title:'Confidence tier',value:'HIGH / MEDIUM',sub:'DATA_LIMITED'},{type:'cause',title:'Known gaps',value:'10% LIMITED',sub:'conservative grading',s:'operator'},{type:'decision',title:'Honest disclosure',value:'Confidence shown',sub:'on every battery card',s:'operator',ok:true}],layer2:['n_weeks_telemetry\ngps \u00B7 can coverage','FULL \u2192 STALE\n4 tiers','HIGH / MED\n/ LIMITED','72% HIGH \u00B7 18% MED\n10% LIMITED','5 actions unlock\nmore intelligence'],layer3:[{s:'operator',t:'DATA_LIMITED \u2192 no false action'},{s:'lender',t:'Conservative grade for low-confidence'},{s:'oem',t:'Honest confidence as differentiator'}],saving:'Honest confidence disclosure is a product differentiator \u2014 not a weakness.',demo:null},
+  19:{nodes:[{type:'signal',title:'Operator confirms',value:'Replacement logged',sub:'outcome_log updated'},{type:'physics',title:'Calibration update',value:'+1 toward 30',sub:'conformal calibration gate'},{type:'ml',title:'NBFC model improves',value:'Breach model',sub:'more accurate bands'},{type:'cause',title:'Network effect',value:'All nodes benefit',sub:'from each contribution',s:'operator'},{type:'decision',title:'Data flywheel',value:'More data \u2192 better',sub:'intelligence for everyone',s:'operator',ok:true}],layer2:['Operator:\nusage + outcomes','NBFC:\nloan tenure data','OEM:\nOCV curves','Service:\nground truth','Everyone:\nbetter intelligence'],layer3:[{s:'operator',t:'Confirmations \u2192 better RUL for all'},{s:'lender',t:'Loan data \u2192 income coverage ratio'},{s:'oem',t:'OCV curves \u2192 ICA fleet-wide'},{s:'service',t:'Outcomes \u2192 predictive dispatch'}],saving:'Every node contribution improves intelligence for all \u2014 the network moat.',demo:null},
+  20:{nodes:[{type:'signal',title:'Fleet telemetry',value:'Real conditions',sub:'13+ months India field'},{type:'physics',title:'Lab assumptions',value:'vs field reality',sub:'25\u00B0C \u00B7 0.3C \u00B7 controlled'},{type:'ml',title:'Gap analysis',value:'Delta per factor',sub:'temp \u00B7 DoD \u00B7 C-rate'},{type:'cause',title:'Design gap',value:'Indian field',sub:'not replicable in lab',s:'oem'},{type:'decision',title:'R&D input',value:'Design for field',sub:'not lab conditions',s:'oem',ok:false}],layer2:['Lab: 25\u00B0C \u00B7 0.3C\n80% DoD','Field: 42\u00B0C \u00B7 0.6C\n90% DoD','65% overnight\n29% irregular','Max 0.619C\nno fast charging','22% seasonal\nswing confirmed'],layer3:[{s:'oem',t:'Design for 42\u00B0C not 25\u00B0C'},{s:'operator',t:'Seasonal patterns are real physics'},{s:'lender',t:'Field conditions drive degradation'}],saving:'enerlytik IS the field data system the OEM does not have.',demo:null},
+  21:{nodes:[{type:'signal',title:'IoT quality',value:'Per device',sub:'gps_pct \u00B7 can_pct \u00B7 gaps'},{type:'physics',title:'BMS bias',value:'+5.5% SoC',sub:'systematic overread'},{type:'ml',title:'Equipment grade',value:'OK / DEGRADED',sub:'/ CRITICAL per device'},{type:'cause',title:'Not the battery',value:'IoT degraded',sub:'scoring affected',s:'operator'},{type:'decision',title:'Replace IoT',value:'INR 1,500',sub:'restores full intelligence',s:'operator',ok:true}],layer2:['gps_coverage_pct\ncan_coverage_pct','+5.5% systematic\nSoC overread','BMS alerts\nDISABLED in fleet','Equipment not\nbattery','Separate\ndiagnostics'],layer3:[{s:'operator',t:'IoT device not battery \u2014 INR 1,500'},{s:'oem',t:'BMS reads 98% on degraded battery'},{s:'lender',t:'Conservative grade for IoT-impaired'}],saving:'Equipment reliability separates IoT/BMS/charger from battery degradation.',demo:null},
+  22:{nodes:[{type:'signal',title:'Range delivery',value:'62km current',sub:'technically operational'},{type:'physics',title:'Use case floor',value:'Per route type',sub:'QC: 80km min'},{type:'ml',title:'Economic breach',value:'Below floor',sub:'for this use case'},{type:'cause',title:'Uneconomic',value:'Not for QC',sub:'fine for standard urban',s:'operator'},{type:'decision',title:'Reassign route',value:'Standard urban',sub:'56km floor \u2014 still viable',s:'swap',ok:true}],layer2:['56km standard\nfleet floor','80km QC\nminimum','70km logistics\nminimum','45km light use\nStage 2 viable','Context-dependent\nsame battery'],layer3:[{s:'operator',t:'Reassign to matching route'},{s:'lender',t:'Use-case floor affects breach prob'},{s:'swap',t:'Match pool battery to viable route'}],saving:'Use-case economic floor prevents wrong route assignment.',demo:'BAT_LFP_116'}
+};
+
+// ── DATA LOADING ──
+async function loadChainData(cid) {
+  switch(cid){
+    case 1: const [d278,d013]=await Promise.all([api('/api/battery/BAT_LFP_278/passport?audience=operator'),api('/api/battery/BAT_LFP_013/passport?audience=operator')]); return {bat278:d278,bat013:d013};
+    case 2: return await api('/api/battery/BAT_LFP_122/passport?audience=operator');
+    case 3: return await api('/api/fleet/intelligence/v2?max_week=90');
+    case 7: return await api('/api/nbfc/portfolio-intelligence');
+    case 10: return await api('/api/battery/BAT_LFP_116/passport?audience=nbfc');
+    case 12: return await api('/api/fleet/intelligence/v2?max_week=90');
+    default: return null;
+  }
+}
+
+// ── INSIGHTS DATA ──
+const CHAIN_INSIGHTS={
+  1:[{title:'Attribution precision',body:'Charging pattern separated from 4 other factors via the 5-factor attribution engine.',value:'34.3%',sub:'charged to this factor',colour:'#F97316'},{title:'Cost difference',body:'Without attribution both get replaced. Platform finds one recoverable.',value:'INR 37,000',sub:'saved on this decision',colour:'#16A34A'},{title:'Fleet scale',body:'If 30% of replace-actions have recoverable cause, ~20 avoided.',value:'~20 batteries',sub:'may have recoverable cause',colour:'#0D9488'}],
+  2:[{title:'Corroboration score',body:'Only 2 of 7 independent signals agree with decline. Threshold: 3+.',value:'2 of 7',sub:'signals firing',colour:'#6B7280'},{title:'Fleet-wide catch rate',body:'14 false alarms identified this quarter. Each prevented replacement.',value:'14 caught',sub:'this quarter',colour:'#16A34A'},{title:'Financial impact',body:'Each false alarm prevention saves one full replacement cost.',value:'INR 5.6L',sub:'saved fleet-wide',colour:'#F97316'}],
+  3:[{title:'Degradation differential',body:'Pack3401 degrades 1.5\u00D7 faster than Pack3001 under identical conditions.',value:'1.5\u00D7 faster',sub:'vs Pack3001 baseline',colour:'#EF4444'},{title:'Commissioning gap',body:'40% of Pack3401 delivered above 200mV spread. Fleet median 193mV.',value:'282mV avg',sub:'commissioning spread',colour:'#F59E0B'},{title:'Batteries affected',body:'76 batteries across 3 cities showing design-driven degradation.',value:'76 batteries',sub:'across 3 cities',colour:'#7C3AED'}],
+  7:[{title:'Grade D breach risk',body:'Grade D batteries have 67% probability of floor breach in 12 weeks.',value:'67% breach',sub:'Grade D at 12 weeks',colour:'#EF4444'},{title:'Collateral at risk',body:'Grade D total collateral at elevated risk if no intervention in 8 weeks.',value:'\u20B929.5L',sub:'Grade D collateral',colour:'#F59E0B'},{title:'Early warning window',body:'25 batteries in early warning \u2014 chemistry declining, range still holds.',value:'25 batteries',sub:'intervention window open',colour:'#0D9488'}],
+  10:[{title:'Breach probability',body:'BAT_LFP_116 has 45% probability of breaching floor within 8 weeks.',value:'45%',sub:'8-week floor breach',colour:'#EF4444'},{title:'Chemistry vs range',body:'Range dropped but internal chemistry healthy. Likely operational cause.',value:'BHS healthy',sub:'chemistry intact',colour:'#0D9488'},{title:'Grade implication',body:'Grade D reflects range drop only. Intervention may recover if operational.',value:'Grade D',sub:'range-driven only',colour:'#F59E0B'}],
+  12:[{title:'Approaching knee',body:'Batteries in APPROACHING_KNEE have 8-12 weeks before rapid decline.',value:'58',sub:'batteries approaching',colour:'#F59E0B'},{title:'Post-knee',body:'POST_KNEE batteries will not respond to service. Replace only.',value:'32',sub:'batteries past knee',colour:'#EF4444'},{title:'Pre-knee',body:'PRE_KNEE batteries have predictable linear decline. Service viable.',value:'120',sub:'batteries pre-knee',colour:'#16A34A'}],
+  5:[{title:'Event chain prediction',body:'Cell Clamp precedes Cell Leakage in 42% of cases within 8 weeks.',value:'42%',sub:'transition probability',colour:'#EF4444'},{title:'Pre-emptive service',body:'Service at Cell Clamp event prevents escalation to leakage in most cases.',value:'Pre-empt',sub:'act at first event',colour:'#16A34A'},{title:'Fleet prevalence',body:'E2\u2192E1 chain detected in multiple batteries. Systemic pattern.',value:'Systemic',sub:'across fleet',colour:'#7C3AED'}],
+  6:[{title:'Recovery potential',body:'Charging behaviour is fully reversible. Correct it and range recovers.',value:'+6km/week',sub:'expected recovery',colour:'#16A34A'},{title:'Fleet impact',body:'108 HIGH stress batteries (33% fleet). If half correct, significant improvement.',value:'108 batteries',sub:'HIGH stress tier',colour:'#F97316'},{title:'Attribution split',body:'Charging accounts for 24.5% of degradation \u2014 second only to cell imbalance.',value:'24.5%',sub:'charged to charging',colour:'#0D9488'}],
+  8:[{title:'September spike',body:'September failure rate is 1.52\u00D7 annual average \u2014 real physics from heat.',value:'1.52\u00D7',sub:'September multiplier',colour:'#EF4444'},{title:'Safe window',body:'March is lowest-risk month at 0.54\u00D7 baseline. Best for maintenance.',value:'0.54\u00D7',sub:'March multiplier',colour:'#16A34A'},{title:'Pre-summer ROI',body:'50 thermally vulnerable batteries. Proactive April service prevents Sep failures.',value:'50 batteries',sub:'pre-summer candidates',colour:'#F97316'}],
+  9:[{title:'12\u00D7 cohort spread',body:'Best (Pack1201+CU+standard+overnight) vs worst (Pack3401+SR+QC+irregular).',value:'12\u00D7 spread',sub:'best to worst',colour:'#EF4444'},{title:'Risk-based pricing',body:'QC operators in SR carry 1.8\u00D7 default risk of standard operators in CU.',value:'1.8\u00D7 premium',sub:'QC risk',colour:'#F97316'},{title:'Route optimisation',body:'Pack3401 on STANDARD_URBAN instead of QC extends life by 8 weeks.',value:'+8 weeks',sub:'life extension',colour:'#16A34A'}],
+  11:[{title:'Most damaging',body:'AGG drive + IRREGULAR charge + QC route is worst combination across all packs.',value:'3\u00D7 degradation',sub:'vs best fingerprint',colour:'#EF4444'},{title:'Most protective',body:'CON drive + OVERNIGHT charge + STANDARD_URBAN is best. Pack1201 responds best.',value:'0.5\u00D7 degradation',sub:'vs fleet average',colour:'#16A34A'},{title:'All recoverable',body:'Unlike cell chemistry, behavioural factors are fully controllable.',value:'Reversible',sub:'behaviour-driven',colour:'#0D9488'}],
+  13:[{title:'Early detection',body:'Born-weak batteries identifiable at week 4 \u2014 before any visible range loss.',value:'Week 4',sub:'detection point',colour:'#F97316'},{title:'Life acceleration',body:'Born-weak batteries reached CRITICAL 3\u00D7 faster than pack siblings.',value:'3\u00D7 faster',sub:'to CRITICAL',colour:'#EF4444'},{title:'Batch quality',body:'6 batteries = 3% born-weak rate vs 1-2% baseline. Batch investigation recommended.',value:'3% rate',sub:'vs 1-2% baseline',colour:'#7C3AED'}],
+  14:[{title:'Warranty clarity',body:'Platform separates valid claims from exhausted and on-track batteries.',value:'4 quadrants',sub:'each = one decision',colour:'#7C3AED'},{title:'False claims',body:'HIGH EFC + DEAD range = heavily used. Not a design defect.',value:'Exhausted',sub:'not warranty claim',colour:'#F59E0B'},{title:'Design feedback',body:'Fleet EFC at failure onset averages 650, not 1,000. Warranty limit may need revision.',value:'650 avg EFC',sub:'vs 1,000 stated',colour:'#EF4444'}],
+  15:[{title:'Top failure mode',body:'Cell Unbalanced at 20.6% is most common. Physical damage combined is 23.5%.',value:'20.6%',sub:'Cell Unbalanced',colour:'#EF4444'},{title:'Preventable NPF',body:'10.4% of service visits are No Problem Found. Platform would flag these.',value:'10.4% NPF',sub:'preventable visits',colour:'#F97316'},{title:'Transition chain',body:'Cabinet Broken precedes Cell Leakage in 28% of cases within 8 weeks.',value:'28%',sub:'Cabinet\u2192Leakage',colour:'#7C3AED'}],
+  16:[{title:'Service vs replace',body:'Cell balance INR 2K. Replacement INR 40K. Platform knows which works.',value:'20\u00D7 ROI',sub:'when service succeeds',colour:'#16A34A'},{title:'When not to service',body:'POST_KNEE and structural failures have < 15% success. Replace instead.',value:'< 15% success',sub:'replace these',colour:'#EF4444'},{title:'Fleet-wide value',body:'83 batteries need action. Correct service vs replace decisions save significant capex.',value:'83 decisions',sub:'this week',colour:'#F97316'}],
+  17:[{title:'Same battery, 4 stories',body:'67km looks terrible vs OEM (\u221243%). Moderate vs fleet (\u221228%). Chemistry healthy.',value:'4 frames',sub:'different actions',colour:'#7C3AED'},{title:'Right frame',body:'vs-cohort (pack+city peers) is most actionable. Bottom 15% = investigate now.',value:'Bottom 15%',sub:'of pack+city cohort',colour:'#F97316'},{title:'Chemistry vs range',body:'BHS healthy. Range dropped but chemistry intact. Likely operational.',value:'BHS healthy',sub:'chemistry intact',colour:'#16A34A'}],
+  18:[{title:'Honest confidence',body:'Platform shows confidence tier on every recommendation. DATA_LIMITED = no false action.',value:'3 tiers',sub:'always disclosed',colour:'#0D9488'},{title:'What improves intelligence',body:'5 field confirmations \u2192 conformal RUL. Loan data \u2192 ICR. OCV curves \u2192 ICA.',value:'5 actions',sub:'each unlocks capability',colour:'#F97316'},{title:'Portfolio confidence',body:'72% HIGH, 18% MEDIUM, 10% DATA_LIMITED. Conservative provisioning for 10%.',value:'72% HIGH',sub:'portfolio confidence',colour:'#16A34A'}],
+  19:[{title:'Current gate',body:'30 confirmed replacement outcomes needed for conformal RUL. Currently ~15.',value:'15 of 30',sub:'outcomes confirmed',colour:'#F97316'},{title:'Loan data unlocks',body:'NBFC loan tenure enables income_coverage_ratio \u2014 most valuable NBFC metric.',value:'ICR unlocked',sub:'when loan data connects',colour:'#0D9488'},{title:'OCV curves unlock',body:'OEM OCV curves enable ICA fleet-wide \u2014 the platform moat signal.',value:'ICA fleet-wide',sub:'when OEM provides curves',colour:'#7C3AED'}],
+  20:[{title:'Temperature gap',body:'Lab tests at 25\u00B0C. Indian field peaks at 42\u00B0C. 17\u00B0C difference \u2014 significant for LFP.',value:'+17\u00B0C',sub:'field vs lab temp',colour:'#EF4444'},{title:'DoD gap',body:'Lab assumes 80% DoD. Fleet average 90% DoD. Deeper cycling accelerates degradation.',value:'90% avg DoD',sub:'vs 80% lab',colour:'#F97316'},{title:'Charging gap',body:'29% of fleet charges irregularly. Lab assumes controlled. Real charging is messy.',value:'29% irregular',sub:'fleet charging',colour:'#7C3AED'}],
+  21:[{title:'BMS accuracy gap',body:'BMS SoH reads 97-100% on batteries with 30% capacity loss. LFP flat OCV curve.',value:'+5.5% error',sub:'systematic overread',colour:'#EF4444'},{title:'IoT vs battery',body:'Platform separately diagnoses IoT quality from battery health.',value:'Separate diagnosis',sub:'IoT vs battery',colour:'#0D9488'},{title:'BMS alerts disabled',body:'BMS alert firmware disabled. 0 alerts in 13 months. Platform is only alert source.',value:'0 BMS alerts',sub:'in 13 months',colour:'#F97316'}],
+  22:[{title:'Context changes answer',body:'62km fine for standard urban (floor 56km). Not for QC (floor 80km).',value:'Same battery',sub:'different answer',colour:'#F97316'},{title:'Second-life routing',body:'Stage 2 batteries at 45-55km still viable on light-use routes. Extends life.',value:'4-8 weeks',sub:'life extension',colour:'#16A34A'},{title:'Income coverage',body:'When loan data connects, ICR will be route-adjusted. More accurate than flat floor.',value:'Pending ICR',sub:'loan data needed',colour:'#9CA3AF'}]
+};
+
+// ── RENDER CHAIN CARD (4 layers) ──
+function renderChainCard(cid, data) {
+  const def=CHAIN_NODES[cid];
+  const isLive=PRIORITY.includes(cid);
+  const nodes=def?def.nodes:[{type:'signal',value:'...',sub:'Awaiting data',s:null},{type:'physics',value:'...',sub:'Physics model',s:null},{type:'ml',value:'...',sub:'ML inference',s:null},{type:'cause',value:'...',sub:'Root cause',s:'operator'},{type:'decision',value:'...',sub:'Decision output',s:'operator',ok:true}];
+  const layer2=def?def.layer2:['','','','',''];
+  const layer3=def?def.layer3:CHAIN_META[cid].stakeholders.map(s=>({s:s,t:'Intelligence applied'}));
+  const saving=def?def.saving:null;
+  const demo=def?def.demo:null;
+  const insights=CHAIN_INSIGHTS[cid]||getPlaceholderInsights(cid);
+
+  // Update C12 insights with live data
+  if(cid===12&&data?.regime_distribution){
+    const rd=data.regime_distribution;
+    const pre=rd.find(r=>r.degradation_regime==='PRE_KNEE');
+    const app=rd.find(r=>r.degradation_regime==='APPROACHING_KNEE');
+    const post=rd.find(r=>r.degradation_regime==='POST_KNEE');
+    if(insights[0])insights[0].value=String((app||{}).n||58);
+    if(insights[1])insights[1].value=String((post||{}).n||32);
+    if(insights[2])insights[2].value=String((pre||{}).n||120);
+  }
+
+  let h='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden">';
+
+  // Layer 1: Reasoning nodes
+  h+='<div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 14px;background:#F9FAFB;border-bottom:1px solid #F3F4F6;color:#9CA3AF">Layer 1 \u2014 reasoning chain</div>';
+  h+='<div style="display:grid;grid-template-columns:repeat('+nodes.length+',1fr);border-bottom:1px solid #F3F4F6">';
+  nodes.forEach((n,i)=>{
+    const tc=NC[n.type]||(n.type==='decision'?(n.ok?NC.decision_ok:NC.decision_bad):'#9CA3AF');
+    const sc_=n.s?SC[n.s]||SC.operator:null;
+    const bg=((n.type==='cause'||n.type==='decision')&&sc_)?sc_.bg:'#fff';
+    const valCol=((n.type==='cause'||n.type==='decision')&&sc_)?sc_.text:'#111827';
+    const isLast=i===nodes.length-1;
+    h+='<div style="padding:12px 12px;border-right:'+(isLast?'none':'1px solid #F3F4F6')+';border-left:3px solid '+tc+';background:'+bg+';position:relative;min-width:0">';
+    h+='<div style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;color:'+tc+';margin-bottom:5px">'+n.type+(n.s?' \u00B7 '+n.s.charAt(0).toUpperCase()+n.s.slice(1):'')+'</div>';
+    h+='<div style="font-size:13px;font-weight:700;color:'+valCol+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px">'+n.value+'</div>';
+    h+='<div style="font-size:9px;color:#9CA3AF;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4">'+n.sub+'</div>';
+    if(!isLast)h+='<div style="position:absolute;right:-7px;top:50%;transform:translateY(-50%);width:14px;height:14px;background:'+bg+';border-radius:50%;border:1px solid #E5E7EB;display:flex;align-items:center;justify-content:center;z-index:2;font-size:8px;color:#F97316;line-height:14px;text-align:center">\u203A</div>';
+    h+='</div>';
+  });
+  h+='</div>';
+
+  // Layer 2: Data values
+  h+='<div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 14px;background:#F9FAFB;border-bottom:1px solid #F3F4F6;border-top:1px solid #F3F4F6;color:#9CA3AF">Layer 2 \u2014 data values through chain</div>';
+  h+='<div style="display:flex;border-bottom:1px solid #F3F4F6">';
+  layer2.forEach((v,i)=>{
+    const isLast=i===layer2.length-1;
+    const lines=(v||'\u2014').split('\n');
+    h+='<div style="flex:1;padding:8px 11px;min-width:0;border-right:'+(isLast?'none':'1px solid #F3F4F6')+'">';
+    h+='<div style="font-size:11px;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(lines[0]||'')+'</div>';
+    if(lines[1])h+='<div style="font-size:9px;color:#9CA3AF;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+lines[1]+'</div>';
+    h+='</div>';
+    if(!isLast)h+='<div style="display:flex;align-items:center;padding:0 2px;font-size:10px;color:rgba(249,115,22,0.3);flex-shrink:0">\u2192</div>';
+  });
+  h+='</div>';
+
+  // Layer 3: Stakeholder tags
+  h+='<div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 14px;background:#F9FAFB;border-bottom:1px solid #F3F4F6;border-top:1px solid #F3F4F6;color:#9CA3AF">Layer 3 \u2014 who acts on this chain</div>';
+  h+='<div style="padding:9px 14px;display:flex;gap:7px;flex-wrap:wrap;border-bottom:1px solid #F3F4F6">';
+  layer3.forEach(tag=>{
+    const sc_=SC[tag.s]||SC.operator;
+    h+='<span style="font-size:10px;font-weight:600;padding:4px 10px;border-radius:10px;border:1px solid '+sc_.border+';background:'+sc_.bg+';color:'+sc_.text+';white-space:nowrap">'+tag.s.charAt(0).toUpperCase()+tag.s.slice(1)+': '+tag.t+'</span>';
+  });
+  h+='</div>';
+
+  // Insights row
+  h+='<div style="font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;padding:5px 14px;background:#F9FAFB;border-bottom:1px solid #F3F4F6;border-top:1px solid #F3F4F6;color:#9CA3AF">Insights from this chain</div>';
+  h+='<div style="padding:10px 14px;display:grid;grid-template-columns:repeat('+Math.min(insights.length,3)+',1fr);gap:10px;background:#FAFAF8">';
+  insights.forEach(ins=>{
+    h+='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:7px;padding:10px 12px">';
+    h+='<div style="font-size:10px;font-weight:700;color:#374151;margin-bottom:4px">'+ins.title+'</div>';
+    h+='<div style="font-size:10px;color:#6B7280;line-height:1.5;margin-bottom:6px">'+ins.body+'</div>';
+    h+='<div style="font-size:16px;font-weight:700;color:'+(ins.colour||'#F97316')+'">'+ins.value+'</div>';
+    h+='<div style="font-size:9px;color:#9CA3AF;margin-top:2px">'+ins.sub+'</div></div>';
+  });
+  h+='</div></div>';
+
+  // Saving bar
+  if(saving){
+    h+='<div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:9px 14px;font-size:12px;color:#15803D;font-weight:600;text-align:center;margin-top:12px">'+saving+'</div>';
+  }
+
+  // Demo row
+  if(demo){
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;margin-top:8px">';
+    h+='<div><div style="font-size:8px;text-transform:uppercase;letter-spacing:0.1em;color:#9CA3AF;margin-bottom:3px">Live demo battery</div><div style="font-size:13px;font-weight:700;color:#F97316;font-family:\'DM Mono\',monospace">'+demo+'</div></div>';
+    h+='<button onclick="window.open(\'/passport-next?battery='+demo+'\',\'_blank\')" style="background:#F97316;color:#fff;border:none;padding:6px 14px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer">Open in Passport \u2192</button></div>';
+  }
+
+  // Chain-specific extras
+  if(cid===2){
+    h+='<div style="display:flex;align-items:center;gap:6px;padding:10px 14px;background:#fff;border:1px solid #E5E7EB;border-radius:8px;margin-top:8px">';
+    h+='<span style="font-size:10px;color:#6B7280;margin-right:4px">Signal agreement:</span>';
+    for(let i=0;i<7;i++){const f=i<2;h+='<div style="width:24px;height:24px;border-radius:50%;background:'+(f?'#FFF7ED':'#F9FAFB')+';border:2px solid '+(f?'#F97316':'#E5E7EB')+';display:flex;align-items:center;justify-content:center;font-size:9px;color:'+(f?'#F97316':'#D1D5DB')+'">S'+(i+1)+'</div>';}
+    h+='<span style="font-size:10px;color:#6B7280;margin-left:8px">2 of 7 agree. Threshold: 3+.</span></div>';
+  }
+
+  return h;
+}
+
+function getPlaceholderInsights(cid){
+  const m=CHAIN_META[cid];
+  return [{title:'What this chain detects',body:m.invisible,value:'Live soon',sub:'data wiring in progress',colour:'#9CA3AF'},{title:'Primary stakeholder',body:'Delivers intelligence directly to '+m.stakeholders[0]+' decisions.',value:m.stakeholders[0],sub:'primary audience',colour:'#F97316'},{title:'The invisible made visible',body:'Before enerlytik this signal was not observable from any single data source.',value:'Not visible before',sub:'without this platform',colour:'#0D9488'}];
+}
+
+// ── OPEN ENERLYST WITH CHAIN CONTEXT ──
+function openEnerlyst(question){
+  const activeEl=document.querySelector('.chain-item.active');
+  const chainId=activeEl?activeEl.id.replace('chain-item-',''):null;
+  const meta=chainId&&CHAIN_META[chainId]?CHAIN_META[chainId]:null;
+  let q=question;
+  if(meta){
+    const demo=meta.demo&&meta.demo[0]?meta.demo[0]:null;
+    q='[Context: Chain '+chainId+' \u2014 '+meta.label+']'
+      +(demo?' [Battery: '+demo+']':'')
+      +' '+question;
+  }
+  window.open('/enerlyst-next?q='+encodeURIComponent(q),'_blank');
+}
+
+// ── RENDER STAKEHOLDERS ──
+function renderStakeholders(cid){
+  const el=document.getElementById('stakeholder-cards');
+  const cards=STAKEHOLDER_CARDS[cid]||CHAIN_META[cid].stakeholders.map(s=>({role:s.toUpperCase(),s:s,sees:CHAIN_META[cid].invisible,decides:'Intelligence applied.',saving:'Chain '+cid,link:s==='operator'?'/fleet-mis':s==='nbfc'||s==='lender'?'/nbfc':s==='oem'?'/oem':'/swap',linkLabel:'Open surface \u2192'}));
+  let h='';
+  cards.forEach(card=>{
+    const sc_=SC[card.s]||SC.operator;
+    h+='<div style="border-left:3px solid '+sc_.border+';background:'+sc_.bg+';border-radius:0 8px 8px 0;padding:10px 12px;margin-bottom:8px">';
+    h+='<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:'+sc_.text+';margin-bottom:4px">'+card.role+'</div>';
+    h+='<div style="font-size:11px;font-weight:600;color:#111827;margin-bottom:3px;line-height:1.4">'+card.decides+'</div>';
+    h+='<div style="font-size:10px;color:#6B7280;line-height:1.5;margin-bottom:6px">'+card.sees+'</div>';
+    h+='<a href="'+card.link+'" target="_blank" style="font-size:10px;font-weight:600;color:'+sc_.text+';text-decoration:none">'+card.linkLabel+'</a></div>';
+  });
+  // Enerlyst questions
+  const qs=CHAIN_META[cid]?.questions||[];
+  if(qs.length){
+    h+='<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px 12px;margin-top:12px">';
+    h+='<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#C2410C;margin-bottom:8px;font-family:\'DM Mono\',monospace">\u25C8 Ask enerlyst</div>';
+    qs.forEach(q=>{h+='<div onclick="openEnerlyst(\''+q.replace(/'/g,"\\'")+'\')" style="background:#fff;border:1px solid #FED7AA;border-radius:8px;padding:5px 9px;font-size:10px;color:#C2410C;cursor:pointer;margin-bottom:5px;line-height:1.4;transition:all 0.12s" onmouseover="this.style.background=\'#F97316\';this.style.color=\'#fff\'" onmouseout="this.style.background=\'#fff\';this.style.color=\'#C2410C\'">'+q+'</div>';});
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+
+// ── CHAIN SELECTOR ──
+let openGroupId=null;
+function renderChainSelector(){
+  const el=document.getElementById('chain-selector');
+  let h='';
+  CHAIN_GROUPS.forEach((group,gi)=>{
+    const isOpen=openGroupId===group.id||(openGroupId===null&&gi===0);
+    h+='<div><div onclick="toggleGroup(\''+group.id+'\')" style="padding:8px 14px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:#9CA3AF;display:flex;justify-content:space-between;cursor:pointer;user-select:none;border-bottom:1px solid #F9FAFB">';
+    h+=group.label+'<span style="background:#F3F4F6;color:#9CA3AF;padding:1px 6px;border-radius:8px;font-family:monospace;font-size:9px">'+group.chains.length+'</span></div>';
+    h+='<div id="group-'+group.id+'" style="'+(isOpen?'':'display:none')+'">';
+    group.chains.forEach(cid=>{
+      const c=CHAIN_META[cid];if(!c)return;
+      const isLive=PRIORITY.includes(cid);
+      h+='<div id="chain-item-'+cid+'" class="chain-item" onclick="selectChain('+cid+')" style="padding:8px 14px 8px 16px;cursor:pointer">';
+      h+='<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><span style="font-size:9px;font-family:monospace;font-weight:700;color:#F97316">C'+cid+'</span>'+(isLive?'<span style="width:5px;height:5px;border-radius:50%;background:#22C55E;flex-shrink:0"></span>':'')+'</div>';
+      h+='<div class="ci-label" style="font-size:11px;font-weight:600;color:#374151">'+c.label+'</div>';
+      h+='<div style="font-size:10px;color:#9CA3AF;line-height:1.35;margin-top:2px">'+c.invisible+'</div></div>';
+    });
+    h+='</div></div>';
+  });
+  el.innerHTML=h;
+}
+function toggleGroup(id){
+  if(openGroupId===id){openGroupId=null;}else{openGroupId=id;}
+  CHAIN_GROUPS.forEach(g=>{const el=document.getElementById('group-'+g.id);if(el)el.style.display=g.id===openGroupId?'':'none';});
+}
+
+// ── SELECT CHAIN ──
+async function selectChain(cid){
+  document.querySelectorAll('.chain-item').forEach(i=>{i.classList.remove('active');});
+  const item=document.getElementById('chain-item-'+cid);
+  if(item)item.classList.add('active');
+  document.getElementById('chain-counter').textContent='Chain '+cid+' of 22 \u00B7 '+(CHAIN_META[cid]?.label||'');
+  document.getElementById('chain-default').style.display='none';
+  const flow=document.getElementById('chain-flow');
+  flow.style.display='block';
+  flow.innerHTML='<div style="color:#9CA3AF;font-size:13px;padding:40px;text-align:center">Loading chain data...</div>';
+  document.getElementById('stakeholder-default').style.display='none';
+  document.getElementById('stakeholder-cards').style.display='block';
+  const meta=CHAIN_META[cid];
+  const data=await loadChainData(cid);
+  // Chain header
+  let h='<div style="flex-shrink:0">';
+  h+='<div style="font-size:9px;font-family:\'DM Mono\',monospace;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px">Chain '+cid+' \u00B7 '+(CHAIN_GROUPS.find(g=>g.chains.includes(cid))?.label||'')+'</div>';
+  const chainBadge=PRIORITY.includes(cid)?'<span style="background:#DCFCE7;color:#16A34A;font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:0.06em;margin-left:8px">LIVE</span>':'<span style="background:#F3F4F6;color:#6B7280;font-size:8px;font-weight:700;padding:2px 7px;border-radius:8px;letter-spacing:0.06em;margin-left:8px">CONFIRMED</span>';
+  h+='<div style="font-size:18px;font-weight:700;color:#111827;margin-bottom:6px;font-family:\'Outfit\',sans-serif">'+meta.label+chainBadge+'</div>';
+  h+='<div style="font-size:12px;color:#6B7280;font-style:italic;margin-bottom:16px">The invisible: '+meta.invisible+'</div>';
+  h+='</div>';
+  h+=renderChainCard(cid,data);
+  flow.innerHTML=h;
+  renderStakeholders(cid);
+}
+
+// ── URL PARAMS ──
+function handleParams(){
+  const params=new URLSearchParams(window.location.search);
+  const chainParam=params.get('chain');
+  if(chainParam){
+    const cid=parseInt(chainParam);
+    const group=CHAIN_GROUPS.find(g=>g.chains.includes(cid));
+    if(group){openGroupId=group.id;renderChainSelector();}
+    selectChain(cid);
+  }
+}
+
+// ── BOOT ──
+renderChainSelector();
+handleParams();
+</script>
+</body>
+</html>

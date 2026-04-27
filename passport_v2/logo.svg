@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 40">
+  <defs>
+    <linearGradient id="eg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#eg)">
+    <rect x="4" y="6" width="4" height="28" rx="1.5"/>
+    <rect x="8" y="6" width="16" height="4" rx="1.5"/>
+    <rect x="8" y="18" width="13" height="4" rx="1.5"/>
+    <rect x="8" y="30" width="16" height="4" rx="1.5"/>
+    <circle cx="27" cy="9" r="3"/>
+  </g>
+  <text x="38" y="28" font-family="Outfit, sans-serif" font-size="22" fill="#F97316">
+    <tspan font-weight="700">ener</tspan><tspan font-weight="300">lytik</tspan>
+  </text>
+</svg>

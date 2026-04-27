@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik · Fleet MIS</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafaf8;--card:#fff;--muted:#f4f3f0;--text:#0d0d0b;--text2:#555;--text3:#9ca3af;
+--border:rgba(0,0,0,.08);--accent:#f97316;--red:#ef4444;--amber:#f59e0b;--green:#22c55e;--blue:#3b82f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+
+/* ── SHARED SURFACE STANDARDS ── */
+.drill-breadcrumb{display:flex;align-items:center;gap:6px;font-size:11px;color:#9CA3AF;padding:8px 0;margin-bottom:12px}
+.drill-breadcrumb .crumb{cursor:pointer}.drill-breadcrumb .crumb:hover{color:#F97316}
+.drill-breadcrumb .sep{color:#E5E7EB}.drill-breadcrumb .crumb.active{color:#111827;font-weight:600;cursor:default}
+.jump-nav{position:sticky;top:0;z-index:100;background:#0F172A;padding:8px 20px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #F97316;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.jump-nav-label{font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap}
+.jump-nav select{flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;padding:6px 10px;border-radius:6px;cursor:pointer;max-width:300px}
+.jump-nav select option{background:#1E293B}
+.section-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6B7280;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #F3F4F6;display:flex;justify-content:space-between;align-items:center}
+.section-head .section-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#F3F4F6;color:#6B7280}
+.stat-row{display:grid;gap:10px;margin-bottom:16px}.stat-row-4{grid-template-columns:repeat(4,1fr)}.stat-row-3{grid-template-columns:repeat(3,1fr)}.stat-row-2{grid-template-columns:repeat(2,1fr)}
+.stat-tile{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:10px 14px}
+.stat-tile.accent{border-left:3px solid #F97316}.stat-tile.green{border-left:3px solid #16A34A}.stat-tile.amber{border-left:3px solid #F59E0B}.stat-tile.red{border-left:3px solid #EF4444}.stat-tile.teal{border-left:3px solid #0D9488}
+.stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#9CA3AF;margin-bottom:3px}
+.stat-value{font-size:20px;font-weight:700;color:#111827;line-height:1}.stat-sub{font-size:11px;color:#9CA3AF;margin-top:2px}
+.segment-grid{display:grid;gap:8px;margin-bottom:16px}.segment-grid-3{grid-template-columns:repeat(3,1fr)}.segment-grid-4{grid-template-columns:repeat(4,1fr)}
+.segment-card{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;cursor:pointer;transition:all 0.15s;position:relative}
+.segment-card:hover{border-color:#F97316;box-shadow:0 2px 8px rgba(249,115,22,0.15)}.segment-card.active{border-color:#F97316;background:#FFF7ED}
+.segment-card .sc-label{font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px}
+.segment-card .sc-value{font-size:16px;font-weight:700;color:#111827}.segment-card .sc-sub{font-size:10px;color:#9CA3AF;margin-top:2px}
+.segment-card .sc-drill{position:absolute;top:8px;right:10px;font-size:10px;color:#F97316;opacity:0;transition:opacity 0.15s}.segment-card:hover .sc-drill{opacity:1}
+.battery-list-compact{background:#fff;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;margin-bottom:16px}
+.blc-header{display:grid;padding:6px 12px;background:#F9FAFB;border-bottom:1px solid #E5E7EB;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9CA3AF}
+.blc-row{display:grid;padding:8px 12px;border-bottom:1px solid #F3F4F6;align-items:center;cursor:pointer;transition:background 0.1s;font-size:12px}
+.blc-row:last-child{border-bottom:none}.blc-row:hover{background:#FFF7ED}
+.blc-id{font-family:'DM Mono',monospace;font-weight:600;color:#F97316;font-size:11px}
+.blc-action-pill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.pill-replace{background:#FEE2E2;color:#DC2626}.pill-service{background:#FEF3C7;color:#B45309}.pill-monitor{background:#DBEAFE;color:#1D4ED8}.pill-ok{background:#DCFCE7;color:#16A34A}
+.drill-panel{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:16px;margin-top:8px;margin-bottom:16px;animation:slideDown 0.2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.drill-panel-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.drill-close{font-size:16px;cursor:pointer;color:#9CA3AF;line-height:1}.drill-close:hover{color:#374151}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filter-chip{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #E5E7EB;background:#fff;color:#6B7280;transition:all 0.15s}
+.filter-chip:hover{border-color:#F97316;color:#F97316}.filter-chip.active{background:#F97316;color:#fff;border-color:#F97316}
+
+/* Page-specific */
+.dark-hero{background:#0F172A;color:#fff;padding:24px 28px;border-radius:12px;margin-bottom:20px}
+.dark-hero .identity{font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);margin-bottom:8px}
+.dark-hero .headline{font-size:22px;font-weight:700;line-height:1.3;margin-bottom:10px;font-family:'Outfit'}
+.dark-hero .story{font-size:14px;color:rgba(255,255,255,0.7);line-height:1.6}
+.cause-tiles{display:flex;gap:12px;margin-top:16px}
+.cause-tile{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;flex:1}
+.cause-tile .ct-label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.cause-tile .ct-val{font-size:15px;font-weight:700}
+.table-wrap{max-height:60vh;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead{background:var(--muted);position:sticky;top:0}
+th{padding:8px 10px;text-align:left;font-weight:600;font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;cursor:pointer;border-bottom:2px solid var(--border)}
+td{padding:7px 10px;border-bottom:1px solid var(--border)}
+tr:hover{background:var(--muted);cursor:pointer}
+.action-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap}
+.a-prp{background:#fee2e2;color:#991b1b}.a-breach{background:#fef3c7;color:#92400e}.a-replace{background:#ffedd5;color:#9a3412}
+.a-balance{background:#dbeafe;color:#1e40af}.a-investigate{background:#e0e7ff;color:#3730a3}.a-monitor{background:#f0fdf4;color:#166534}.a-none{background:var(--muted);color:var(--text3)}
+.bar-track{height:8px;background:var(--muted);border-radius:4px;overflow:hidden}.bar-fill{height:100%;border-radius:4px}
+.show-all-btn{display:block;width:100%;padding:8px;text-align:center;font-size:12px;color:var(--accent);background:var(--muted);border:none;cursor:pointer;border-radius:0 0 8px 8px}
+.show-all-btn:hover{background:#E5E7EB}
+</style>
+</head>
+<body>
+
+<!-- JUMP NAV -->
+<div class="jump-nav">
+  <div style="display:flex;align-items:center;gap:10px;margin-right:12px">
+    <div style="width:28px;height:28px;background:#F97316;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-weight:900;font-size:14px;font-family:'Outfit',sans-serif;letter-spacing:-1px">e</span></div>
+    <div><div style="color:#F8FAFC;font-weight:700;font-size:15px;font-family:'Outfit',sans-serif;letter-spacing:-0.3px;line-height:1">enerlytik</div><div style="color:#F97316;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;line-height:1;margin-top:2px">Intelligence Applied</div></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.1);margin:0 4px"></div>
+    <span style="color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:0.06em">Fleet Intelligence</span>
+  </div>
+  <select id="jump-select" onchange="jumpTo(this.value)"></select>
+  <a href="javascript:history.back()" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none;margin-left:auto">&larr; Back</a>
+</div>
+
+<div style="padding:16px 32px">
+
+<!-- BREADCRUMB -->
+<div class="drill-breadcrumb" id="breadcrumb">
+  <span class="crumb active">Fleet Overview</span>
+</div>
+
+<!-- L0: FLEET OVERVIEW -->
+<div id="section-l0">
+  <div id="fleet-story" class="dark-hero">
+    <div class="identity">Fleet Intelligence &middot; Loading...</div>
+    <div class="headline">Loading fleet intelligence...</div>
+  </div>
+
+  <div class="stat-row stat-row-4" id="fleet-stats"></div>
+</div>
+
+<!-- L0→L1: SEGMENT CARDS -->
+<div id="section-segments">
+  <div class="section-head" id="section-city">City Performance <span class="section-badge" id="city-count"></span></div>
+  <div class="segment-grid segment-grid-3" id="city-cards"></div>
+  <div id="city-drill-container"></div>
+
+  <div class="section-head" id="section-pack">Pack Performance <span class="section-badge" id="pack-count"></span></div>
+  <div class="segment-grid" id="pack-cards"></div>
+  <div id="pack-drill-container"></div>
+
+  <div class="section-head" id="section-action">Action Groups <span class="section-badge" id="action-count"></span></div>
+  <div class="segment-grid segment-grid-4" id="action-cards"></div>
+  <div id="action-drill-container"></div>
+</div>
+
+<details open style="margin:16px 0"><summary style="font-size:12px;font-weight:600;color:#6B7280;cursor:pointer;padding:8px 0">Loan Intelligence</summary>
+<!-- LOAN AGENT CARD -->
+<div class="loan-agent-card" style="background:#F5F4F0;border:1px solid #E5E4DF;border-radius:12px;overflow:hidden;margin:24px auto;max-width:1100px;font-family:'Outfit',sans-serif">
+  <div style="padding:20px 24px 16px;border-bottom:1px solid #E5E4DF">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;background:rgba(232,80,10,0.15);color:#E8500A;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">// LOAN AGENT</div>
+        <div style="font-size:15px;font-weight:600;color:#1F2937;margin-bottom:4px">EV Battery Loan Intelligence</div>
+        <div style="font-size:12px;color:#6B7280;line-height:1.5">Actuarial origination &middot; warranty-split risk &middot; live portfolio monitoring</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:#9CA3AF">5 profiles assessed</div><div style="font-size:11px;color:#9CA3AF">Last run: today</div></div>
+    </div>
+  </div>
+  <div style="padding:8px 24px 4px;background:rgba(0,0,0,0.02);border-bottom:1px solid #E5E4DF"><div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.1em;text-transform:uppercase;padding:8px 0">How loan decisions are made</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr">
+    <div style="padding:16px 24px;border-right:1px solid #E5E4DF">
+      <div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#D1D5DB;display:inline-block"></span>Without enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Credit score + fleet size + reference. <span style="color:#374151;font-weight:500">Flat 18% rate.</span> 36-month tenure. &#8377;40K collateral.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#6B7280;line-height:1.5">No differentiation by city, pack, or operator behaviour. <span style="color:#374151;font-weight:500">All operators priced identically.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Portfolio reviewed monthly. <span style="color:#374151;font-weight:500">Default discovered at missed EMI</span> &mdash; 6&ndash;8 weeks after intervention was possible.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Collateral by age depreciation. <span style="color:#374151;font-weight:500">Not measured.</span> All degradation risk on borrower.</div></div>
+    </div>
+    <div style="padding:16px 24px">
+      <div style="font-size:10px;font-weight:600;color:#E8500A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#E8500A;display:inline-block"></span>With enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Agent pulls <span style="color:#374151;font-weight:500">operational P50</span> (OEM failures removed), commissioning stress baseline, city thermal multiplier. <span style="color:#374151;font-weight:500">Decision in 4 minutes.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Pack3001/CU: <span style="color:#374151;font-weight:500">14-month tenure</span> viable. Pack1201/CU: <span style="color:#374151;font-weight:500">24-month tenure.</span> Pack3401/SR: warranty claim active.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Portfolio monitored <span style="color:#374151;font-weight:500">weekly.</span> Grade C&rarr;D migration flagged 6 weeks early. Covenant trigger before default.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#6B7280;line-height:1.5"><span style="color:#374151;font-weight:500">44.6% of failures</span> OEM-design defects &mdash; warranty-backstopped. Only operator risk priced to borrower.</div></div>
+    </div>
+  </div>
+  <div style="padding:6px 24px 4px;border-top:1px solid #E5E4DF;background:rgba(0,0,0,0.01)"><div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;padding:8px 0 6px">Last 5 decisions</div></div>
+  <div style="padding:0 24px 16px;display:flex;gap:6px;flex-wrap:wrap">
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.12);color:#16A34A">Meena &middot; APPROVE &middot; 14mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.12);color:#D97706">Ravi &middot; CONDITIONS &middot; 10mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.12);color:#D97706">GreenRide &middot; CONDITIONS</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.12);color:#16A34A">Sharma &middot; CONDITIONS &middot; 24mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:#E5E4DF;color:#6B7280">FastDeliver &middot; REFER</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(220,38,38,0.1);color:#DC2626">&#9888; Pack3401 warranty claim</span>
+  </div>
+  <div style="padding:14px 24px;border-top:1px solid #E5E4DF;background:#EEEDEA;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">&#8377;8.4L</div><div style="font-size:10px;color:#9CA3AF">bad debt prevented</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#1F2937">4 min</div><div style="font-size:10px;color:#9CA3AF">vs 2&ndash;3 days manual</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#1F2937">44.6%</div><div style="font-size:10px;color:#9CA3AF">warranty-backed risk</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">Sharma</div><div style="font-size:10px;color:#9CA3AF">REFER&rarr;APPROVE (split)</div></div>
+    </div>
+    <button onclick="window.location.href='/loan-approval'" style="background:#E8500A;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Outfit',sans-serif">Open loan agent &rarr;</button>
+  </div>
+</div>
+</details>
+<!-- CHARGING PROFILES -->
+<div class="section-head" id="section-charging">Charging Profiles</div>
+<div id="charging-body"></div>
+
+<!-- RUL BANDS -->
+<div class="section-head" id="section-rul">RUL Bands &amp; Predictions</div>
+<div id="rul-body"></div>
+
+<!-- FAULT CHAIN -->
+<div class="section-head" id="section-fault">Fault Chain Summary</div>
+<div id="fault-body"></div>
+
+<!-- ACTION QUEUE -->
+<div class="section-head" id="section-queue">Action Queue <span class="section-badge" id="queue-count"></span></div>
+<div class="filter-group" id="queue-filters"></div>
+<div class="table-wrap" id="queue-wrap">
+  <table>
+    <thead><tr>
+      <th data-sort="battery_id">Battery</th><th data-sort="pack_model">Pack</th><th data-sort="city">City</th>
+      <th data-sort="action">Action</th><th data-sort="range_km">Range</th><th data-sort="driver_stress_tier">Driver</th>
+      <th data-sort="nbfc_grade">Grade</th><th data-sort="bhs_score">BHS</th>
+      <th data-sort="tier_label_v2" title="BHS tier classification">Tier</th>
+      <th data-sort="cohort_key" style="font-size:10px">Cohort</th>
+      <th>Fault</th><th>Stage</th>
+    </tr></thead>
+    <tbody id="queue-body"></tbody>
+  </table>
+</div>
+<button class="show-all-btn" id="show-all-btn" style="display:none" onclick="showAllQueue()">Show all</button>
+
+<div style="text-align:right;margin-top:12px">
+  <button onclick="exportCSV()" style="padding:6px 14px;border:1px solid var(--border);border-radius:6px;background:var(--card);font-size:11px;cursor:pointer;font-family:'DM Sans'">Export CSV &darr;</button>
+</div>
+
+<!-- ANALYTICS -->
+<div id="section-analytics" style="margin-top:24px;padding-top:8px">
+  <div class="section-head">&loz; Analytics &mdash; Signal Explorer</div>
+  <div id="analytics-content"><div style="padding:20px;text-align:center;color:#9CA3AF;font-size:13px">Loading analytics...</div></div>
+</div>
+
+</div><!-- end padding wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+const API = '';
+const HDR = {};
+let fleetData = null;
+let allQueueData = [];
+let queueFilter = 'ALL';
+let queueLimit = 15;
+
+const EVENT_LABELS = {E1:'Efficiency Drop',E2:'Cell Imbalance',E3:'Thermal Anomaly',E4:'Capacity Fade',E5:'Charge Irregularity',E6:'Discharge Anomaly',E7:'Voltage Anomaly'};
+const actionMap = {PHYSICS_REPLACE_PLAN:'a-prp',ACUTE_BREACH_WATCH:'a-breach',CELL_BALANCE_PRIORITY:'a-balance',REPLACE_PLAN:'a-replace',MONITOR_INVESTIGATE:'a-investigate',MONITOR_WEEKLY:'a-monitor',NO_ACTION:'a-none'};
+const actionShort = {PHYSICS_REPLACE_PLAN:'PRP',ACUTE_BREACH_WATCH:'Breach',CELL_BALANCE_PRIORITY:'Balance',REPLACE_PLAN:'Replace',MONITOR_INVESTIGATE:'Investigate',MONITOR_WEEKLY:'Monitor',NO_ACTION:'OK'};
+const gradeClass = {A:'color:var(--green);font-weight:700',B:'color:var(--blue);font-weight:600',C:'color:var(--amber);font-weight:600',D:'color:var(--red);font-weight:700'};
+
+// ── SHARED HELPERS ──
+function buildJumpNav(sections) {
+  const groups = {};
+  sections.forEach(s => { if (!groups[s.group]) groups[s.group] = []; groups[s.group].push(s); });
+  let opts = '<option value="">Jump to section...</option>';
+  Object.entries(groups).forEach(([g, items]) => {
+    opts += '<optgroup label="── ' + g + ' ──">';
+    items.forEach(s => { opts += '<option value="' + s.id + '">' + s.label + '</option>'; });
+    opts += '</optgroup>';
+  });
+  document.getElementById('jump-select').innerHTML = opts;
+}
+function jumpTo(id) {
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el) { el.scrollIntoView({behavior:'smooth',block:'start'}); el.style.outline='2px solid #F97316'; setTimeout(()=>el.style.outline='',1500); }
+  document.getElementById('jump-select').value = '';
+}
+function setBreadcrumb(l1, l2) {
+  const bc = document.getElementById('breadcrumb');
+  let html = '<span class="crumb' + (!l1?' active':'') + '" onclick="drillUp(0)">Fleet Overview</span>';
+  if (l1) { html += '<span class="sep">&rsaquo;</span><span class="crumb' + (!l2?' active':'') + '" onclick="drillUp(1)">' + l1 + '</span>'; }
+  if (l2) { html += '<span class="sep">&rsaquo;</span><span class="crumb active">' + l2 + '</span>'; }
+  bc.innerHTML = html;
+}
+function drillUp(level) {
+  if (level === 0) { closeDrillPanels(); setBreadcrumb(); }
+}
+function closeDrillPanels() {
+  ['city-drill-container','pack-drill-container','action-drill-container'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+  document.querySelectorAll('.segment-card.active').forEach(el => el.classList.remove('active'));
+  setBreadcrumb();
+}
+function openPassport(bid, audience) { window.open('/passport-next?battery=' + bid + '&audience=' + (audience||'operator'), '_blank'); }
+function actionPill(action) {
+  if (!action) return '<span>&mdash;</span>';
+  const a = (action||'').toLowerCase();
+  const cls = a.includes('replace')||a.includes('plan')?'pill-replace':a.includes('service')||a.includes('balance')||a.includes('investigate')?'pill-service':a.includes('monitor')?'pill-monitor':'pill-ok';
+  return '<span class="blc-action-pill '+cls+'">'+action+'</span>';
+}
+function gradeBadge(g) {
+  const colors = {A:'#16A34A',B:'#0D9488',C:'#F59E0B',D:'#EF4444'};
+  return '<span style="font-weight:700;color:'+(colors[g]||'#9CA3AF')+'">'+(g||'&mdash;')+'</span>';
+}
+// ══ SHARED: makeBatteryTable + sort + filter + expand ══
+function makeBatteryTable(opts) {
+  const {containerId,data,cols,audience,pageSize=15}=opts;
+  window['_tbl_'+containerId]={all:data,filtered:data,sortKey:null,sortDir:'asc',shown:pageSize};
+  _renderTableRows(containerId,cols,audience||'operator',pageSize);
+}
+function _renderTableRows(cid,cols,audience,pageSize) {
+  const state=window['_tbl_'+cid]; if(!state)return;
+  const el=document.getElementById(cid); if(!el)return;
+  const data=state.filtered; const slice=data.slice(0,state.shown);
+  const colTpl=cols.map(c=>c.width||'1fr').join(' ');
+  let h='<div class="battery-list-compact"><div class="blc-header" style="grid-template-columns:'+colTpl+'">';
+  cols.forEach(c=>{
+    if(c.key){const isA=state.sortKey===c.key;const arr=isA?(state.sortDir==='asc'?' \u25B2':' \u25BC'):' \u21C5';
+      h+='<span style="cursor:pointer;user-select:none" onclick="_sortTable(\''+cid+'\',\''+c.key+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">'+c.label+'<span style="font-size:9px;color:#F97316;opacity:'+(isA?1:0.4)+'">'+arr+'</span></span>';
+    } else { h+='<span>'+c.label+'</span>'; }
+  });
+  h+='</div>';
+  if(!slice.length){h+='<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:13px">No batteries in this group.</div>';}
+  else{slice.forEach(b=>{h+='<div class="blc-row" style="grid-template-columns:'+colTpl+'" onclick="openPassport(\''+b.battery_id+'\',\''+audience+'\')">';cols.forEach(c=>{h+='<span>'+(c.render?c.render(b):(b[c.key]!=null?b[c.key]:'\u2014'))+'</span>';});h+='</div>';});}
+  h+='<div style="padding:7px 12px;background:#F9FAFB;border-top:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;border-radius:0 0 8px 8px"><span style="font-size:11px;color:#9CA3AF">'+slice.length+' of '+data.length+' batteries</span><div style="display:flex;gap:8px">';
+  if(state.shown<data.length){h+='<button class="action-btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="window[\'_tbl_'+cid+'\'].shown+=15;_renderTableRows(\''+cid+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">+15 more \u2193</button>';}
+  if(state.shown>pageSize){h+='<button class="action-btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="window[\'_tbl_'+cid+'\'].shown='+pageSize+';_renderTableRows(\''+cid+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">Show less \u2191</button>';}
+  h+='</div></div></div>';
+  el.innerHTML=h;
+}
+function _sortTable(cid,key,cols,audience,pageSize) {
+  const state=window['_tbl_'+cid]; if(!state)return;
+  const dir=state.sortKey===key&&state.sortDir==='asc'?'desc':'asc';
+  state.sortKey=key; state.sortDir=dir;
+  state.filtered=[...state.filtered].sort((a,b)=>{const av=a[key],bv=b[key];if(av==null)return 1;if(bv==null)return -1;const n=parseFloat(av);if(!isNaN(n)&&!isNaN(parseFloat(bv)))return dir==='asc'?n-parseFloat(bv):parseFloat(bv)-n;return dir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));});
+  state.shown=pageSize; _renderTableRows(cid,cols,audience,pageSize);
+}
+function buildFilterChips(containerId,chips,activeFn) {
+  const el=document.getElementById(containerId); if(!el)return;
+  let active='all';
+  function render(){
+    el.innerHTML=chips.map(c=>'<button class="filter-chip'+(c.value===active?' active':'')+'" data-chip="'+c.value+'"'+(c.colour&&c.value!==active?' style="border-left:3px solid '+c.colour+'"':'')+'>'+c.label+(c.count!=null?'<span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:0 5px;font-size:9px;margin-left:3px">'+c.count+'</span>':'')+'</button>').join('');
+    el.querySelectorAll('button[data-chip]').forEach(btn=>btn.addEventListener('click',()=>{active=btn.dataset.chip;render();activeFn(active);}));
+  }
+  render();
+}
+// Backward-compat wrapper
+function renderBatteryList(containerId,data,cols,audience,limit) {
+  makeBatteryTable({containerId:containerId,data:data||[],cols:cols,audience:audience||'operator',pageSize:limit||15});
+}
+
+// ── LOAD FLEET INTELLIGENCE ──
+async function loadFleetIntelligence() {
+  try {
+    const r = await fetch(API + '/api/fleet/intelligence/v2?max_week=90');
+    const d = await r.json();
+    if (d.error) return;
+    fleetData = d;
+
+    // Dark hero
+    const el = document.getElementById('fleet-story');
+    let tiles = '<div class="cause-tiles">';
+    tiles += '<div class="cause-tile"><div class="ct-label">Primary degradation driver</div><div class="ct-val">'+(d.narrative.top_cause||'--')+'</div></div>';
+    tiles += '<div class="cause-tile"><div class="ct-label">Pack needing attention</div><div class="ct-val">'+((d.narrative.worst_pack||'--').replace('GF_LFP_',''))+'</div></div>';
+    tiles += '<div class="cause-tile"><div class="ct-label">City action rate</div><div class="ct-val">'+(d.narrative.worst_city||'--')+'</div></div>';
+    tiles += '</div>';
+    el.innerHTML = '<div class="identity">Fleet Intelligence &middot; Week '+d.week+' &middot; '+d.total+' batteries</div>'
+      +'<div class="headline" id="fleet-headline">'+d.narrative.headline+'</div>'
+      +'<div class="story">'+d.narrative.story+'</div>'+tiles;
+
+    // Stat tiles
+    const pp = d.pack_performance||[];
+    const ranges = pp.filter(p=>p.avg_range).map(p=>({v:p.avg_range,n:p.n}));
+    const bhss = pp.filter(p=>p.avg_bhs).map(p=>({v:p.avg_bhs,n:p.n}));
+    const totalN = ranges.reduce((s,r)=>s+r.n,0);
+    const avgRange = totalN ? Math.round(ranges.reduce((s,r)=>s+r.v*r.n,0)/totalN) : '--';
+    const avgBhs = totalN ? Math.round(bhss.reduce((s,r)=>s+r.v*r.n,0)/totalN) : '--';
+    const ac = {};
+    (d.action_counts||[]).forEach(a => ac[a.rul_action_v2]=a.n);
+    const needAction = (ac.PHYSICS_REPLACE_PLAN||0)+(ac.REPLACE_PLAN||0)+(ac.ACUTE_BREACH_WATCH||0)+(ac.CELL_BALANCE_PRIORITY||0)+(ac.MONITOR_INVESTIGATE||0);
+    const ds = d.driver_stress||[];
+    const dsTotal = ds.reduce((s,x)=>s+x.n,0);
+    const high = ds.find(x=>x.driver_stress_tier==='HIGH');
+
+    document.getElementById('fleet-stats').innerHTML =
+      '<div class="stat-tile accent"><div class="stat-label">Avg Range</div><div class="stat-value">'+avgRange+'</div><div class="stat-sub">km</div></div>'
+     +'<div class="stat-tile accent"><div class="stat-label">Avg BHS</div><div class="stat-value">'+avgBhs+'</div><div class="stat-sub">score</div></div>'
+     +'<div class="stat-tile red"><div class="stat-label">Need Action</div><div class="stat-value">'+needAction+'</div><div class="stat-sub">'+(d.total?Math.round(needAction/d.total*100):0)+'% of fleet</div></div>'
+     +'<div class="stat-tile amber"><div class="stat-label">HIGH Stress</div><div class="stat-value">'+(high?high.n:0)+'</div><div class="stat-sub">'+(dsTotal?Math.round((high?high.n:0)/dsTotal*100):0)+'% of fleet</div></div>';
+
+    // City segment cards
+    const cp = d.city_performance||[];
+    document.getElementById('city-count').textContent = cp.length + ' cities';
+    let ch = '';
+    cp.forEach(c => {
+      const rate = c.action_pct||0;
+      const borderCls = rate>30?'red':rate>20?'amber':'green';
+      ch += '<div class="segment-card '+borderCls+'" onclick="drillCity(\''+c.city+'\')" data-city="'+c.city+'">';
+      ch += '<div class="sc-drill">&rsaquo;</div>';
+      ch += '<div class="sc-label">'+c.city+'</div>';
+      ch += '<div class="sc-value">'+c.n+' batteries</div>';
+      ch += '<div class="sc-sub">Range '+Math.round(c.avg_range||0)+'km &middot; Action '+rate+'%</div></div>';
+    });
+    document.getElementById('city-cards').innerHTML = ch;
+
+    // Pack segment cards
+    let packH = '';
+    const packCount = pp.length;
+    document.getElementById('pack-count').textContent = packCount + ' packs';
+    document.getElementById('pack-cards').style.gridTemplateColumns = 'repeat('+Math.min(packCount,4)+',1fr)';
+    pp.forEach(p => {
+      const is3401 = (p.pack_model||'').includes('3401');
+      packH += '<div class="segment-card'+(is3401?' red':'')+'" onclick="drillPack(\''+p.pack_model+'\')" data-pack="'+p.pack_model+'">';
+      packH += '<div class="sc-drill">&rsaquo;</div>';
+      packH += '<div class="sc-label">'+((p.pack_model||'').replace('GF_LFP_',''))+'</div>';
+      packH += '<div class="sc-value">'+p.n+' batteries</div>';
+      packH += '<div class="sc-sub">BHS '+(p.avg_bhs||'--')+' &middot; Slope '+(p.avg_slope?p.avg_slope.toFixed(4):'--')+'</div></div>';
+    });
+    document.getElementById('pack-cards').innerHTML = packH;
+
+    // Action group cards
+    const replace_n = (ac.PHYSICS_REPLACE_PLAN||0)+(ac.REPLACE_PLAN||0);
+    const service_n = (ac.ACUTE_BREACH_WATCH||0)+(ac.CELL_BALANCE_PRIORITY||0)+(ac.MONITOR_INVESTIGATE||0);
+    const watch_n = ac.MONITOR_WEEKLY||0;
+    const ok_n = ac.NO_ACTION||0;
+    document.getElementById('action-count').textContent = d.total + ' total';
+    document.getElementById('action-cards').innerHTML =
+      '<div class="segment-card red" onclick="drillAction(\'replace\')"><div class="sc-drill">&rsaquo;</div><div class="sc-label">Replace</div><div class="sc-value">'+replace_n+'</div><div class="sc-sub">Immediate action</div></div>'
+     +'<div class="segment-card amber" onclick="drillAction(\'service\')"><div class="sc-drill">&rsaquo;</div><div class="sc-label">Service</div><div class="sc-value">'+service_n+'</div><div class="sc-sub">Investigate / balance</div></div>'
+     +'<div class="segment-card" onclick="drillAction(\'watch\')"><div class="sc-drill">&rsaquo;</div><div class="sc-label">Watch</div><div class="sc-value">'+watch_n+'</div><div class="sc-sub">Monitor weekly</div></div>'
+     +'<div class="segment-card green" onclick="drillAction(\'ok\')"><div class="sc-drill">&rsaquo;</div><div class="sc-label">OK</div><div class="sc-value">'+ok_n+'</div><div class="sc-sub">No action needed</div></div>';
+
+    // Fault chain
+    const fc = d.fault_chain||[];
+    let fh = '<div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden"><table><thead><tr><th>Code</th><th>Label</th><th>Batteries</th><th>Events</th></tr></thead><tbody>';
+    fc.forEach(f => { fh += '<tr><td style="font-family:DM Mono;font-weight:600">'+(f.event_code||'--')+'</td><td>'+(EVENT_LABELS[f.event_code]||f.event_code||'--')+'</td><td style="font-weight:600">'+f.batteries+'</td><td>'+f.events+'</td></tr>'; });
+    fh += '</tbody></table></div>';
+    const e2=fc.find(f=>f.event_code==='E2'),e1=fc.find(f=>f.event_code==='E1');
+    if(e2&&e1){fh+='<div style="font-size:11px;color:#6B7280;margin-top:10px;padding:8px;background:#EFF6FF;border-radius:6px">E2&rarr;E1 detected in ~'+Math.min(e2.batteries,e1.batteries)+' batteries &mdash; cell imbalance causing efficiency drop.</div>';}
+    document.getElementById('fault-body').innerHTML = fh;
+
+    // RUL bands
+    const regimes = d.regime_distribution||[];
+    const regColors = {PRE_KNEE:'#22c55e',APPROACHING_KNEE:'#f59e0b',POST_KNEE:'#ef4444',RESISTANCE_DOMINATED:'#3b82f6'};
+    const regDescs = {PRE_KNEE:'Months of life remaining',APPROACHING_KNEE:'8-12 weeks to inflection',POST_KNEE:'Replace now',RESISTANCE_DOMINATED:'Monitor R0'};
+    let rh = '<div class="stat-row" style="grid-template-columns:repeat('+Math.min(regimes.length,4)+',1fr)">';
+    regimes.forEach(r => {
+      const col = regColors[r.degradation_regime]||'#9CA3AF';
+      rh += '<div class="stat-tile" style="border-left:3px solid '+col+'"><div class="stat-label">'+((r.degradation_regime||'').replace(/_/g,' '))+'</div><div class="stat-value" style="color:'+col+'">'+r.n+'</div><div class="stat-sub">'+((regDescs[r.degradation_regime])||'')+'</div></div>';
+    });
+    rh += '</div>';
+    // Action bar chart
+    const maxAc = Math.max(replace_n,service_n,watch_n,ok_n,1);
+    rh += '<div style="margin-top:12px">';
+    [{l:'Replace',n:replace_n,c:'#ef4444'},{l:'Service',n:service_n,c:'#f59e0b'},{l:'Monitor',n:watch_n,c:'#3b82f6'},{l:'Healthy',n:ok_n,c:'#22c55e'}].forEach(b=>{
+      rh+='<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="width:60px;font-size:11px;text-align:right;color:#6B7280">'+b.l+'</span><div class="bar-track" style="flex:1;height:14px"><div class="bar-fill" style="width:'+Math.round(b.n/maxAc*100)+'%;background:'+b.c+'"></div></div><span style="width:30px;font-size:11px;font-weight:600">'+b.n+'</span></div>';
+    });
+    rh += '</div>';
+    document.getElementById('rul-body').innerHTML = rh;
+
+  } catch(e) { console.error('Fleet intelligence error:', e); }
+}
+
+// ── DRILL FUNCTIONS ──
+async function drillCity(city) {
+  closeDrillPanels();
+  document.querySelector('[data-city="'+city+'"]')?.classList.add('active');
+  setBreadcrumb(city);
+  const container = document.getElementById('city-drill-container');
+  container.innerHTML = '<div style="padding:20px;color:#9CA3AF">Loading...</div>';
+  try {
+    const r = await fetch(API+'/api/fleet/segment-batteries?city='+encodeURIComponent(city));
+    const bats = await r.json();
+    const cityData = (fleetData?.city_performance||[]).find(c=>c.city===city)||{};
+    let h = '<div class="drill-panel"><div class="drill-panel-title"><span>'+city+' &mdash; '+(cityData.n||bats.length)+' batteries</span><span class="drill-close" onclick="closeDrillPanels()">&times;</span></div>';
+    h += '<div class="stat-row stat-row-3">';
+    h += '<div class="stat-tile"><div class="stat-label">Avg Range</div><div class="stat-value">'+(cityData.avg_range||'--')+'</div><div class="stat-sub">km</div></div>';
+    h += '<div class="stat-tile"><div class="stat-label">Avg BHS</div><div class="stat-value">'+(cityData.avg_bhs||'--')+'</div></div>';
+    h += '<div class="stat-tile'+(cityData.action_pct>20?' red':'')+'" ><div class="stat-label">Action Rate</div><div class="stat-value">'+(cityData.action_pct||0)+'%</div></div>';
+    h += '</div>';
+    h += '<div id="drill-city-bats"></div></div>';
+    container.innerHTML = h;
+    renderBatteryList('drill-city-bats', bats, [
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'1fr'},
+      {key:'rul_action_plain',label:'Action',width:'2fr',render:b=>actionPill(b.rul_action_plain)},
+      {key:'driver_stress_tier',label:'Driver',width:'1fr'}
+    ], 'operator', 15);
+    container.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e) { container.innerHTML = '<div class="drill-panel" style="color:#ef4444">Error loading data</div>'; }
+}
+
+async function drillPack(pack) {
+  closeDrillPanels();
+  document.querySelector('[data-pack="'+pack+'"]')?.classList.add('active');
+  setBreadcrumb((pack||'').replace('GF_LFP_',''));
+  const container = document.getElementById('pack-drill-container');
+  container.innerHTML = '<div style="padding:20px;color:#9CA3AF">Loading...</div>';
+  try {
+    const r = await fetch(API+'/api/fleet/segment-batteries?pack='+encodeURIComponent(pack));
+    const bats = await r.json();
+    const packData = (fleetData?.pack_performance||[]).find(p=>p.pack_model===pack)||{};
+    let h = '<div class="drill-panel"><div class="drill-panel-title"><span>'+(pack||'').replace('GF_LFP_','')+' &mdash; '+(packData.n||bats.length)+' batteries</span><span class="drill-close" onclick="closeDrillPanels()">&times;</span></div>';
+    h += '<div class="stat-row stat-row-3">';
+    h += '<div class="stat-tile"><div class="stat-label">Avg BHS</div><div class="stat-value">'+(packData.avg_bhs||'--')+'</div></div>';
+    h += '<div class="stat-tile"><div class="stat-label">Avg Range</div><div class="stat-value">'+(packData.avg_range||'--')+'</div><div class="stat-sub">km</div></div>';
+    h += '<div class="stat-tile'+(packData.action_n>5?' red':'')+'" ><div class="stat-label">Actions</div><div class="stat-value">'+(packData.action_n||0)+'</div></div>';
+    h += '</div>';
+    h += '<div id="drill-pack-bats"></div></div>';
+    container.innerHTML = h;
+    renderBatteryList('drill-pack-bats', bats, [
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'city',label:'City',width:'1fr'},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'1fr'},
+      {key:'rul_action_plain',label:'Action',width:'2fr',render:b=>actionPill(b.rul_action_plain)}
+    ], 'operator', 15);
+    container.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e) { container.innerHTML = '<div class="drill-panel" style="color:#ef4444">Error loading data</div>'; }
+}
+
+async function drillAction(group) {
+  closeDrillPanels();
+  document.querySelectorAll('#action-cards .segment-card').forEach(el => { if(el.textContent.toLowerCase().includes(group)) el.classList.add('active'); });
+  setBreadcrumb(group.charAt(0).toUpperCase()+group.slice(1));
+  const container = document.getElementById('action-drill-container');
+  container.innerHTML = '<div style="padding:20px;color:#9CA3AF">Loading...</div>';
+  try {
+    const r = await fetch(API+'/api/fleet/segment-batteries?action='+group);
+    const bats = await r.json();
+    let h = '<div class="drill-panel"><div class="drill-panel-title"><span>'+group.charAt(0).toUpperCase()+group.slice(1)+' &mdash; '+bats.length+' batteries</span><span class="drill-close" onclick="closeDrillPanels()">&times;</span></div>';
+    h += '<div id="drill-action-bats"></div></div>';
+    container.innerHTML = h;
+    renderBatteryList('drill-action-bats', bats, [
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'pack_model',label:'Pack',width:'1.5fr',render:b=>((b.pack_model||'').replace('GF_LFP_',''))},
+      {key:'city',label:'City',width:'1fr'},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'1fr'},
+      {key:'rul_action_plain',label:'Action',width:'2fr',render:b=>actionPill(b.rul_action_plain)}
+    ], 'operator', 15);
+    container.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e) { container.innerHTML = '<div class="drill-panel" style="color:#ef4444">Error loading data</div>'; }
+}
+
+// ── CHARGING PROFILES ──
+async function loadChargingProfiles() {
+  try {
+    const r = await fetch(API+'/api/fleet/charging-profiles');
+    const data = await r.json();
+    if (!data || !data.length) { document.getElementById('charging-body').innerHTML='<div style="color:#9CA3AF;font-size:12px;padding:8px">No charging profile data available.</div>'; return; }
+    const labels = {A:'Excellent',B:'Good',C:'Fair',D:'Poor',F:'Critical'};
+    const colors = {A:'green',B:'teal',C:'amber',D:'red',F:'red'};
+    let h = '<div class="stat-row" style="grid-template-columns:repeat('+Math.min(data.length,4)+',1fr)">';
+    data.forEach(p => {
+      h += '<div class="stat-tile '+(colors[p.profile]||'')+'">';
+      h += '<div class="stat-label">Grade '+(p.profile||'?')+' &mdash; '+(labels[p.profile]||'')+'</div>';
+      h += '<div class="stat-value">'+p.n+'</div>';
+      h += '<div class="stat-sub">BHS '+(p.avg_bhs||'--')+' &middot; Range '+(p.avg_range||'--')+'km</div></div>';
+    });
+    h += '</div>';
+    h += '<div style="font-size:11px;color:#6B7280;padding:8px;background:#FEF2F2;border-radius:6px;margin-top:4px">Poor charging discipline correlates with 2&times; higher cell imbalance rate and faster Grade D transition.</div>';
+    document.getElementById('charging-body').innerHTML = h;
+  } catch(e) {}
+}
+
+// ── ACTION QUEUE ──
+async function loadQueue() {
+  try {
+    const data = await fetch(API+'/api/fleet/action-queue?limit=500').then(r=>r.json());
+    allQueueData = data;
+    document.getElementById('queue-count').textContent = data.length + ' batteries';
+    // Filter chips
+    const ac = {};
+    data.forEach(b => { const a=b.action||'NO_ACTION'; ac[a]=(ac[a]||0)+1; });
+    const groups = [
+      {k:'ALL',l:'All '+data.length,cls:''},
+      {k:'REPLACE',l:'Replace '+ ((ac.PHYSICS_REPLACE_PLAN||0)+(ac.REPLACE_PLAN||0)),cls:''},
+      {k:'SERVICE',l:'Service '+((ac.ACUTE_BREACH_WATCH||0)+(ac.CELL_BALANCE_PRIORITY||0)+(ac.MONITOR_INVESTIGATE||0)),cls:''},
+      {k:'WATCH',l:'Watch '+(ac.MONITOR_WEEKLY||0),cls:''},
+      {k:'OK',l:'OK '+(ac.NO_ACTION||0),cls:''}
+    ];
+    document.getElementById('queue-filters').innerHTML = groups.map(g => '<span class="filter-chip'+(queueFilter===g.k?' active':'')+'" onclick="filterQueue(\''+g.k+'\')">'+g.l+'</span>').join('');
+    renderQueue();
+  } catch(e) { document.getElementById('queue-body').innerHTML='<tr><td colspan="10" style="color:#ef4444;padding:20px">API offline</td></tr>'; }
+}
+
+function filterQueue(f) {
+  queueFilter = f;
+  queueLimit = 15;
+  const chips = document.querySelectorAll('#queue-filters .filter-chip');
+  chips.forEach(c => c.classList.remove('active'));
+  chips.forEach(c => { if(c.textContent.startsWith(f==='ALL'?'All':f.charAt(0)+f.slice(1).toLowerCase())) c.classList.add('active'); });
+  renderQueue();
+}
+
+function renderQueue() {
+  const filterMap = {
+    REPLACE:['PHYSICS_REPLACE_PLAN','REPLACE_PLAN'],
+    SERVICE:['ACUTE_BREACH_WATCH','CELL_BALANCE_PRIORITY','MONITOR_INVESTIGATE'],
+    WATCH:['MONITOR_WEEKLY'],OK:['NO_ACTION'],ALL:null
+  };
+  const allowed = filterMap[queueFilter];
+  const filtered = allowed ? allQueueData.filter(b=>allowed.includes(b.action)) : allQueueData;
+  const rows = filtered.slice(0, queueLimit);
+  const tbody = document.getElementById('queue-body');
+  tbody.innerHTML = rows.map(b => {
+    const ac = actionMap[b.action]||'a-none';
+    const gc = gradeClass[b.nbfc_grade]||'';
+    return '<tr onclick="openPassport(\''+b.battery_id+'\',\'operator\')">'
+      +'<td style="font-family:DM Mono;font-size:11px;color:var(--accent)">'+b.battery_id+'</td>'
+      +'<td style="font-size:11px">'+((b.pack_model||'').replace('GF_LFP_',''))+'</td>'
+      +'<td>'+(b.city||'--')+'</td>'
+      +'<td><span class="action-badge '+ac+'">'+(actionShort[b.action]||b.action||'--')+'</span></td>'
+      +'<td style="font-weight:600">'+(b.range_km||'--')+'</td>'
+      +'<td style="font-size:11px">'+(b.driver_stress_tier||'--')+'</td>'
+      +'<td style="'+gc+'">'+(b.nbfc_grade||'--')+'</td>'
+      +'<td>'+(b.bhs_score||'--')+'</td>'
+      +'<td style="font-size:10px;color:#6B7280" title="BHS tier (SCORE_REVIEW flag if starred)">'+(b.tier_label_v2||'--')+(b.bhs_v4_score_review?' \u26A0':'')+'</td>'
+      +'<td style="font-size:10px;color:#6B7280">'+(b.cohort_key?b.cohort_key.split('|').slice(0,2).join('/'):'--')+'</td>'
+      +'<td style="text-align:center">'+({CHRONIC_WORSENING:'\uD83D\uDD34',ACTIVE_WORSENING:'\uD83D\uDFE0',ACTIVE_STABLE:'\uD83D\uDFE1',RECOVERING:'\uD83D\uDFE2',CLEAN:'\u26AA'}[b.fault_profile_tier]||'\u26AA')+'</td>'
+      +'<td style="font-size:10px">'+({STAGE1_ACTIVE:'S1',STAGE2_SECONDLIFE:'S2',STAGE3_SCRAP:'S3'}[b.resale_stage]||'--')+'</td>'
+      +'</tr>';
+  }).join('');
+  const btn = document.getElementById('show-all-btn');
+  if (filtered.length > queueLimit) { btn.style.display='block'; btn.textContent='Show all '+filtered.length+' batteries'; }
+  else { btn.style.display='none'; }
+}
+
+function showAllQueue() { queueLimit = 9999; renderQueue(); }
+
+// Sort
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    const dir = th.classList.contains('sort-asc') ? -1 : 1;
+    document.querySelectorAll('th').forEach(t => t.classList.remove('sort-asc','sort-desc'));
+    th.classList.add(dir===1?'sort-asc':'sort-desc');
+    allQueueData.sort((a,b) => { const va=a[key],vb=b[key]; if(va==null)return 1;if(vb==null)return -1; return typeof va==='number'?(va-vb)*dir:String(va).localeCompare(String(vb))*dir; });
+    renderQueue();
+  });
+});
+
+function exportCSV() {
+  const headers = [...document.querySelectorAll('thead th')].map(th=>th.textContent.trim());
+  const rows = [...document.querySelectorAll('tbody tr')].map(tr=>[...tr.querySelectorAll('td')].map(td=>'"'+td.textContent.trim().replace(/"/g,'""')+'"'));
+  const csv = [headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = 'enerlytik_fleet_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+// ── SIDEBAR COLLAPSE (stub for future 3-panel layout) ──
+// sidebar-left / closeSidebar / reopen — wired when layout supports panels
+function closeSidebar(){}function reopenSidebar(){}
+
+// ── BOOT ──
+buildJumpNav([
+  {id:'section-l0',label:'Fleet Overview',group:'Overview'},
+  {id:'section-city',label:'City Performance',group:'Segments'},
+  {id:'section-pack',label:'Pack Performance',group:'Segments'},
+  {id:'section-action',label:'Action Groups',group:'Segments'},
+  {id:'section-charging',label:'Charging Profiles',group:'Analysis'},
+  {id:'section-rul',label:'RUL Bands',group:'Analysis'},
+  {id:'section-fault',label:'Fault Chain',group:'Analysis'},
+  {id:'section-queue',label:'Action Queue',group:'Queue'},
+  {id:'section-analytics',label:'Analytics',group:'Deep Data'}
+]);
+
+// ── ANALYTICS RENDERER ──
+function renderSurfaceAnalytics(cid,defaultY){
+  const el=document.getElementById(cid);if(!el)return;
+  const GROUPS={'Health & Range':[{v:'avg_range',l:'Range (km)'},{v:'avg_bhs',l:'BHS Score'}],'Activity':[{v:'action_n',l:'Action count'},{v:'n',l:'Battery count'}]};
+  let yO='';Object.entries(GROUPS).forEach(([g,ss])=>{yO+='<optgroup label="\u2500\u2500 '+g+' \u2500\u2500">';ss.forEach(s=>{yO+='<option value="'+s.v+'"'+(s.v===defaultY?' selected':'')+'>'+s.l+'</option>';});yO+='</optgroup>';});
+  el.innerHTML='<div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-end;flex-wrap:wrap"><div><div style="font-size:10px;color:#9CA3AF;margin-bottom:4px">Signal (Y axis)</div><select id="'+cid+'-y" onchange="updateSurfaceChart(\''+cid+'\')" style="padding:6px 10px;border-radius:6px;border:1px solid #E5E7EB;font-size:12px;background:#fff;cursor:pointer">'+yO+'</select></div><div style="font-size:11px;color:#9CA3AF;font-style:italic">Fleet-level averages by pack model.</div></div><div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:14px;margin-bottom:12px"><canvas id="'+cid+'-chart" style="height:200px"></canvas></div><div id="'+cid+'-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>';
+  updateSurfaceChart(cid);
+}
+async function updateSurfaceChart(cid){
+  const yKey=document.getElementById(cid+'-y')?.value;if(!yKey)return;
+  const data=fleetData||await(await fetch(API+'/api/fleet/intelligence/v2?max_week=90')).json();if(!data)return;
+  const packs=data.pack_performance||[];const labels=packs.map(p=>(p.pack_model||'').replace('GF_LFP_',''));const values=packs.map(p=>p[yKey]!=null?parseFloat(p[yKey]):null);
+  const canvas=document.getElementById(cid+'-chart');if(!canvas)return;
+  if(window['_c_'+cid])try{window['_c_'+cid].destroy();}catch(e){}
+  window['_c_'+cid]=new Chart(canvas,{type:'bar',data:{labels,datasets:[{data:values,backgroundColor:labels.map(l=>l.includes('3401')?'rgba(239,68,68,0.7)':'rgba(249,115,22,0.7)'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10}}},x:{ticks:{font:{size:10}}}}}});
+  const clean=values.filter(v=>v!=null).map(Number);
+  if(clean.length){document.getElementById(cid+'-stats').innerHTML=[['Min',Math.min(...clean).toFixed(1)],['Max',Math.max(...clean).toFixed(1)],['Avg',(clean.reduce((s,v)=>s+v,0)/clean.length).toFixed(1)],['Packs',packs.length]].map(([l,v])=>'<div style="background:#F9FAFB;border-radius:6px;padding:8px 10px"><div style="font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">'+l+'</div><div style="font-size:14px;font-weight:700;color:#111827">'+v+'</div></div>').join('');}
+}
+
+loadFleetIntelligence();
+loadChargingProfiles();
+loadQueue();
+setTimeout(()=>renderSurfaceAnalytics('analytics-content','avg_range'),2000);
+</script>
+</body>
+</html>

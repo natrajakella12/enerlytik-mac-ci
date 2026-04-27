@@ -1,0 +1,1 @@
+tauri_bundle/data/*.db filter=lfs diff=lfs merge=lfs -text

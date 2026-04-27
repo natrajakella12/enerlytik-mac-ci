@@ -1,0 +1,555 @@
+{
+  "manifest_version": "1.0",
+  "generated_at": "2026-04-27T04:57:23Z",
+  "source_release": "release-3.0",
+  "source_db": "enerlytik_production.db",
+  "scenario_count": 25,
+  "locked_count": 13,
+  "curated_count": 12,
+  "scenarios": [
+    {
+      "battery_id": "BAT_LFP_109",
+      "scenario_rank": 1,
+      "narrative_title": "The hero — exit now, warranty active",
+      "action_type": "EXIT_NOW",
+      "demo_talking_points": [
+        "Health score 15.6 out of 100 with battery health at 53% — well past the floor where this asset earns money.",
+        "Range corrected to 46 km per swap means this driver is losing trips daily; covenant and resale are both at risk.",
+        "Warranty claim is still eligible on this Pack3401 — the operator can recover value if they act this week."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Service",
+        "Attribution",
+        "Reference"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_165",
+      "scenario_rank": 2,
+      "narrative_title": "Second exit — Pack3401 design gap confirmed",
+      "action_type": "EXIT_NOW",
+      "demo_talking_points": [
+        "Health score 26.3 with battery health 76% but range only 69 km — capacity looks okay, the asset still does not.",
+        "This is the Pack3401 pattern: design-driven loss that BMS-reported health hides until the operator complains.",
+        "Warranty active — bundle the claim with the rest of the Pack3401 cohort for a single conversation with the OEM."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Attribution",
+        "Service",
+        "Reference"
+      ],
+      "expected_audience": "OEM",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_108",
+      "scenario_rank": 3,
+      "narrative_title": "Replace plan — Pack3401 with cell-balance window",
+      "action_type": "REPLACE_PLAN",
+      "demo_talking_points": [
+        "Battery health 91% looks healthy on paper — health score 39 says the trajectory does not.",
+        "Range 63 km is below what this route needs; replacement should be scheduled within the next service cycle.",
+        "Warranty eligible — claim before the deployment window closes on this pack model."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Service",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_116",
+      "scenario_rank": 4,
+      "narrative_title": "Replace plan — cell balance flagged, range floor breached",
+      "action_type": "REPLACE_PLAN",
+      "demo_talking_points": [
+        "Range 46 km already at the floor — this battery is failing the route, not just trending toward failure.",
+        "Cell balancing is flagged but unlikely to recover the asset given the score trajectory.",
+        "Plan replacement; warranty active means OEM picks up the cost if filed promptly."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Service",
+        "Predictions",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_132",
+      "scenario_rank": 5,
+      "narrative_title": "Replace plan with healthy-looking cells — divergence case",
+      "action_type": "REPLACE_PLAN",
+      "demo_talking_points": [
+        "Battery health near 100% but health score only 51 — the score is reading degradation that capacity has not surfaced yet.",
+        "Cell balance flagged — this is where service can buy weeks if scheduled now.",
+        "Useful teaching case: capacity and operational health can disagree; trust the composite, not the BMS readout."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Deepdive",
+        "Service",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack1201",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_139",
+      "scenario_rank": 6,
+      "narrative_title": "Investigate — Pack3001 with low capacity, high range",
+      "action_type": "MONITOR_INVESTIGATE",
+      "demo_talking_points": [
+        "Battery health 66% but range still 83 km — this driver is using less than the battery can give.",
+        "Investigate before escalating — usage profile may explain the gap without action needed.",
+        "Pack3001 pattern: data quality is good, but the cause sits between the battery and the route."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Deepdive",
+        "Attribution",
+        "Reference"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack3001",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_012",
+      "scenario_rank": 7,
+      "narrative_title": "Investigate — cell balance, no warranty buffer",
+      "action_type": "MONITOR_INVESTIGATE",
+      "demo_talking_points": [
+        "Health score 32 with cell balance flagged — service intervention is the lever, not replacement.",
+        "Warranty not eligible here, so the cost of waiting falls entirely on the operator.",
+        "If cell balancing succeeds, this battery moves back into MONITOR; if not, replacement is the next escalation."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Service",
+        "Attribution",
+        "Predictions"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack1201",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_011",
+      "scenario_rank": 8,
+      "narrative_title": "Investigate — capacity holding, range deficit",
+      "action_type": "MONITOR_INVESTIGATE",
+      "demo_talking_points": [
+        "Battery health 85% but range only 61 km — capacity is fine, the route or driver behaviour is consuming it.",
+        "Cell balance flagged — useful preventive service before the deficit becomes a replacement decision.",
+        "Warranty eligible adds a deadline to the investigate-or-act decision."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Deepdive",
+        "Service",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack1201",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_117",
+      "scenario_rank": 9,
+      "narrative_title": "False alarm cleared — Pack3401 looks healthy despite BMS flag",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "BMS reports 88% capacity which would normally trigger a service call — platform examines coulomb-corrected SOH and clears it as a measurement artefact.",
+        "Range stable at 90 km per swap and DRI 96 confirm the asset is performing on plan.",
+        "Warranty has 30 months remaining on this Pack3401 — the operator avoids an unnecessary claim and keeps the battery in service."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Forensic",
+        "Attribution",
+        "Reference"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE_ERICKSHAW",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_131",
+      "scenario_rank": 10,
+      "narrative_title": "No action — cell balance preventive opportunity",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "Health score 67 with battery health 100% and range 113 km — a healthy GE Pack1201 example.",
+        "Cell balance flag is preventive, not corrective — the asset is not at risk this quarter.",
+        "Useful as a baseline reference when comparing against the lower-scored Pack1201 cases."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Reference",
+        "Predictions"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": "GF_LFP_Pack1201",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_351",
+      "scenario_rank": 11,
+      "narrative_title": "No action — SG batt running clean in SR",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "Health score 75, battery health 97%, range 95 km — operating well within healthy bands.",
+        "SG segment example from the SR cohort; useful for comparing geography effects.",
+        "No intervention needed; weekly summary only."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Reference"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_254",
+      "scenario_rank": 12,
+      "narrative_title": "No action — top SG performer",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "Health score 81, battery health 105% relative to commissioning — this asset is performing above baseline.",
+        "Range 100 km holds steady; covenant-grade for NBFC underwriting.",
+        "Useful proof point that the SG segment can match or exceed GE under good conditions."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Reference",
+        "Predictions"
+      ],
+      "expected_audience": "NBFC",
+      "is_locked": true,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_315",
+      "scenario_rank": 13,
+      "narrative_title": "No action — flagship healthy reference",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "Health score 87, battery health 100%, range 82 km — this is the reference for what a healthy battery looks like.",
+        "Used across the platform as the calm-comparison case during demos.",
+        "If a customer doubts the platform is conservative, point them at this card."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Reference",
+        "Predictions",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": true,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_055",
+      "scenario_rank": 14,
+      "narrative_title": "Exit now — independent confirmation",
+      "action_type": "EXIT_NOW",
+      "demo_talking_points": [
+        "Health score 21 with range only 41 km — this battery is failing the daily route already.",
+        "GE segment, CU city — a different geography from the Pack3401 hero, same conclusion.",
+        "Warranty eligible; act before next billing cycle."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Service",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": false,
+      "pack_model": null,
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_277",
+      "scenario_rank": 15,
+      "narrative_title": "Exit now — SG segment failure",
+      "action_type": "EXIT_NOW",
+      "demo_talking_points": [
+        "First SG segment exit case in the demo — health score 37, range 54 km.",
+        "Battery health 78% — capacity isn't the worst in the fleet, but the operational picture is.",
+        "Warranty active means the SG operator has a recovery option if filed within window."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Service",
+        "Attribution",
+        "Predictions"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": false,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_322",
+      "scenario_rank": 16,
+      "narrative_title": "Replace plan — SG, no pack-model attribution",
+      "action_type": "REPLACE_PLAN",
+      "demo_talking_points": [
+        "Health score 25, battery health 73%, range 60 km — clear replacement case in the SG segment.",
+        "No pack-model attribution available, so the case rests on the composite, not the cohort.",
+        "Warranty eligible; teach this as the SG operator's version of the Pack3401 conversation."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Service",
+        "Attribution"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": false,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_169",
+      "scenario_rank": 17,
+      "narrative_title": "Replace plan — Pack3401, cell balance flagged",
+      "action_type": "REPLACE_PLAN",
+      "demo_talking_points": [
+        "Health score 27, battery health 85%, range 59 km — replace soon, but cell balance window still open.",
+        "Pack3401 cohort confirms this is design-pattern, not driver behaviour.",
+        "Warranty eligible — this is the OEM-conversation case, not the operator-fault case."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Service",
+        "Attribution",
+        "Reference"
+      ],
+      "expected_audience": "OEM",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_111",
+      "scenario_rank": 18,
+      "narrative_title": "Replace plan — Pack3401 with deep capacity loss",
+      "action_type": "REPLACE_PLAN",
+      "demo_talking_points": [
+        "Battery health 63% — one of the deeper capacity losses outside the EXIT bucket.",
+        "Range 78 km is still respectable; the capacity floor is what forces the replacement decision.",
+        "Pack3401 pattern again — bundle with the cohort for the OEM conversation."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Attribution",
+        "Service",
+        "Reference"
+      ],
+      "expected_audience": "OEM",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_071",
+      "scenario_rank": 19,
+      "narrative_title": "Investigate — lowest unlocked score, Pack1201",
+      "action_type": "MONITOR_INVESTIGATE",
+      "demo_talking_points": [
+        "Health score 19.6 — among the lowest investigate cases; trajectory is heading toward replace.",
+        "Range 78 km masks the underlying capacity loss (battery health 69%) — the operator may not have complained yet.",
+        "This is the case the pipeline catches before service desk does."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Attribution",
+        "Service"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack1201",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_046",
+      "scenario_rank": 20,
+      "narrative_title": "Investigate — Pack3401 with cell balance opportunity",
+      "action_type": "MONITOR_INVESTIGATE",
+      "demo_talking_points": [
+        "Battery health 63%, range 51 km — this is borderline replace, but cell balance flag keeps it in investigate.",
+        "Pack3401 again — the same cohort story, different week of the trajectory.",
+        "If balancing extends the asset, the warranty claim window stays open longer."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Service",
+        "Attribution",
+        "Reference"
+      ],
+      "expected_audience": "OEM",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_141",
+      "scenario_rank": 21,
+      "narrative_title": "Monitor — Pack3001 with range deficit",
+      "action_type": "MONITOR",
+      "demo_talking_points": [
+        "Battery health 66% with range 45 km — capacity is the issue, route can absorb it for now.",
+        "Pack3001 cohort has a different signature than Pack3401 — useful contrast.",
+        "Warranty active; track weekly and escalate if range drops further."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Reference"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack3001",
+      "segment": "GE",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_115",
+      "scenario_rank": 22,
+      "narrative_title": "Monitor — Pack3401 with capacity reserve",
+      "action_type": "MONITOR",
+      "demo_talking_points": [
+        "Battery health 91%, range 76 km — comfortably in monitor band despite Pack3401 cohort risk.",
+        "Cell balance flag is preventive, not urgent.",
+        "Compare with same-pack EXIT cases: cohort risk does not equal individual risk."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Reference",
+        "Service",
+        "Attribution"
+      ],
+      "expected_audience": "OEM",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack3401",
+      "segment": "GE",
+      "city_code": "SR"
+    },
+    {
+      "battery_id": "BAT_LFP_318",
+      "scenario_rank": 23,
+      "narrative_title": "Monitor — SG with range exceeding spec",
+      "action_type": "MONITOR",
+      "demo_talking_points": [
+        "Range 110 km exceeds the per-pack rated value — the platform handles this with a cohort fallback.",
+        "Battery health 100%, no service flags — pure capacity-rich case.",
+        "Useful demo for showing how the platform treats range over-performance without breaking trust."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Predictions",
+        "Reference"
+      ],
+      "expected_audience": "NBFC",
+      "is_locked": false,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_337",
+      "scenario_rank": 24,
+      "narrative_title": "No action — SG flagship, range 164 km",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "Health score 85, range 164 km — best-performing SG asset in the demo set.",
+        "Battery health 103% relative to commissioning — capacity is exceeding the original spec.",
+        "Use as the NBFC conversation anchor: this is what an A-grade asset looks like."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Reference",
+        "Predictions"
+      ],
+      "expected_audience": "NBFC",
+      "is_locked": false,
+      "pack_model": null,
+      "segment": "SG",
+      "city_code": "CU"
+    },
+    {
+      "battery_id": "BAT_LFP_077",
+      "scenario_rank": 25,
+      "narrative_title": "No action — GE Pack1201 healthy reference",
+      "action_type": "NO_ACTION",
+      "demo_talking_points": [
+        "Health score 88, battery health 100%, range 137 km — strongest GE Pack1201 in the demo.",
+        "Pairs with the lower-scored Pack1201 cases to show within-cohort variation.",
+        "DRI score 100 — clean across every signal layer."
+      ],
+      "tab_sequence": [
+        "Health",
+        "Reference",
+        "Predictions"
+      ],
+      "expected_audience": "Operator",
+      "is_locked": false,
+      "pack_model": "GF_LFP_Pack1201",
+      "segment": "GE",
+      "city_code": "CU"
+    }
+  ]
+}

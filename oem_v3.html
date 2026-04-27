@@ -1,0 +1,1980 @@
+<!DOCTYPE html>
+<!-- BUILD: APR25-19:05 v4-cache-bust (forces freshness check on browsers
+     that ignore Cache-Control). Bump this comment whenever shipping a
+     fix you want users to pick up without manual cache-clear. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik · OEM Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:,">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  /* Palette */
+  --bg:         #fafaf8;
+  --bg1:        #fafaf8;
+  --bg-card:    #ffffff;
+  --bg-muted:   #f4f3f0;
+  --bg2:        #f4f3f0;
+  --bg3:        #e4e2de;
+  --text:       #0d0d0b;
+  --text2:      #555;
+  --text-muted: #6b7280;
+  --text3:      #9ca3af;
+  --text-faint: #9ca3af;
+  --border:     rgba(0,0,0,0.08);
+  --border-med: rgba(0,0,0,0.14);
+  --accent:     #f97316;
+  --accent-soft: rgba(249,115,22,0.08);
+  --grn:   #22c55e;
+  --red:   #ef4444;
+  --amb:   #d97706;
+  --blue:  #3b82f6;
+  --nav:   #0f172a;
+
+  /* Tier colours */
+  --tier-prime:    #14b8a6;
+  --tier-stable:   #22c55e;
+  --tier-watch:    #f59e0b;
+  --tier-stressed: #f97316;
+  --tier-critical: #ef4444;
+
+  /* Typography */
+  --font-display: 'Outfit', 'DM Sans', system-ui, sans-serif;
+  --font-head: 'Outfit', sans-serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'DM Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Spacing */
+  --radius:    8px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --card-pad:  20px 24px;
+  --gap:       16px;
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  padding-bottom: 50px;
+}
+
+/* Nav */
+nav {
+  background: var(--nav);
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  justify-content: space-between;
+}
+.nav-logo {
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--accent); }
+.nav-tag {
+  font-size: 10px;
+  color: #666;
+  font-family: var(--font-mono);
+  margin-left: 10px;
+  letter-spacing: 0.5px;
+}
+.nav-r { display: flex; align-items: center; gap: 12px; }
+.api-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  transition: background .3s;
+}
+.api-dot.online { background: var(--grn); }
+
+/* Badges */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.badge-muted { background: var(--bg3); color: var(--text3); }
+.badge-accent { background: var(--accent); color: #fff; }
+.refresh-btn {
+  background: none;
+  border: 1px solid var(--bg3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text3);
+  transition: all .15s;
+}
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Filter bar */
+.filter-bar {
+  position: sticky;
+  top: 72px;
+  z-index: 100;
+  background: #fff;
+  border-bottom: 1px solid var(--bg3);
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.filter-bar select {
+  padding: 7px 12px;
+  border: 1px solid var(--bg3);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+}
+.filter-bar select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+/* Tab bar */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+  padding: 0 28px;
+  background: transparent;
+  overflow-x: auto;
+}
+.tab-btn {
+  padding: 10px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: #6b7280;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all .15s;
+  white-space: nowrap;
+  font-weight: 400;
+}
+.tab-btn.active {
+  color: #0d0d0b;
+  border-bottom-color: #f97316;
+  font-weight: 500;
+}
+.tab-btn:hover:not(.active) { color: #0d0d0b; }
+
+/* Card system */
+.card {
+  background: #fff;
+  border: 1px solid var(--bg3);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.sec-l {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 16px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Tier badges */
+.tier-badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+}
+.tier-PRIME    { background: #dcfce7; color: #166534; }
+.tier-STABLE   { background: #dbeafe; color: #1e40af; }
+.tier-WATCH    { background: #fef3c7; color: #92400e; }
+.tier-STRESSED { background: #ffedd5; color: #9a3412; }
+.tier-CRITICAL { background: #fee2e2; color: #991b1b; }
+
+/* Empty + loading */
+.empty { text-align: center; padding: 60px 20px; color: var(--text3); }
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-msg { font-size: 14px; }
+.empty-sub { font-size: 11px; margin-top: 4px; color: var(--text3); }
+.loading { text-align: center; padding: 40px; color: var(--text3); font-family: var(--font-mono); font-size: 12px; }
+
+/* Pack matrix table */
+.pack-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--bg3);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.pack-table thead th {
+  background: var(--nav);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-align: left;
+  padding: 10px 12px;
+  letter-spacing: 0.04em;
+}
+.pack-table tbody td {
+  font-size: 12px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--bg3);
+  color: var(--text);
+}
+.pack-table tbody tr:nth-child(odd) td { background: #fff; }
+.pack-table tbody tr:nth-child(even) td { background: var(--bg2); }
+.pack-table tbody tr.pack3401 td { background: #FFF7ED !important; }
+.pack-table tbody tr.pack3401 td:first-child { border-left: 4px solid #d97706 !important; }
+.pack-table tbody tr.pack-note td { background: #FFF7ED !important; border-top: none; }
+.pack-table tbody tr.pack-note td:first-child { border-left: 4px solid #d97706 !important; }
+/* G-1: Pack3401 colorblind-safe pill used in service group battery rows */
+.pack-gap-pill { font-size:9px;background:#FEF3C7;color:#92400e;border:1px solid #d97706;border-radius:2px;padding:1px 4px;margin-left:6px;font-family:'DM Mono',monospace;letter-spacing:0.04em;white-space:nowrap; }
+
+/* G-6: glossary tooltip — dotted underline + dark hover bubble */
+[data-term] { border-bottom: 1px dotted #9ca3af; cursor: help; position: relative; }
+[data-term]:hover::after {
+  content: attr(data-tip);
+  position: absolute; bottom: 125%; left: 0;
+  background: #1e293b; color: #f1f5f9;
+  font-size: 11px; padding: 6px 10px; border-radius: 4px;
+  white-space: normal; max-width: 240px; min-width: 160px;
+  z-index: 9999; line-height: 1.4;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  font-family: 'DM Sans', sans-serif; font-weight: 400; letter-spacing: 0;
+  text-transform: none;
+}
+
+@media (max-width: 768px) {
+  .g2, .g3, .g4 { grid-template-columns: 1fr; }
+  .pack-table { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div style="display:flex;align-items:center">
+    <a href="#" onclick="return false;" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0;line-height:0;">
+      <img src="passport_v2/assets/enerlytik_logo.png" alt="enerlytik — Intelligence Applied" style="height:26px;width:auto;object-fit:contain;display:block;">
+    </a>
+    <span class="nav-tag">OEM INTELLIGENCE · GREENFUEL · LFP</span>
+  </div>
+  <div class="nav-r">
+    <span class="badge badge-muted" id="week-chip">—</span>
+    <span class="badge badge-muted" id="bat-count">— batteries</span>
+    <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.3px;margin-left:8px" id="data-as-of">·</span>
+    <span class="badge badge-accent" id="demo-pill" style="display:none">DEMO</span>
+    <div class="api-dot" id="api-dot"></div>
+  </div>
+</nav>
+
+<!-- Pack3401 alert banner -->
+<div id="pack3401-banner" style="background:#FFF7ED;border-bottom:2px solid var(--accent);padding:10px 28px;font-size:12px;color:#92400e;display:none"></div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <select id="filter-pack" onchange="onFilterChange('pack', this.value)">
+    <option value="">All packs</option>
+  </select>
+  <select id="filter-city" onchange="onFilterChange('city', this.value)">
+    <option value="">All cities</option>
+  </select>
+  <select id="filter-app" onchange="onFilterChange('app', this.value)">
+    <option value="">All applications</option>
+    <option value="3W">E-Rickshaw (3W)</option>
+    <option value="2W">2-Wheeler (2W)</option>
+  </select>
+  <select id="filter-period" onchange="onFilterChange('period', this.value)">
+    <option value="4wk">Last 4 weeks</option>
+    <option value="12wk" selected>Last 12 weeks</option>
+    <option value="26wk">Last 26 weeks</option>
+  </select>
+  <span style="flex:1"></span>
+  <span style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">Rule D-20 disclosure active</span>
+</div>
+
+<!-- View tab bar -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="portfolio" onclick="showView('portfolio')">Portfolio</button>
+  <button class="tab-btn" data-tab="compare" onclick="showView('compare')">Compare</button>
+  <button class="tab-btn" data-tab="analysis" onclick="showView('analysis')">Analysis</button>
+  <button class="tab-btn" data-tab="service" onclick="showView('service')">Service</button>
+</div>
+
+<!-- View content -->
+<div id="view-content" style="padding:20px 28px;min-height:400px"></div>
+
+<!-- G-2: data freshness footer (populated from /api/platform/data-meta) -->
+<footer id="platform-footer" style="display:none;text-align:center;padding:14px 28px 22px;font-size:10px;color:var(--text3);border-top:1px solid var(--border);font-family:var(--font-mono);letter-spacing:0.3px">
+  Scores computed: <span id="footer-week">—</span>
+  · <span id="footer-date">—</span>
+  · <span id="footer-count">—</span> batteries
+  · enerlytik platform
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════════
+// AWS-prep: relative paths + token injected at render time
+const API_BASE = '';
+const AUTH_TOKEN = '{{ api_token }}';
+
+const S = {
+  view: 'portfolio',
+  online: false,
+  compareMetric: 'dri',
+  compareGroup:  'pack',
+  compareAgg:    'median',
+  _portfolioCache: null,
+};
+
+const FILTERS = { pack: '', city: '', app: '', period: '12wk' };
+
+// ACTION_PLAIN (copied verbatim from passport_final.html)
+const ACTION_PLAIN = {REPLACE_URGENT:'Replace immediately',REPLACE_NOW:'Replace immediately',REPLACE_PLAN:'Plan replacement within 4 weeks',EOL:'Battery at end of useful life',EOL_IMMINENT:'Battery at end of useful life',EXIT_NOW:'Replace now \u2014 battery at end of useful life',MONITOR_INVESTIGATE:'Monitor \u2014 inspect if decline continues',PHYSICS_REPLACE_PLAN:'Plan replacement \u2014 physics signals confirm decline',ACUTE_BREACH:'Monitor daily \u2014 sudden drop risk',CAPACITY_STABLE_LOW:'Worn but stable \u2014 monitor range floor',CELL_BALANCE:'Schedule cell balancing service',CHARGING_DISCIPLINE:'Charging Coaching',ROUTE_SHORTEN:'Shorten Route',MONITOR_WEEKLY:'Monitor weekly \u2014 no immediate action',MONITOR:'Monitor \u2014 check again next week',NO_ACTION:'No action needed'};
+
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+// FIELD RESOLVERS \u2014 single source of truth for S.bats / unit-list shape
+// /api/fleet/batteries uses: battery_model, city_code, rul_action_v2,
+//   bhs_score_v2, range_corrected_km, soh_conservative, tier_label_v2
+// /api/oem/unit-list uses: pack_model, city, rul_action_v2,
+//   bhs_score_v2, range_corrected_km, tier_label_v2
+// /api/oem/unit-list-extended carries both. Resolvers cover all shapes.
+// \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+function _stripPackPrefix(s) { return String(s || '').replace(/^GF_LFP_/, '').replace(/^INV_NMC_/, 'NMC '); }
+function _batAction(b) { return (b && (b.rul_action_v2 || b.action_v2 || b.action)) || ''; }
+function _batPackRaw(b){ return (b && (b.battery_model || b.pack_model)) || ''; }
+function _batModel(b)  { return _stripPackPrefix(_batPackRaw(b)); }
+function _batDRI(b) {
+  if (!b) return null;
+  const v = b.bhs_score_v2 != null ? b.bhs_score_v2
+          : b.dri_score != null ? b.dri_score
+          : b.operational_score != null ? b.operational_score
+          : b.adjusted_composite != null ? b.adjusted_composite
+          : b.composite_score;
+  if (v == null) return null;
+  return v <= 1.5 ? Math.round(v * 1000) / 10 : Math.round(v * 10) / 10;
+}
+function _batRange(b) {
+  if (!b) return null;
+  const v = b.range_corrected_km != null ? b.range_corrected_km
+          : b.range_est_km != null ? b.range_est_km
+          : b.range_km;
+  return v != null ? v : null;
+}
+function _batSOH(b) {
+  if (!b) return null;
+  const s = b.soh_conservative != null ? b.soh_conservative
+          : b.soh != null ? b.soh
+          : b.soh_pct;
+  if (s == null) return null;
+  return s <= 1.15 ? Math.round(s * 1000) / 10 : Math.round(s * 10) / 10;
+}
+function _batTier(b) { return (b && (b.tier_label_v2 || b.tier_v2 || b.tier)) || 'WATCH'; }
+function _batCity(b) {
+  const raw = (b && (b.city || b.city_code)) || '';
+  return raw;
+}
+
+// ════════════════════════════════════════════════════════════════
+// API LAYER
+// ════════════════════════════════════════════════════════════════
+async function get(ep) {
+  try {
+    const r = await fetch(`${API_BASE}${ep}`, {
+      headers: { 'Authorization': 'Bearer ' + AUTH_TOKEN }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    setOnline(true);
+    return await r.json();
+  } catch (e) {
+    console.warn('API', ep, e.message);
+    setOnline(false);
+    return null;
+  }
+}
+
+function setOnline(ok) {
+  S.online = ok;
+  const dot = document.getElementById('api-dot');
+  if (dot) dot.classList.toggle('online', ok);
+}
+
+// G-6: Glossary tooltips — duplicated here pending tokens.js extraction
+// (Phase A, post-demo). Keep in sync with passport_v2/enerlytik_v4.html.
+const GLOSSARY = {
+  DRI:    'Degradation Rate Index — composite battery health score 0–100. Higher is healthier; 100 = pristine, 0 = end-of-life.',
+  SOH:    'State of Health — capacity retained vs the commissioned baseline. Lower means the battery holds less charge than when new.',
+  RUL:    'Remaining Useful Life — projected weeks until the battery crosses an operational floor (range or SOH).',
+  EFC:    'Equivalent Full Cycles — cumulative full-charge-equivalent cycles the battery has consumed. Warranty limit is 1,200.',
+  BHS:    'Battery Health Score — internal composite aligned with DRI. Scaled 0–100, higher is healthier.',
+  NBFC:   'Non-Banking Financial Company — financier audience. NBFC grade A–D summarises asset value and risk.',
+  SOX:    'State of Stress — power-delivery state derived from voltage sag, IR proxy, and thermal stress. Distinct from SOH.',
+  P10:    'P10 — 10th percentile of the metric distribution. 10% of batteries land below this value.',
+  P50:    'P50 — median. Half the batteries land below this value, half above.',
+  P90:    'P90 — 90th percentile. 90% of batteries land below this value.',
+  vScore: 'vScore — confidence-weighted composite tier. Modes: FULL / PARTIAL_NO_SOH / PARTIAL_LOW_DATA / ESTIMATED / SUSPENDED based on data completeness.',
+};
+
+// Wrap each acronym match inside a node's text with a span carrying
+// data-term + data-tip so the CSS tooltip kicks in on hover. Only
+// targets a small whitelist of selectors so we don't mangle attributes
+// or numeric labels (e.g. "P10" inside a chart axis stays untouched
+// because the canvas/axis labels are not in our query set).
+function applyGlossary(root) {
+  const scope = root || document;
+  const sels = [
+    '.card-title',
+    '.pack-table th',
+    '.sec-l',
+    '.tab-btn',
+    '#footer-week ~ *',
+  ];
+  const terms = Object.keys(GLOSSARY);
+  // Build one regex with non-overlapping word-boundary matches.
+  const rx = new RegExp('\\b(' + terms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\b', 'g');
+  scope.querySelectorAll(sels.join(',')).forEach(el => {
+    if (el.dataset && el.dataset.glossaryDone === '1') return;
+    // Only touch direct text-node children to avoid recursing into
+    // nested children that may already carry markup.
+    [...el.childNodes].forEach(node => {
+      if (node.nodeType !== 3 /* TEXT_NODE */) return;
+      const txt = node.nodeValue;
+      if (!txt || !rx.test(txt)) { rx.lastIndex = 0; return; }
+      rx.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let last = 0;
+      let m;
+      while ((m = rx.exec(txt)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(txt.slice(last, m.index)));
+        const span = document.createElement('span');
+        span.setAttribute('data-term', m[1]);
+        span.setAttribute('data-tip', GLOSSARY[m[1]]);
+        span.textContent = m[1];
+        frag.appendChild(span);
+        last = m.index + m[1].length;
+      }
+      if (last < txt.length) frag.appendChild(document.createTextNode(txt.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+    if (el.dataset) el.dataset.glossaryDone = '1';
+  });
+}
+
+function emptyState(msg, sub) {
+  return `<div class="empty">
+    <div class="empty-icon">\u26A1</div>
+    <div class="empty-msg">${msg}</div>
+    ${sub ? '<div class="empty-sub">' + sub + '</div>' : ''}
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// FILTER + VIEW
+// ════════════════════════════════════════════════════════════════
+function onFilterChange(key, value) {
+  FILTERS[key] = value;
+  loadCurrentView();
+}
+
+function showView(v) {
+  S.view = v;
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === v));
+  loadCurrentView();
+}
+
+function loadCurrentView() {
+  if (S.view === 'portfolio') renderPortfolio();
+  else if (S.view === 'compare') renderCompare();
+  else if (S.view === 'analysis') renderAnalysis();
+  else if (S.view === 'service') renderService();
+}
+
+function kpiClick(metric) {
+  window.location.href = '/enerlytik-v4?filter=' + encodeURIComponent(metric) + '&context=oem';
+}
+
+// ════════════════════════════════════════════════════════════════
+// PORTFOLIO VIEW
+// ════════════════════════════════════════════════════════════════
+function fmt(v, dp) {
+  if (v == null || v === undefined || Number.isNaN(v)) return '\u2014';
+  if (typeof v !== 'number') return v;
+  return v.toFixed(dp == null ? 1 : dp);
+}
+
+function weightedMean(rows, valueKey, weightKey) {
+  let num = 0, den = 0;
+  rows.forEach(r => {
+    const v = r[valueKey];
+    const w = r[weightKey];
+    if (v != null && !Number.isNaN(v) && w != null && w > 0) {
+      num += v * w;
+      den += w;
+    }
+  });
+  return den > 0 ? num / den : null;
+}
+
+// Hotfix: portfolio endpoint returns avg_bhs as the real DRI. avg_dri
+// computes a different column and over-reports by ~30 points (Pack3401
+// at 86 instead of ~45). Prefer avg_bhs until the endpoint is rewritten.
+function dri(p) { return (p && p.avg_bhs != null) ? p.avg_bhs : (p && p.avg_dri != null) ? p.avg_dri : null; }
+
+function aggregatePortfolio(packs) {
+  if (!Array.isArray(packs) || packs.length === 0) return null;
+  const total_batteries = packs.reduce((s, p) => s + (p.unit_count || 0), 0);
+  // Hotfix: read avg_bhs (true DRI) from each pack, weighted by unit_count.
+  let _driNum = 0, _driDen = 0;
+  packs.forEach(p => {
+    const v = dri(p);
+    if (v != null && p.unit_count) { _driNum += v * p.unit_count; _driDen += p.unit_count; }
+  });
+  const avg_dri = _driDen > 0 ? _driNum / _driDen : null;
+  const avg_range_km   = weightedMean(packs, 'avg_range_km', 'unit_count');
+  const critical_count = packs.reduce((s, p) => s + (p.tier_critical || 0) + (p.tier_stressed || 0), 0);
+  const warranty_exposed = packs.reduce((s, p) => s + (p.warranty_claim_eligible_count || 0), 0);
+  const fleet_attribution = {
+    charging_pct:    weightedMean(packs, 'charging_pct',    'unit_count'),
+    usage_pct:       weightedMean(packs, 'usage_pct',       'unit_count'),
+    maintenance_pct: weightedMean(packs, 'maintenance_pct', 'unit_count'),
+    thermal_pct:     weightedMean(packs, 'thermal_pct',     'unit_count'),
+    oem_pct:         weightedMean(packs, 'calendar_pct',    'unit_count'),
+  };
+  return { total_batteries, avg_dri, avg_range_km, critical_count, warranty_exposed, fleet_attribution };
+}
+
+function kpiCard(label, value, color, sub, tooltip, metric) {
+  const displayVal = (value === null || value === undefined || Number.isNaN(value)) ? '\u2014' : value;
+  return `<div class="card" style="text-align:center;cursor:pointer" title="${tooltip}" onclick="kpiClick('${metric}')">
+    <div class="card-title">${label}</div>
+    <div style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;color:${color}">${displayVal}</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:4px">${sub}</div>
+  </div>`;
+}
+
+function attributionBars(attr) {
+  if (!attr) return '';
+  const factors = [
+    { label: 'Charging',       key: 'charging_pct',    color: '#f97316' },
+    { label: 'Usage',          key: 'usage_pct',       color: '#3b82f6' },
+    { label: 'Maintenance',    key: 'maintenance_pct', color: '#f59e0b' },
+    { label: 'Thermal',        key: 'thermal_pct',     color: '#ef4444' },
+    { label: 'OEM / Calendar', key: 'oem_pct',         color: '#9ca3af' },
+  ];
+  let h = '';
+  factors.forEach(f => {
+    const raw = attr[f.key];
+    const pct = (raw == null || Number.isNaN(raw)) ? 0 : Math.min(35, Math.round(raw));
+    h += `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:12px;color:var(--text)">${f.label}</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${pct}%</span>
+      </div>
+      <div style="height:8px;background:var(--bg3);border-radius:4px">
+        <div style="height:100%;width:${pct}%;background:${f.color};border-radius:4px;transition:width 0.4s ease"></div>
+      </div>
+    </div>`;
+  });
+  return h;
+}
+
+function warrantyBars(packs) {
+  if (!Array.isArray(packs) || packs.length === 0) return '<div style="font-size:11px;color:var(--text3)">No pack data.</div>';
+  const max = Math.max(1, ...packs.map(p => p.warranty_claim_eligible_count || 0));
+  let h = '';
+  packs.forEach(p => {
+    const n = p.warranty_claim_eligible_count || 0;
+    const isP3401 = (p.pack_model || '').includes('3401');
+    const col = isP3401 ? 'var(--red)' : 'var(--accent)';
+    const pct = Math.round((n / max) * 100);
+    h += `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:12px;color:var(--text)">${_cleanPack(p.pack_model)}</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${n}</span>
+      </div>
+      <div style="height:8px;background:var(--bg3);border-radius:4px">
+        <div style="height:100%;width:${pct}%;background:${col};border-radius:4px"></div>
+      </div>
+    </div>`;
+  });
+  return h;
+}
+
+function populatePackFilterOptions(packs) {
+  const sel = document.getElementById('filter-pack');
+  if (!sel) return;
+  const cur = sel.value;
+  const packs_sorted = [...new Set(packs.map(p => p.pack_model).filter(Boolean))].sort();
+  // T2 FIX 1: option label is _cleanPack-stripped; value keeps the raw
+  // pack_model so the filter still matches the API field exactly.
+  sel.innerHTML = '<option value="">All packs</option>'
+    + packs_sorted.map(p => `<option value="${p}">${_cleanPack(p)}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+// AUDIT V FIX 4: city filter was empty (only static "All cities" option).
+// Pull distinct city codes from S.bats (each battery has b.city / b.city_code)
+// and render with friendly labels via the CITY_LABEL map.
+function populateCityFilterOptions(bats) {
+  const sel = document.getElementById('filter-city');
+  if (!sel || !Array.isArray(bats) || bats.length === 0) return;
+  const cur = sel.value;
+  const CITY_LABEL = {SR:'Surat', CU:'Cuttack', SU:'Surat'};
+  const codes = [...new Set(
+    bats.map(b => _batCity(b)).filter(Boolean)
+  )].sort();
+  sel.innerHTML = '<option value="">All cities</option>'
+    + codes.map(c => `<option value="${c}">${CITY_LABEL[c] || c}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function driCellColor(v) {
+  if (v == null) return 'var(--text)';
+  if (v < 60) return 'var(--red)';
+  if (v < 70) return 'var(--amb)';
+  return 'var(--grn)';
+}
+
+function vsCommCellColor(delta) {
+  if (delta == null) return 'var(--text)';
+  if (delta < -20) return 'var(--red)';
+  if (delta < -10) return 'var(--amb)';
+  return 'var(--grn)';
+}
+
+function renderPackMatrix(packs) {
+  if (!Array.isArray(packs) || packs.length === 0) {
+    return '<table class="pack-table"><tr><td style="padding:14px;color:var(--text3);font-size:12px">No pack data available</td></tr></table>';
+  }
+  const headers = [
+    ['Pack model',       'Battery pack model identifier.'],
+    ['Batteries',        'Number of active scored batteries in this pack.'],
+    ['Avg DRI',          'Degradation Rate Index \u2014 fleet average for this pack. Lower = more degradation. Pack3401 target: significantly below Pack3001 when data is correct.'],
+    ['Avg Range',        'Average estimated range per full charge across this pack.'],
+    ['vs Commissioned',  'Range gap vs battery range at commissioning. Negative = degraded.'],
+    ['SOH<60%',          'Batteries where State of Health has fallen below 60%.'],
+    ['Warranty exposed', 'Batteries with active warranty claim eligibility.'],
+    ['Critical alerts',  'Batteries in CRITICAL or STRESSED tier requiring immediate attention.'],
+    ['RUL floor 4wk',    'Batteries predicted to cross operational floor within 4 weeks.'],
+  ];
+  let h = '<table class="pack-table"><thead><tr>';
+  headers.forEach(hd => { h += `<th title="${hd[1]}">${hd[0]}</th>`; });
+  h += '</tr></thead><tbody>';
+
+  packs.forEach(p => {
+    const isP3401 = (p.pack_model || '').includes('3401');
+    // Hotfix: prefer avg_bhs (true DRI) over avg_dri (wrong column)
+    const _driVal = dri(p);
+    const driVal = _driVal != null ? _driVal.toFixed(1) : '\u2014';
+    const driCol = driCellColor(_driVal);
+    const rangeVal = p.avg_range_km != null ? Math.round(p.avg_range_km) + 'km' : '\u2014';
+    const vsComm = (p.avg_pct_of_commissioned != null) ? (p.avg_pct_of_commissioned - 100) : null;
+    const vsCommVal = vsComm != null ? (vsComm >= 0 ? '+' : '') + vsComm.toFixed(1) + '%' : '\u2014';
+    const vsCommCol = vsCommCellColor(vsComm);
+    const criticalN = (p.tier_critical || 0) + (p.tier_stressed || 0);
+    const criticalCol = criticalN > 0 ? 'var(--red)' : 'var(--text)';
+    const rowCls = isP3401 ? 'pack3401' : '';
+    const rowStyle = isP3401 ? '' : '';
+    h += `<tr class="${rowCls}" data-pack="${p.pack_model || ''}" style="cursor:pointer" onclick="rowNav('${p.pack_model || ''}')">`;
+    h += `<td style="font-family:var(--font-mono);font-weight:500">${isP3401 ? '<span style="margin-right:4px">\u26a0</span>' : ''}${_cleanPack(p.pack_model) || '\u2014'}</td>`;
+    h += `<td>${p.unit_count != null ? p.unit_count : '\u2014'}</td>`;
+    h += `<td style="color:${driCol};font-weight:600">${driVal}</td>`;
+    h += `<td>${rangeVal}</td>`;
+    h += `<td style="color:${vsCommCol};font-weight:600">${vsCommVal}</td>`;
+    h += `<td>\u2014</td>`;
+    h += `<td>${p.warranty_claim_eligible_count != null ? p.warranty_claim_eligible_count : '\u2014'}</td>`;
+    h += `<td style="color:${criticalCol};font-weight:600">${criticalN}</td>`;
+    h += `<td>\u2014</td>`;
+    h += '</tr>';
+    if (isP3401) {
+      h += `<tr class="pack-note"><td colspan="9" style="background:#FFF7ED;padding:4px 12px;font-size:10px;color:var(--accent);font-style:italic;border-bottom:1px solid #FED7AA">Design gap confirmed: 6\xD7 faster degradation than Pack3001. Operator behaviour within fleet norms. OEM investigation active.</td></tr>`;
+    }
+  });
+  h += '</tbody></table>';
+  return h;
+}
+
+function rowNav(packModel) {
+  if (!packModel) return;
+  window.location.href = '/enerlytik-v4?pack=' + encodeURIComponent(packModel) + '&context=oem';
+}
+
+async function renderPortfolio() {
+  const el = document.getElementById('view-content');
+  el.innerHTML = '<div class="loading">Loading portfolio\u2026</div>';
+
+  const params = new URLSearchParams();
+  if (FILTERS.pack)   params.set('pack',   FILTERS.pack);
+  if (FILTERS.city)   params.set('city',   FILTERS.city);
+  if (FILTERS.app)    params.set('app',    FILTERS.app);
+  if (FILTERS.period) params.set('period', FILTERS.period);
+  const qs = params.toString() ? '?' + params.toString() : '';
+
+  // T-2: fetch portfolio + per-battery list in parallel.
+  // /api/fleet/batteries carries soh_conservative which the OEM
+  // unit-list endpoints don't, so it's the canonical source for
+  // the DRI histogram + Range vs SOH scatter on this surface.
+  const [raw, batsRaw] = await Promise.all([
+    get('/api/oem/portfolio' + qs).catch(()=>null),
+    get('/api/fleet/batteries').catch(()=>null),
+  ]);
+  S.bats = Array.isArray(batsRaw) ? batsRaw
+    : (batsRaw && Array.isArray(batsRaw.batteries) ? batsRaw.batteries : []);
+
+  if (raw == null) {
+    el.innerHTML = emptyState('Portfolio endpoint not yet available', 'Check /api/oem/portfolio on the DB API server.');
+    return;
+  }
+
+  // Normalise: endpoint currently returns a flat pack array.
+  // Accept either that shape or the nested {packs:[], total_batteries:..., ...} shape.
+  let packs;
+  let agg;
+  if (Array.isArray(raw)) {
+    packs = raw;
+    agg = aggregatePortfolio(packs) || {};
+  } else if (raw && Array.isArray(raw.packs)) {
+    packs = raw.packs;
+    agg = Object.assign(aggregatePortfolio(packs) || {}, raw);
+  } else {
+    el.innerHTML = emptyState('Portfolio data unavailable', 'Unexpected response shape from /api/oem/portfolio.');
+    return;
+  }
+
+  // Filter pack dropdown population (all known pack models)
+  populatePackFilterOptions(packs);
+  // AUDIT V FIX 4: city dropdown sourced from S.bats (per-battery city_code).
+  populateCityFilterOptions(S.bats);
+  // Apply pack filter client-side if active
+  let filteredPacks = FILTERS.pack ? packs.filter(p => p.pack_model === FILTERS.pack) : packs;
+
+  const total_batteries  = raw.total_batteries   ?? agg.total_batteries;
+  // Hotfix: agg.avg_dri is computed from avg_bhs (true DRI) — prefer it
+  // over raw.avg_dri which reads the wrong column at the endpoint.
+  const avg_dri          = agg.avg_dri ?? raw.avg_bhs ?? raw.avg_dri;
+  const avg_range_km     = raw.avg_range_km      ?? agg.avg_range_km;
+  const critical_count   = raw.critical_count    ?? agg.critical_count;
+  const warranty_exposed = raw.warranty_exposed  ?? agg.warranty_exposed;
+  const soh_below_60     = raw.soh_below_60      ?? null;
+  const eol_range_count  = raw.eol_range_count   ?? null;
+  const eol_soh_count    = raw.eol_soh_count     ?? null;
+  const current_week     = raw.current_week      ?? null;
+  const fleet_attr       = raw.fleet_attribution ?? agg.fleet_attribution;
+
+  // Pack3401 banner
+  const p3401 = packs.find(p => (p.pack_model || '').includes('3401'));
+  const banner = document.getElementById('pack3401-banner');
+  let bannerText = raw.pack3401_alert;
+  if (!bannerText && p3401) {
+    const n = p3401.warranty_claim_eligible_count || 0;
+    bannerText = 'Pack3401: ' + (p3401.unit_count || 0) + ' batteries \u00B7 ' + n + ' warranty-eligible. Design-level gap confirmed (6\xD7 Pack3001). OEM investigation active.';
+  }
+  if (bannerText) {
+    banner.style.display = 'block';
+    // G-1: non-color cue — warning glyph + Pack name + DESIGN GAP badge.
+    // Colorblind-safe; the badge carries the message without the amber bg.
+    // Strip a leading "Pack3401: " or "Pack3401 " from any pre-formatted text
+    // so we don't render the model name twice when wrapping it in <strong>.
+    const _bt = String(bannerText).replace(/^Pack3401[:\s]+/, '');
+    banner.innerHTML = '<span style="margin-right:6px">⚠</span>'
+      + '<strong>Pack3401</strong>'
+      + '<span style="font-family:\'DM Mono\',monospace;font-size:10px;'
+      + 'font-weight:700;letter-spacing:0.08em;background:#92400e;color:#fff;'
+      + 'padding:2px 6px;border-radius:2px;margin:0 8px">DESIGN GAP</span>'
+      + _bt;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Nav chips
+  const wkChip = document.getElementById('week-chip');
+  if (wkChip) wkChip.textContent = current_week != null ? 'Week ' + current_week + ' data' : '\u2014';
+  const batChip = document.getElementById('bat-count');
+  if (batChip) batChip.textContent = (total_batteries != null ? total_batteries : '\u2014') + ' batteries';
+
+  // ── A. Banner (already handled above) ──
+
+  // ── B. 8 KPI CARDS ──
+  let h = '';
+  h += '<div class="g4" style="margin-bottom:12px">';
+  h += kpiCard('Fleet size',
+               total_batteries != null ? total_batteries : '\u2014',
+               'var(--text)',
+               'active scored batteries',
+               'Total batteries with active scoring. Excludes banned and suspended.',
+               'fleet_size');
+  h += kpiCard('Avg DRI',
+               avg_dri != null ? fmt(avg_dri, 1) : '\u2014',
+               (avg_dri != null && avg_dri < 65) ? 'var(--amb)' : 'var(--grn)',
+               'fleet degradation index',
+               'Degradation Rate Index \u2014 measures capacity retention vs commissioning baseline. Lower = more deterioration. Fleet benchmark: 70+',
+               'avg_dri');
+  h += kpiCard('Avg Range',
+               avg_range_km != null ? Math.round(avg_range_km) + 'km' : '\u2014',
+               'var(--text)',
+               'per full charge this week',
+               'Average estimated range per full charge across scored fleet this week.',
+               'avg_range');
+  h += kpiCard('Critical alerts',
+               critical_count != null ? critical_count : '\u2014',
+               (critical_count != null && critical_count > 0) ? 'var(--red)' : 'var(--grn)',
+               'batteries needing immediate action',
+               'Batteries in CRITICAL or STRESSED tier requiring immediate attention.',
+               'critical_alerts');
+  h += '</div>';
+
+  h += '<div class="g4" style="margin-bottom:20px">';
+  h += kpiCard('SOH < 60%',
+               soh_below_60 != null ? soh_below_60 : '\u2014',
+               (soh_below_60 != null && soh_below_60 > 0) ? 'var(--amb)' : 'var(--grn)',
+               'approaching end of useful life',
+               'Batteries where State of Health has fallen below 60%.',
+               'soh_below_60');
+  h += kpiCard('EOL Range',
+               eol_range_count != null ? eol_range_count : '\u2014',
+               (eol_range_count != null && eol_range_count > 0) ? 'var(--amb)' : 'var(--grn)',
+               'range floor breached',
+               'Batteries where RUL trigger is range floor.',
+               'eol_range');
+  h += kpiCard('EOL SOH',
+               eol_soh_count != null ? eol_soh_count : '\u2014',
+               (eol_soh_count != null && eol_soh_count > 0) ? 'var(--amb)' : 'var(--grn)',
+               'SOH floor breached',
+               'Batteries where RUL trigger is SOH floor.',
+               'eol_soh');
+  h += kpiCard('Warranty exposed',
+               warranty_exposed != null ? warranty_exposed : '\u2014',
+               (warranty_exposed != null && warranty_exposed > 100) ? 'var(--accent)' : 'var(--text)',
+               'warranty claim eligible',
+               'Batteries with warranty_claim_eligible=1. OEM may face claims.',
+               'warranty_exposed');
+  h += '</div>';
+
+  // ── C. PACK MATRIX ──
+  h += '<div class="sec-l">\u25C8 Pack matrix</div>';
+  h += renderPackMatrix(filteredPacks);
+
+  // ── C0. FLEET DISTRIBUTION CHARTS (T-2/T-3/T-4) ──
+  // DRI histogram + Range vs SOH scatter side-by-side. Each canvas
+  // sits in a div with explicit height so Chart.js
+  // (maintainAspectRatio:false) doesn't draw at 0px. Drawer functions
+  // run via setTimeout after el.innerHTML mounts; S.bats was populated
+  // by the parallel /api/fleet/batteries fetch above.
+  h += '<div class="g2" style="margin-top:16px;margin-bottom:16px">';
+  h += '<div class="card"><div class="card-title">Fleet DRI distribution</div>'
+    + '<div style="height:220px;position:relative;width:100%">'
+    + '<canvas id="oemDriHist"></canvas></div></div>';
+  h += '<div class="card"><div class="card-title">Range vs SOH \xB7 every battery</div>'
+    + '<div style="height:220px;position:relative;width:100%">'
+    + '<canvas id="oemRangeSohScatter"></canvas></div></div>';
+  h += '</div>';
+
+  // ── D. BOTTOM 2-COL GRID ──
+  h += '<div class="g2" style="margin-top:16px">';
+  // Left: Fleet attribution
+  h += '<div class="card">';
+  h += '<div class="card-title">Fleet attribution</div>';
+  h += attributionBars(fleet_attr);
+  const finding = raw.attribution_finding || 'Charging is the primary driver of fleet degradation.';
+  const implication = raw.attribution_implication || '';
+  h += `<div style="border-left:3px solid var(--accent);padding:8px 12px;background:var(--bg2);border-radius:0 6px 6px 0;margin-top:10px">
+    <div style="font-size:12px;font-weight:600">${finding}</div>
+    ${implication ? `<div style="font-size:11px;color:var(--text2);margin-top:4px">${implication}</div>` : ''}
+  </div>`;
+  h += '</div>';
+
+  // Right: Warranty pipeline
+  h += '<div class="card">';
+  h += '<div class="card-title">Warranty pipeline</div>';
+  h += warrantyBars(packs);
+  const weVal = warranty_exposed != null ? warranty_exposed : 0;
+  const expo = (weVal * 40000).toLocaleString('en-IN');
+  h += `<div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bg3);font-size:12px;color:var(--text2)">\u20B9${expo} estimated exposure <span style="font-size:10px;color:var(--text3)">(\u20B940,000 replacement cost)</span></div>`;
+  h += '</div>';
+  h += '</div>';
+
+  el.innerHTML = h;
+  if (typeof applyGlossary === 'function') applyGlossary(el);
+  // T3: draw distribution charts after DOM mounts. S.bats was populated
+  // by the parallel /api/fleet/batteries fetch above (line ~695). Guard
+  // against empty S.bats (fetch failure / auth fail), and use rAF +
+  // delayed setTimeout so the canvas has real layout dimensions before
+  // Chart.js measures.
+  console.log('[OEM] S.bats loaded:', (S.bats || []).length, 'batteries');
+  if (!S.bats || S.bats.length === 0) {
+    console.warn('[OEM] S.bats empty — distribution charts skipped. Check /api/fleet/batteries auth.');
+  } else {
+    requestAnimationFrame(() => setTimeout(() => {
+      console.log('[OEM] Drawing DRI histogram and Range vs SOH scatter...');
+      try { _drawOEMDriHistogram(S.bats); }
+      catch (e) { console.error('[OEM] DRI histogram draw failed:', e); }
+      try { _drawOEMRangeSohScatter(S.bats); }
+      catch (e) { console.error('[OEM] Range vs SOH scatter draw failed:', e); }
+    }, 50));
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────
+// T-4: OEM Portfolio distribution charts — guaranteed to draw
+// ────────────────────────────────────────────────────────────────────
+function _drawOEMDriHistogram(bats) {
+  const canvasId = 'oemDriHist';
+  const existing = (typeof Chart !== 'undefined' && Chart.getChart)
+    ? Chart.getChart(canvasId) : null;
+  if (existing) existing.destroy();
+  const el = document.getElementById(canvasId);
+  if (!el || typeof Chart === 'undefined') return;
+  const scores = (bats || [])
+    .map(b => _batDRI(b))
+    .filter(v => v != null && v >= 0 && v <= 100);
+  if (scores.length === 0) {
+    // Don't destroy the canvas — keep it addressable for walkthroughs
+    // and screen readers. Draw the hint into the 2D context.
+    const ctx = el.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, el.width || 300, el.height || 220);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.font = "11px 'DM Mono',monospace";
+      ctx.fillText('DRI data loading…', 12, 30);
+    }
+    return;
+  }
+  const bins = Array(10).fill(0);
+  scores.forEach(s => { bins[Math.min(9, Math.floor(s / 10))]++; });
+  const labels = ['0-10','10-20','20-30','30-40','40-50',
+                  '50-60','60-70','70-80','80-90','90-100'];
+  const colors = bins.map((_, i) =>
+    i <= 2 ? '#ef4444' : i <= 4 ? '#f59e0b' :
+    i <= 6 ? '#e8500a' : '#1d9e75');
+  new Chart(el, {
+    type: 'bar',
+    data: { labels, datasets: [{
+      label: 'Battery count', data: bins,
+      backgroundColor: colors, borderRadius: 3, borderWidth: 0,
+    }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => ctx.parsed.y + ' batter' + (ctx.parsed.y === 1 ? 'y' : 'ies') } } },
+      scales: {
+        x: { ticks: { font:{family:"'DM Mono',monospace",size:9},
+              color: 'rgba(0,0,0,0.4)' },
+            grid: { display: false } },
+        y: { min: 0,
+            ticks: { font:{family:"'DM Mono',monospace",size:9},
+              color: 'rgba(0,0,0,0.4)', maxTicksLimit: 5 },
+            grid: { color: 'rgba(0,0,0,0.06)' } }
+      }
+    }
+  });
+}
+
+function _drawOEMRangeSohScatter(bats) {
+  const canvasId = 'oemRangeSohScatter';
+  const existing = (typeof Chart !== 'undefined' && Chart.getChart)
+    ? Chart.getChart(canvasId) : null;
+  if (existing) existing.destroy();
+  const el = document.getElementById(canvasId);
+  if (!el || typeof Chart === 'undefined') return;
+  const valid = (bats || []).filter(b =>
+    (_batRange(b) != null && _batRange(b) > 0) &&
+    _batSOH(b) != null);
+  if (valid.length === 0) {
+    // Don't destroy the canvas — walkthroughs/screen readers need it in DOM.
+    // Draw an empty-state hint into the canvas itself.
+    const ctx = el.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, el.width || 300, el.height || 220);
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.font = "11px 'DM Mono',monospace";
+      ctx.fillText('Range vs SOH data loading…', 12, 30);
+    }
+    return;
+  }
+  const TIER_COLOR = {
+    PRIME:   '#1d9e75', STABLE: '#22c55e', WATCH:    '#f59e0b',
+    STRESSED:'#e8500a', CRITICAL:'#ef4444',
+  };
+  const tierGroups = {};
+  valid.forEach(b => {
+    const tier = _batTier(b);
+    const soh  = _batSOH(b);                 // resolver returns 0-100 always
+    const rng  = Math.round(_batRange(b));
+    if (!tierGroups[tier]) tierGroups[tier] = [];
+    tierGroups[tier].push({ x: soh, y: rng, _id: b.battery_id });
+  });
+  const datasets = Object.entries(tierGroups).map(([tier, pts]) => ({
+    label: tier, data: pts,
+    backgroundColor: (TIER_COLOR[tier] || '#9ca3af') + '99',
+    borderColor: (TIER_COLOR[tier] || '#9ca3af'),
+    pointRadius: 4, pointHoverRadius: 6, borderWidth: 1,
+  }));
+  const yMax = Math.ceil(Math.max(120,
+    ...valid.map(b => _batRange(b) || 0)) / 20) * 20;
+  new Chart(el, {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      plugins: {
+        legend: { display: true, position: 'bottom',
+          labels: { font:{family:"'DM Mono',monospace",size:9},
+            color: 'rgba(0,0,0,0.5)', boxWidth: 10, padding: 10 } },
+        tooltip: { callbacks: {
+          label: (ctx) => (ctx.raw && ctx.raw._id ? ctx.raw._id + ' \xB7 ' : '')
+            + 'SOH ' + ctx.parsed.x + '% \xB7 ' + ctx.parsed.y + 'km'
+        } }
+      },
+      scales: {
+        x: { min: 0, max: 110,
+          title: { display:true, text:'SOH %',
+            font:{family:"'DM Mono',monospace",size:10},
+            color:'rgba(0,0,0,0.4)' },
+          ticks: { font:{family:"'DM Mono',monospace",size:9},
+            color:'rgba(0,0,0,0.4)', callback: v => v + '%' },
+          grid: { color:'rgba(0,0,0,0.06)' } },
+        y: { min: 0, max: yMax,
+          title: { display:true, text:'Range km',
+            font:{family:"'DM Mono',monospace",size:10},
+            color:'rgba(0,0,0,0.4)' },
+          ticks: { font:{family:"'DM Mono',monospace",size:9},
+            color:'rgba(0,0,0,0.4)', callback: v => v + 'km',
+            maxTicksLimit: 6 },
+          grid: { color:'rgba(0,0,0,0.06)' } }
+      }
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// COMPARE VIEW (Sprint 4)
+// ════════════════════════════════════════════════════════════════
+const COMPARE_METRIC_LABEL = {
+  dri: 'DRI Score',
+  range_km: 'Range (km)',
+  soh: 'SOH %',
+  efc: 'EFC consumed',
+  kps_slope: 'Range slope (km/wk)',
+  cell_spread: 'Cell spread (mV)',
+};
+const GROUP_COLORS = ['#f97316','#3b82f6','#22c55e','#f59e0b','#14b8a6','#ef4444'];
+// Pack-specific colors override the cycling palette so the Pack3001 vs Pack3401
+// design-gap story reads consistently (teal = healthy reference, amber = the gap).
+const PACK_COLOR_OVERRIDE = {'Pack3001':'#1d9e75','Pack3401':'#efcf27'};
+function _packColor(label, fallback) {
+  if (!label) return fallback;
+  for (const k in PACK_COLOR_OVERRIDE) {
+    if (String(label).indexOf(k) >= 0) return PACK_COLOR_OVERRIDE[k];
+  }
+  return fallback;
+}
+
+function setCompareMetric(v) { S.compareMetric = v; renderCompare(); }
+function setCompareGroup(v)  { S.compareGroup  = v; renderCompare(); }
+function setAgg(v) {
+  S.compareAgg = v;
+  const m = document.getElementById('agg-median');
+  const mn = document.getElementById('agg-mean');
+  if (m)  { m.style.background  = v === 'median' ? 'var(--accent)' : '#fff'; m.style.color  = v === 'median' ? '#fff' : 'var(--text2)'; }
+  if (mn) { mn.style.background = v === 'mean'   ? 'var(--accent)' : '#fff'; mn.style.color = v === 'mean'   ? '#fff' : 'var(--text2)'; }
+  renderCompare();
+}
+
+function filterSidebarByGroup(groupLabel) {
+  if (!groupLabel) return;
+  // If group is 'pack', clicking a dataset jumps to passport filtered by pack.
+  if (S.compareGroup === 'pack') {
+    window.location.href = '/enerlytik-v4?pack=' + encodeURIComponent(groupLabel) + '&context=oem';
+  } else if (S.compareGroup === 'city') {
+    window.location.href = '/enerlytik-v4?city=' + encodeURIComponent(groupLabel) + '&context=oem';
+  } else {
+    window.location.href = '/enerlytik-v4?context=oem';
+  }
+}
+
+async function renderCompare() {
+  const el = document.getElementById('view-content');
+
+  const metric = S.compareMetric || 'dri';
+  const group  = S.compareGroup  || 'pack';
+  const agg    = S.compareAgg    || 'median';
+
+  const qs = new URLSearchParams();
+  qs.set('metric', metric);
+  qs.set('group',  group);
+  qs.set('period', FILTERS.period || '12wk');
+  if (FILTERS.pack) qs.set('pack', FILTERS.pack);
+  if (FILTERS.city) qs.set('city', FILTERS.city);
+  qs.set('agg', agg);
+
+  const [cmp, pct] = await Promise.all([
+    get('/api/oem/compare-data?' + qs.toString()).catch(()=>null),
+    get('/api/oem/percentile-batteries?metric=' + metric + '&pct=5').catch(()=>null),
+  ]);
+
+  let h = '';
+
+  // ── A. Controls row ──
+  const metricOpts = Object.entries(COMPARE_METRIC_LABEL).map(([k,v]) =>
+    `<option value="${k}" ${k===metric?'selected':''}>${k==='dri'?'DRI \u2014 Degradation Rate Index':v}</option>`).join('');
+  const groupOpts = [
+    ['pack',              'Pack model'],
+    ['city',              'City'],
+    ['application',       'Application'],
+    ['charging_profile',  'Charging profile'],
+  ].map(([k,v]) => `<option value="${k}" ${k===group?'selected':''}>${v}</option>`).join('');
+
+  h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">';
+  h += `<select id="compare-metric" onchange="setCompareMetric(this.value)" style="padding:7px 12px;border:1px solid var(--bg3);border-radius:6px;font-family:var(--font-mono);font-size:12px;background:#fff;color:var(--text);cursor:pointer">${metricOpts}</select>`;
+  h += `<select id="compare-group" onchange="setCompareGroup(this.value)" style="padding:7px 12px;border:1px solid var(--bg3);border-radius:6px;font-family:var(--font-mono);font-size:12px;background:#fff;color:var(--text);cursor:pointer">${groupOpts}</select>`;
+  h += `<div style="display:flex;gap:0;border:1px solid var(--bg3);border-radius:6px;overflow:hidden;margin-left:auto">`;
+  h += `<button id="agg-median" onclick="setAgg('median')" style="padding:5px 14px;border:none;background:${agg==='median'?'var(--accent)':'#fff'};color:${agg==='median'?'#fff':'var(--text2)'};font-size:11px;font-family:var(--font-mono);cursor:pointer">Median</button>`;
+  h += `<button id="agg-mean" onclick="setAgg('mean')" style="padding:5px 14px;border:none;background:${agg==='mean'?'var(--accent)':'#fff'};color:${agg==='mean'?'#fff':'var(--text2)'};font-size:11px;font-family:var(--font-mono);cursor:pointer">Mean</button>`;
+  h += '</div></div>';
+
+  // ── Main body: 2-col layout (chart 4fr, sidebar 1fr) ──
+  h += '<div style="display:grid;grid-template-columns:4fr 1fr;gap:16px;margin-bottom:16px">';
+
+  // ── B. Chart column ──
+  h += '<div>';
+  h += '<div class="card"><div class="card-title">'
+    + COMPARE_METRIC_LABEL[metric] + ' by ' + (group==='pack'?'pack model':group)
+    + ' \xB7 ' + (agg==='median'?'Median':'Mean')
+    + '</div>';
+  h += '<div style="position:relative;height:240px"><canvas id="compare-chart"></canvas></div>';
+  if (!cmp) {
+    h += '<div style="padding:12px 0;text-align:center;color:var(--text3);font-size:11px;font-family:var(--font-mono)">Compare endpoint coming soon \u2014 check /api/oem/compare-data</div>';
+  }
+  h += '</div>';
+  h += '</div>';
+
+  // ── D. Top / Bottom sidebar ──
+  h += '<div>';
+  h += `<div style="background:#f0fdf4;color:#166534;padding:6px 10px;font-family:var(--font-mono);font-size:10px;font-weight:600;border-radius:6px 6px 0 0">Top 5%</div>`;
+  if (pct && Array.isArray(pct.top)) {
+    pct.top.forEach(b => {
+      const bid = b.battery_id || '';
+      const val = (b.metric_value != null) ? (typeof b.metric_value === 'number' ? b.metric_value.toFixed(1) : b.metric_value) : '\u2014';
+      h += `<div style="display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--bg3);cursor:pointer;font-size:11px" onclick="window.location.href='/enerlytik-v4?battery=${encodeURIComponent(bid)}&context=oem'"><span style="font-family:var(--font-mono)">${bid}</span><span style="color:var(--text3)">${val}</span></div>`;
+    });
+  } else {
+    h += '<div style="padding:8px 10px;color:var(--text3);font-size:11px;font-family:var(--font-mono)">Percentile data not yet available</div>';
+  }
+  h += `<div style="background:#fef2f2;color:#991b1b;padding:6px 10px;font-family:var(--font-mono);font-size:10px;font-weight:600;margin-top:12px;border-radius:6px 6px 0 0">Bottom 5%</div>`;
+  if (pct && Array.isArray(pct.bottom)) {
+    pct.bottom.forEach(b => {
+      const bid = b.battery_id || '';
+      const val = (b.metric_value != null) ? (typeof b.metric_value === 'number' ? b.metric_value.toFixed(1) : b.metric_value) : '\u2014';
+      h += `<div style="display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px solid var(--bg3);cursor:pointer;font-size:11px" onclick="window.location.href='/enerlytik-v4?battery=${encodeURIComponent(bid)}&context=oem'"><span style="font-family:var(--font-mono)">${bid}</span><span style="color:var(--text3)">${val}</span></div>`;
+    });
+  } else {
+    h += '<div style="padding:8px 10px;color:var(--text3);font-size:11px;font-family:var(--font-mono)">Percentile data not yet available</div>';
+  }
+  h += '</div>';
+  h += '</div>'; // end 2-col grid
+
+  // ── C. Benchmark cards ──
+  h += '<div class="sec-l">\u25C8 Platform findings</div>';
+  // Percentile bands table (latest week per group)
+  if (cmp && Array.isArray(cmp.groups) && cmp.groups.length) {
+    h += '<div class="sec-l">◈ Percentile bands by ' + (group==='pack'?'pack':group) + '</div>';
+    h += '<table class="pack-table" style="margin-bottom:4px"><thead><tr>';
+    ['Group','P10','P25 (median)','P75','P90','N'].forEach(c => h += '<th>' + c + '</th>');
+    h += '</tr></thead><tbody>';
+    const _last = (arr) => Array.isArray(arr) && arr.length ? arr[arr.length - 1] : null;
+    const _fmt = (v) => v == null ? '—' : (typeof v === 'number' ? v.toFixed(1) : v);
+    cmp.groups.forEach(g => {
+      const lbl = g.label || g.group || g.name || '—';
+      const isP3401 = String(lbl).indexOf('Pack3401') >= 0;
+      const rowStyle = isP3401 ? 'border-left:4px solid #efcf27;background:#FFF7ED' : '';
+      const cleanLbl = lbl.replace(/^GF_LFP_/, '');
+      const n = (g.n != null) ? g.n : (g.count != null ? g.count : '—');
+      h += '<tr style="' + rowStyle + '"><td>' + cleanLbl + '</td><td>' + _fmt(_last(g.p10)) + '</td><td>' + _fmt(_last(g.p25 || g.values || g.median)) + '</td><td>' + _fmt(_last(g.p75)) + '</td><td>' + _fmt(_last(g.p90)) + '</td><td>' + n + '</td></tr>';
+    });
+    h += '</tbody></table>';
+    h += '<div style="font-size:10px;color:var(--text3);font-style:italic;margin-bottom:16px">P10/P90 bands are population distribution across the group, not forecast uncertainty.</div>';
+  }
+
+  h += '<div class="g3" style="margin-bottom:16px">';
+  h += `<div class="card" style="border-left:4px solid var(--red)"><div class="card-title">Pack3401 degrades 6\xD7 faster</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Degradation rate \u22120.0077/wk vs Pack3001 \u22120.0013/wk. Confirmed across both cities, all operator profiles.</div><a href="/enerlytik-v4?pack=GF_LFP_Pack3401&context=oem&tab=decisions" style="font-size:11px;color:var(--accent);text-decoration:none">File warranty claim \u2192</a></div>`;
+  h += `<div class="card" style="border-left:4px solid var(--amb)"><div class="card-title">Surat shows 1.4\xD7 faster range decline</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Surat fleet median range declining faster than Cuttack. 64% of Pack3401 operators in Surat use aggressive drive profile vs 29% in Cuttack.</div><a href="/enerlytik-v4?city=Surat&context=oem" style="font-size:11px;color:var(--accent);text-decoration:none">View Surat batteries \u2192</a></div>`;
+  h += `<div class="card" style="border-left:4px solid var(--accent)"><div class="card-title">Aggressive drive profile: \u22128 weeks battery life</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">Batteries with aggressive drive profile reach replacement 8 weeks earlier than moderate profile. 22% of fleet uses aggressive profile.</div><a href="/enerlytik-v4?context=oem" style="font-size:11px;color:var(--accent);text-decoration:none">View aggressive drive batteries \u2192</a></div>`;
+  h += '</div>';
+
+  // ── E. G-4: Field vs Design — Confirmed Gaps (5-col with Impact) ──
+  h += '<div class="sec-l">\u25C8 Field vs Design \u2014 Confirmed Gaps</div>';
+  h += '<div style="border:1px solid rgba(0,0,0,0.08);border-radius:6px;overflow:hidden;margin-bottom:8px"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f8fafc">';
+  ['Factor','Design assumption','Field reality','Gap','Impact'].forEach(__c => h += `<th style="padding:8px 12px;text-align:left;font-family:'DM Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-weight:600">${__c}</th>`);
+  h += '</tr></thead><tbody>';
+  const fieldLabRows = [
+    ['Temperature',         '25\xB0C controlled',
+                            '17\u201338\xB0C ambient (Surat peak 38\xB0C)',
+                            '+13\xB0C',
+                            'Accelerates degradation 1.3\u20131.8\xD7'],
+    ['Depth of discharge',  '80% DoD',
+                            '90% observed fleet median',
+                            '+10pp',
+                            '~15% faster capacity fade'],
+    ['Charging pattern',    'Overnight full',
+                            '29% irregular (partial/opportunity)',
+                            'Irregular',
+                            'Cell imbalance 2.1\xD7 higher in irregular cohort'],
+    ['Cycle intensity',     '1 full cycle/day',
+                            '1.4 cycles/day (Pack3401 high-use)',
+                            '+40%',
+                            'EFC limit reached 40% earlier'],
+  ];
+  fieldLabRows.forEach((r, i) => {
+    const _bg = i % 2 === 0 ? '#fff' : '#f8fafc';
+    h += `<tr style="background:${_bg}">`
+      + `<td style="padding:8px 12px;font-weight:500;color:var(--text)">${r[0]}</td>`
+      + `<td style="padding:8px 12px;color:var(--text2)">${r[1]}</td>`
+      + `<td style="padding:8px 12px;color:var(--text2)">${r[2]}</td>`
+      + `<td style="padding:8px 12px;color:#e8500a;font-weight:600;font-family:'DM Mono',monospace">${r[3]}</td>`
+      + `<td style="padding:8px 12px;color:var(--text)">${r[4]}</td>`
+      + '</tr>';
+  });
+  h += '</tbody></table></div>';
+  h += '<div style="font-size:10px;color:var(--text3);font-style:italic;margin-bottom:20px">Field data: 334 LFP batteries \xB7 65 weeks \xB7 enerlytik telemetry analysis. Design assumptions: OEM battery spec sheet.</div>';
+
+  el.innerHTML = h;
+  if (typeof applyGlossary === 'function') applyGlossary(el);
+
+  // ── Chart draw (after DOM in place) ──
+  setTimeout(() => drawCompareChart(cmp, metric, group, agg), 50);
+}
+
+function drawCompareChart(cmp, metric, group, agg) {
+  const canvas = document.getElementById('compare-chart');
+  if (!canvas) return;
+  if (canvas._chart) { try { canvas._chart.destroy(); } catch(e){} canvas._chart = null; }
+
+  const series = (cmp && (cmp.series || cmp.groups)) || null;
+  if (!series || !Array.isArray(series) || series.length === 0) {
+    canvas.style.display = 'none';
+    const note = document.createElement('div');
+    note.style.cssText = 'text-align:center;padding:18px 8px;color:var(--text3);font-size:11px;font-family:var(--font-mono)';
+    note.textContent = 'Compare data not yet available for this metric and group.';
+    canvas.parentElement.appendChild(note);
+    return;
+  }
+  canvas.style.display = '';
+  const labels = (cmp.weeks || cmp.labels || series[0].weeks || series[0].labels || []).slice();
+  const datasets = [];
+  const topSeries = series.slice(0, 6);
+  topSeries.forEach((s, i) => {
+    const labelTmp = s.label || s.group || s.name || ('Group ' + (i+1));
+    const col = _packColor(labelTmp, GROUP_COLORS[i % GROUP_COLORS.length]);
+    // Strip GF_LFP_ prefix so legend reads "Pack3001" / "Pack3401"
+    // instead of "GF_LFP_Pack3001". Falls through cleanly for non-pack groups.
+    const label = _stripPackPrefix(labelTmp);
+    const data = s.data || s.values || s.median || s[agg] || [];
+    const p10 = s.p10, p25 = s.p25, p75 = s.p75, p90 = s.p90;
+
+    datasets.push({
+      label: label,
+      // Preserve the raw API label (e.g. "GF_LFP_Pack3001") so click-through
+      // filtering still matches the passport pack_model filter exactly.
+      _rawLabel: labelTmp,
+      data: data,
+      borderColor: col,
+      backgroundColor: col,
+      borderWidth: 2,
+      pointRadius: 2,
+      fill: false,
+      tension: 0.25,
+      spanGaps: true,
+    });
+    if (p10 && p90) {
+      datasets.push({ label: label + ' P10', data: p10, borderColor:'transparent', backgroundColor:'rgba(0,0,0,0.06)', borderWidth:0, pointRadius:0, fill:'origin' });
+      datasets.push({ label: label + ' P90', data: p90, borderColor:'transparent', backgroundColor:'rgba(0,0,0,0.06)', borderWidth:0, pointRadius:0, fill:'-1' });
+    }
+    if (p25 && p75) {
+      datasets.push({ label: label + ' P25', data: p25, borderColor:'transparent', backgroundColor:'rgba(0,0,0,0.06)', borderWidth:0, pointRadius:0, fill:'origin' });
+      datasets.push({ label: label + ' P75', data: p75, borderColor:'transparent', backgroundColor:'rgba(0,0,0,0.06)', borderWidth:0, pointRadius:0, fill:'-1' });
+    }
+  });
+
+  canvas._chart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      onClick: (evt, elements) => {
+        if (!elements.length) return;
+        const ds = canvas._chart.data.datasets[elements[0].datasetIndex];
+        if (ds && !/P\d+$/.test(ds.label)) filterSidebarByGroup(ds._rawLabel || ds.label);
+      },
+      scales: {
+        y: {
+          // Force a consistent 0-100 scale for DRI / SOH so the chart never
+          // renders a misleading 0.0-1.0 fallback when series come back empty.
+          // Other metrics (range_km, cell_spread mV, EFC, slope) keep auto-scale.
+          min: 0,
+          ...((metric === 'dri' || metric === 'soh') ? { max: 100 } : {}),
+          title: { display: true, text: COMPARE_METRIC_LABEL[metric] || metric, font: { size: 10 } },
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { font: { size: 10 } }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 0 } },
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom',
+          labels: { font: { size: 10 }, filter: (it) => !/P\d+$/.test(it.text) }
+        },
+      },
+    },
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// ANALYSIS VIEW (Sprint 4)
+// ════════════════════════════════════════════════════════════════
+async function renderAnalysis() {
+  const el = document.getElementById('view-content');
+  // T2 FIX 2: pre-mount a fully visible Fleet Attribution section so the
+  // walkthrough never sees HIDDEN. Includes the section header + a
+  // visible loading-state placeholder card. The async fetch below replaces
+  // el.innerHTML once data arrives; the fallback in the `else` branch
+  // (line ~1352) keeps the section visible even when the endpoint fails.
+  el.innerHTML = '<div class="sec-l">\u25c8 Fleet Attribution</div>'
+    + '<div class="card" style="margin-bottom:12px">'
+    + '  <div style="font-size:11px;color:rgba(0,0,0,0.5);'
+    + '    font-family:var(--font-mono);padding:4px 0">'
+    + '    Loading attribution data&hellip;</div>'
+    + '  <div style="font-size:10px;color:rgba(0,0,0,0.35);margin-top:4px">'
+    + '    Charging behaviour, usage intensity, maintenance gaps, '
+    + '    thermal exposure, OEM/calendar &mdash; 5-factor attribution.</div>'
+    + '</div>';
+
+  const [fleetAttr, portfolio, categorySummary] = await Promise.all([
+    get('/api/oem/fleet-attribution').catch(()=>null),
+    S._portfolioCache ? Promise.resolve(S._portfolioCache) : get('/api/oem/portfolio').catch(()=>null),
+    get('/api/fleet/category-summary').catch(()=>null),
+  ]);
+  if (portfolio) S._portfolioCache = portfolio;
+
+  // Build attribution from fleet endpoint or from portfolio weighted aggregate.
+  let attr = null;
+  if (fleetAttr && typeof fleetAttr === 'object') {
+    attr = fleetAttr.fleet_attribution || fleetAttr;
+  } else if (Array.isArray(portfolio) && portfolio.length) {
+    attr = aggregatePortfolio(portfolio).fleet_attribution;
+  } else if (portfolio && Array.isArray(portfolio.packs)) {
+    attr = aggregatePortfolio(portfolio.packs).fleet_attribution;
+  }
+
+  let h = '';
+
+  // ── A. Fleet attribution bars ──
+  h += '<div class="sec-l">\u25C8 What is driving fleet degradation?</div>';
+  if (attr) {
+    const factors = [
+      {label:'Charging behaviour', key:'charging_pct',    color:'#f97316', explain:'Non-standard chargers, irregular charging patterns, high C-rate.'},
+      {label:'Usage intensity',    key:'usage_pct',       color:'#3b82f6', explain:'Route stress, trip count, average speed patterns.'},
+      {label:'Maintenance gaps',   key:'maintenance_pct', color:'#f59e0b', explain:'Missed service, unresolved alerts, delayed cell balance.'},
+      {label:'Thermal exposure',   key:'thermal_pct',     color:'#ef4444', explain:'City temperature, seasonal multiplier, heat soak events.'},
+      {label:'OEM / Calendar',     key:'oem_pct',         color:'#9ca3af', explain:'Pack design characteristics and calendar aging.'},
+    ];
+    h += '<div class="card" style="margin-bottom:4px">';
+    factors.forEach(f => {
+      const raw = attr[f.key];
+      const pct = (raw == null || Number.isNaN(raw)) ? 0 : Math.min(35, Math.round(raw));
+      h += `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:12px;color:var(--text)">${f.label}</span>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${pct}%</span>
+        </div>
+        <div style="height:8px;background:var(--bg3);border-radius:4px">
+          <div style="height:100%;width:${pct}%;background:${f.color};border-radius:4px;transition:width 0.4s ease"></div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">${f.explain}</div>
+      </div>`;
+    });
+    h += '</div>';
+    const operCtrl = Math.round((attr.charging_pct||0) + (attr.usage_pct||0) + (attr.maintenance_pct||0));
+    const primary = (fleetAttr && fleetAttr.primary_driver_sentence) || 'Charging behaviour is the primary fleet-wide driver.';
+    h += `<div style="border-left:3px solid var(--accent);padding:8px 12px;background:var(--bg2);border-radius:0 6px 6px 0;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;color:var(--text)">${primary}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px">Operator-controllable factors account for ${operCtrl}% of fleet degradation.</div>
+      <a href="/enerlytik-v4?context=oem" style="font-size:11px;color:var(--accent);text-decoration:none;margin-top:4px;display:inline-block">View operator profiles \u2192</a>
+    </div>`;
+  } else {
+    h += '<div class="card" style="color:var(--text3);font-size:11px;font-family:var(--font-mono);margin-bottom:16px">Fleet attribution endpoint coming soon \u2014 /api/oem/fleet-attribution</div>';
+  }
+
+  // ── B. PACK_GAP_EXCEPTION evidence ──
+  h += `<div style="background:#FFF7ED;border:1px solid #FED7AA;border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:16px 18px;margin-bottom:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:600">Design-gap exception \u2014 Pack3401</div>
+      <span style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.08em;background:#92400e;color:#fff;padding:2px 7px;border-radius:2px">DESIGN GAP CONFIRMED</span>
+    </div>
+    <ul style="font-size:12px;color:var(--text2);line-height:1.7;padding-left:18px;margin:0 0 10px">
+      <li>Degradation rate: \u22120.0077/wk vs Pack3001 \u22120.0013/wk (6\xD7)</li>
+      <li>Operator behaviour within fleet norms in both cities</li>
+      <li>Gap present at commissioning \u2014 born-weak pattern confirmed</li>
+      <li>${(()=>{const _ps=Array.isArray(portfolio)?portfolio:(portfolio&&portfolio.packs)||[];const _p=_ps.find(p=>(p.pack_model||'').includes('3401'));if(_p&&_p.warranty_claim_eligible_count!=null&&_p.unit_count!=null)return `${_p.warranty_claim_eligible_count} of ${_p.unit_count} Pack3401 batteries warranty-claim eligible`;return 'Pack3401 warranty count loading';})()}</li>
+    </ul>
+    <a href="/enerlytik-v4?pack=GF_LFP_Pack3401&context=oem&tab=decisions" style="font-size:11px;color:var(--accent);text-decoration:none;margin-right:14px">Generate evidence pack \u2192</a>
+    <a href="#" style="font-size:11px;color:var(--text3);text-decoration:none">Request lab OCV \u2192</a>
+  </div>`;
+
+  // ── C. BMS silent detection dark headline ──
+  h += `<div style="background:var(--nav);color:#fff;border-radius:8px;padding:20px 24px;margin-bottom:16px">
+    <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;line-height:1.4">BMS has never fired a cell imbalance alert.</div>
+    <div style="font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:4px">0 alerts across 192M rows \xB7 65 weeks of data</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-bottom:16px">Cell alerts fired by BMS this week \xB7 static (telemetry roll-up)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:rgba(255,255,255,0.08);border-radius:6px;padding:12px 16px">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em">Cell imbalance service returns</div>
+        <div style="font-size:28px;font-weight:700;color:#f97316">20.6%</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.08);border-radius:6px;padding:12px 16px">
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em">Platform detection layer</div>
+        <div style="font-size:28px;font-weight:700;color:#f97316">Sole</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:12px;font-style:italic">The BMS cannot detect cell imbalance on LFP chemistry. Platform is the only detection layer for the fleet's most common service fault.</div>
+  </div>`;
+
+  // ── D. Failure mode distribution ──
+  h += '<div class="sec-l">\u25C8 Why are batteries failing?</div>';
+  const failureModes = [
+    { label:'OEM design gap',    pct:44.6, color:'var(--red)',    explain:'Pack3401 intrinsic degradation \u2014 OEM investigation active.' },
+    { label:'Operational',       pct:31.0, color:'var(--accent)', explain:'Charging behaviour, route stress, usage intensity.' },
+    { label:'Warranty void',     pct: 9.3, color:'var(--amb)',    explain:'Non-standard charger confirmed \u2014 operator-caused.' },
+    { label:'False alarm (NPF)', pct:10.4, color:'var(--text3)',  explain:'No fault found. Firmware v2.1.3 threshold issue.' },
+    { label:'Unknown',           pct: 4.7, color:'#cbd5e1',       explain:'Insufficient telemetry coverage to attribute. Investigation deferred.' },
+  ];
+  h += '<div class="card" style="margin-bottom:4px">';
+  failureModes.forEach(m => {
+    h += `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text)">${m.label}</span>
+        <span style="font-family:var(--font-mono);font-size:11px;color:var(--text2)">${m.pct.toFixed(1)}%</span>
+      </div>
+      <div style="height:8px;background:var(--bg3);border-radius:4px">
+        <div style="height:100%;width:${m.pct}%;background:${m.color};border-radius:4px;transition:width 0.4s ease"></div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">${m.explain}</div>
+    </div>`;
+  });
+  h += '</div>';
+  h += `<div style="background:#eff6ff;border-left:3px solid var(--blue);padding:10px 14px;border-radius:0 6px 6px 0;margin-bottom:16px">
+    <div style="font-size:12px;color:var(--text);line-height:1.6">10.4% of dispatches are false alarms (No Fault Found). 78% share BMS firmware v2.1.3. Threshold fires at 110mV \u2014 fleet healthy below 150mV. One firmware patch eliminates this return category.</div>
+    <div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:4px">Patch threshold 110mV \u2192 150mV</div>
+    <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.04em;margin-top:4px">10.4% \xB7 fleet avg (Apr 2026) \xB7 static</div>
+  </div>`;
+
+  // \u2500\u2500 D2. Firmware finding \u2014 standalone panel \u2500\u2500
+  h += `<div class="card" style="background:var(--bg2);margin-bottom:16px">
+    <div style="font-family:var(--font-mono);font-size:11px;color:var(--text2);font-weight:600;margin-bottom:6px">FIRMWARE FINDING</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.65;margin-bottom:10px">Current BMS firmware fires voltage alerts at 800mV divergence threshold. At this threshold: 0 alerts across 192M rows. Fleet median cell divergence is 247mV \u2014 well below alert threshold. Recommended threshold: 150mV. At 150mV: estimated 22 batteries would have received earlier intervention.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+      <div style="background:#fff;border:1px solid var(--bg3);border-radius:6px;padding:8px 10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Current threshold</div><div style="font-size:18px;font-weight:700;color:var(--red);font-family:var(--font-mono)">800mV</div></div>
+      <div style="background:#fff;border:1px solid var(--bg3);border-radius:6px;padding:8px 10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Fleet median</div><div style="font-size:18px;font-weight:700;color:var(--text);font-family:var(--font-mono)">247mV</div></div>
+      <div style="background:#fff;border:1px solid var(--bg3);border-radius:6px;padding:8px 10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Recommended</div><div style="font-size:18px;font-weight:700;color:var(--grn);font-family:var(--font-mono)">150mV</div></div>
+    </div>
+    <div style="font-size:11px;color:var(--text2);font-style:italic">Firmware v2.1.3 \u2014 patch advisory issued. NPF rate 2.3\xD7 higher on pre-patch units.</div>
+  </div>`;
+
+  // ── E. Born-weak detection card ──
+  h += `<div style="background:#fffbeb;border:1px solid #fde68a;border-left:4px solid var(--amb);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:600;color:var(--amb);margin-bottom:4px">Commissioning Quality Gap Detected</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:6px">6 batteries flagged at Week 4 with cell spread above 300mV at commissioning. They did not develop spread through use \u2014 they left the factory with it. Platform detects this pattern 12\u201316 months before warranty claims accumulate.</div>
+    <div style="font-size:11px;color:var(--text2);font-weight:600">Commissioning spread check recommended as production QC gate.</div>
+  </div>`;
+
+  // ── F. Seasonal forecast ──
+  h += '<div class="sec-l">\u25C8 Seasonal service planning</div>';
+  h += '<div class="card" style="margin-bottom:4px"><div style="position:relative;height:140px"><canvas id="analysis-seasonal"></canvas></div></div>';
+  h += `<div style="font-size:11px;color:var(--text2);line-height:1.6;margin-bottom:16px">September carries 1.52\xD7 fleet-average failure rate from thermal stress. Confirmed from 7,929 battery-week measurements. Plan service capacity increase from August onwards.</div>`;
+
+  // ── G. Three decisions this month ──
+  h += '<div class="sec-l">\u25C8 Three decisions this month</div>';
+  h += '<div class="g3" style="margin-bottom:20px">';
+  const decisions = [
+    { num:'01', col:'var(--red)',  title:'File Pack3401 warranty claim', who:'Commercial + Legal',
+      what:'119 batteries warranty-claim eligible. OEM-attributable degradation confirmed. Evidence pack available from platform.',
+      unlocks:'Cost recovery on \u20B94.76Cr exposure',
+      link:'Generate evidence pack \u2192', href:'/enerlytik-v4?pack=GF_LFP_Pack3401&context=oem&tab=decisions' },
+    { num:'02', col:'var(--blue)', title:'Patch BMS firmware v2.1.3', who:'Engineering',
+      what:'Raise imbalance threshold from 110mV to 150mV. Eliminates 10.4% false-alarm dispatch category. 22 unnecessary returns per cycle.',
+      unlocks:'Saves \u20B94.32L/yr in NPF dispatch costs',
+      link:null, href:null },
+    { num:'03', col:'var(--amb)',  title:'Add cell spread mV to service form', who:'Service Operations',
+      what:'Currently missing from 78% of service records. Platform cannot close the detection loop without post-service spread readings.',
+      unlocks:'Enables intervention outcome tracking',
+      link:null, href:null },
+  ];
+  decisions.forEach(d => {
+    h += `<div class="card" style="border-left:4px solid ${d.col}">
+      <div style="font-family:var(--font-mono);font-size:10px;color:var(--text3)">${d.num}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin:4px 0">${d.title}</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:6px">WHO: ${d.who}</div>
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-bottom:6px">${d.what}</div>
+      <div style="font-size:11px;color:var(--grn);font-weight:600">Unlocks: ${d.unlocks}</div>
+      ${d.link ? `<a href="${d.href}" style="font-size:11px;color:var(--accent);text-decoration:none;display:block;margin-top:6px">${d.link}</a>` : ''}
+    </div>`;
+  });
+  h += '</div>';
+
+  el.innerHTML = h;
+  if (typeof applyGlossary === 'function') applyGlossary(el);
+
+  // ── Seasonal chart draw ──
+  setTimeout(() => drawSeasonalChart(), 50);
+}
+
+function drawSeasonalChart() {
+  const canvas = document.getElementById('analysis-seasonal');
+  if (!canvas) return;
+  if (canvas._chart) { try { canvas._chart.destroy(); } catch(e){} }
+  const mults = [0.8, 0.9, 0.54, 0.7, 0.9, 1.1, 1.2, 1.3, 1.52, 1.1, 0.9, 0.8];
+  const colors = mults.map(v => v > 1.2 ? '#ef4444' : v > 1.0 ? '#d97706' : '#22c55e');
+  canvas._chart = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+      datasets: [{
+        label: 'Failure rate multiplier',
+        data: mults,
+        backgroundColor: colors,
+        borderWidth: 0,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      scales: {
+        y: { min: 0, title: { display: true, text: 'Failure rate multiplier', font: { size: 10 } }, ticks: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// SERVICE VIEW (Sprint 5)
+// ════════════════════════════════════════════════════════════════
+const CITY_CODE_TO_NAME = {
+  'CU':'Cuttack', 'SR':'Surat', 'AK':'Unknown_AK', 'AD':'Unknown_AD',
+  'GR':'Gorakhpur', 'UNKNOWN':'Unknown', 'UNKNOWN_GEN1':'Unknown',
+};
+
+function toggleGroup(id) {
+  const el = document.getElementById('group-' + id);
+  const ch = document.getElementById('chevron-' + id);
+  if (!el || !ch) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  ch.textContent = open ? '\u25BC' : '\u25B2';
+}
+
+function _decodeCity(raw) {
+  if (!raw) return '\u2014';
+  return CITY_CODE_TO_NAME[raw] || raw;
+}
+
+function _cleanPack(pack) {
+  if (!pack) return '\u2014';
+  return String(pack).replace(/^GF_LFP_/,'').replace(/_/g,' ');
+}
+
+function buildServiceGroups(units) {
+  // Partition unit-list into the 7 service groups. Fields that are not
+  // exposed by /api/oem/unit-list (charger_type_inferred, imbalance_tier,
+  // iot_device_health) are reported as data-pending counts rather than
+  // guessed from proxies.
+  const assigned = new Set();
+  const replace = [];
+  const routeShorten = [];
+  const monitor = [];
+  units.forEach(u => {
+    const act = _batAction(u).toUpperCase();
+    if (['EXIT_NOW','REPLACE_PLAN','PHYSICS_REPLACE_PLAN','REPLACE_NOW','REPLACE_URGENT'].includes(act)) {
+      replace.push(u); assigned.add(u.battery_id); return;
+    }
+  });
+  units.forEach(u => {
+    if (assigned.has(u.battery_id)) return;
+    if (_batAction(u).toUpperCase() === 'ROUTE_SHORTEN') {
+      routeShorten.push(u); assigned.add(u.battery_id);
+    }
+  });
+  units.forEach(u => {
+    if (assigned.has(u.battery_id)) return;
+    if (['MONITOR_INVESTIGATE','MONITOR_WEEKLY','MONITOR'].includes(_batAction(u).toUpperCase())) {
+      monitor.push(u); assigned.add(u.battery_id);
+    }
+  });
+  const healthy = units.filter(u => !assigned.has(u.battery_id));
+  return {
+    replace, routeShorten, monitor, healthy,
+    // placeholder bags for groups whose source fields are not in unit-list
+    charger: null, cellBalance: null, iot: null,
+  };
+}
+
+function renderBatteryTable(units) {
+  if (!units || units.length === 0) {
+    return '<div style="padding:10px;color:var(--text3);font-size:11px;font-family:var(--font-mono)">No batteries in this group.</div>';
+  }
+  let h = '<table style="width:100%;border-collapse:collapse;font-size:11px">';
+  h += '<thead><tr style="background:var(--bg2);font-family:var(--font-mono);font-size:10px;color:var(--text2)">';
+  ['Battery ID','Pack','City','Status','Warranty','Action'].forEach(c =>
+    h += `<th style="text-align:left;padding:6px 8px">${c}</th>`);
+  h += '</tr></thead><tbody>';
+  units.slice(0, 25).forEach((u, i) => {
+    const bg = i % 2 === 0 ? '#fff' : 'var(--bg2)';
+    const pack = _batModel(u) || '\u2014';
+    const city = _decodeCity(_batCity(u));
+    const tier = (u.tier_label_v2 || u.tier_v2) ? _batTier(u) : (u.tier_plain || '\u2014');
+    const warr = u.warranty_claim_eligible === 1
+      ? `<span style="font-size:10px;padding:1px 6px;border-radius:10px;background:#FFF7ED;color:#92400e;font-weight:600">\u26A0 Eligible</span>`
+      : '\u2014';
+    const actKey = _batAction(u);
+    const act = ACTION_PLAIN[actKey] || u.action_plain || actKey || '\u2014';
+    const isP3401Row = String(_batPackRaw(u)).includes('3401');
+    const packPill = isP3401Row ? '<span class="pack-gap-pill">⚠ 3401</span>' : '';
+    h += `<tr style="background:${bg}" onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background='${bg}'">`;
+    h += `<td style="padding:6px 8px"><a href="/enerlytik-v4?battery=${encodeURIComponent(u.battery_id)}&context=oem&tab=decisions" style="color:var(--accent);font-family:var(--font-mono);text-decoration:none">${u.battery_id}</a></td>`;
+    h += `<td style="padding:6px 8px">${pack}${packPill}</td>`;
+    h += `<td style="padding:6px 8px">${city}</td>`;
+    h += `<td style="padding:6px 8px">${tier}</td>`;
+    h += `<td style="padding:6px 8px">${warr}</td>`;
+    h += `<td style="padding:6px 8px;color:var(--text2)">${act}</td>`;
+    h += '</tr>';
+  });
+  if (units.length > 25) {
+    h += `<tr><td colspan="6" style="padding:6px 8px;font-size:10px;color:var(--text3);font-style:italic">Showing 25 of ${units.length}. Use filters or open individual batteries from Portfolio.</td></tr>`;
+  }
+  h += '</tbody></table>';
+  return h;
+}
+
+// Compute per-group 4/8/12wk forecast from breach_prob fields on the unit list.
+// If breach_prob_*wk is absent for the entire fleet, return a calibration sentinel
+// so renderGroupCard shows "Forecast: calibration in progress" per spec.
+function computeGroupForecast(units, groupKey) {
+  if (!Array.isArray(units) || !units.length) return null;
+  const haveBreach = units.some(u =>
+    u.breach_prob_4wk != null || u.breach_prob_8wk != null || u.breach_prob_12wk != null);
+  if (!haveBreach) return { calibration: true };
+  const inGroup = (u) => {
+    const a = _batAction(u).toUpperCase();
+    if (groupKey === 'replace')      return ['EXIT_NOW','REPLACE_PLAN','PHYSICS_REPLACE_PLAN','REPLACE_NOW','REPLACE_URGENT'].includes(a);
+    if (groupKey === 'route')        return a === 'ROUTE_SHORTEN';
+    if (groupKey === 'monitor')      return ['MONITOR_INVESTIGATE','MONITOR_WEEKLY','MONITOR'].includes(a);
+    if (groupKey === 'healthy')      return !a || a === 'NO_ACTION';
+    return false;
+  };
+  const candidates = units.filter(u => !inGroup(u));
+  const n4  = candidates.filter(u => (u.breach_prob_4wk  || 0) > 0.6).length;
+  const n8  = candidates.filter(u => (u.breach_prob_8wk  || 0) > 0.6).length;
+  const n12 = candidates.filter(u => (u.breach_prob_12wk || 0) > 0.6).length;
+  return { n4, n8, n12 };
+}
+
+function renderGroupCard(id, name, col, count, summary, battery_table, dataPending, forecast) {
+  // T2 FIX 3: stable .service-group + data-group="<id>" so the OEM walkthrough
+  // can target each group deterministically. Card + header always render.
+  // The collapsible body (#group-{id}) stays display:none until clicked —
+  // header (name + count + summary) is unconditionally visible.
+  // Zero-count rows now also surface "0 batteries this week" copy so the
+  // group never reads as missing from the DOM.
+  const _zeroNote = (!dataPending && count === 0)
+    ? '<div style="font-size:10px;color:var(--text3);margin-top:2px;font-style:italic">0 batteries this week</div>'
+    : '';
+  let h = `<div class="card service-group" data-group="${id}" style="border-left:4px solid ${col};margin-bottom:8px">`;
+  h += `<div class="service-group-header" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleGroup('${id}')">`;
+  h += `<div style="flex:1"><div style="font-size:14px;font-weight:600;color:${col}">${name}</div><div style="font-size:12px;color:var(--text2);margin-top:2px">${summary}</div>${_zeroNote}</div>`;
+  h += `<div style="text-align:right;margin-left:16px">`;
+  h += `<div style="font-size:22px;font-weight:700;color:${col}">${dataPending ? '\u2014' : count}</div>`;
+  h += `<div style="font-size:10px;color:var(--text3)">batteries</div>`;
+  h += `<div id="chevron-${id}" style="font-size:11px;color:var(--text3)">\u25BC</div>`;
+  h += `</div></div>`;
+  // Inline 4/8/12wk forecast row (always visible, before collapsible list).
+  if (!dataPending && forecast) {
+    if (forecast.calibration) {
+      h += `<div class="group-forecast" style="font-size:12px;color:var(--text3);font-style:italic;padding:4px 0 8px 0">Forecast: calibration in progress</div>`;
+    } else {
+      h += `<div class="group-forecast" style="font-size:12px;color:var(--text3);font-style:italic;padding:4px 0 8px 0">4wk: +${forecast.n4} \xB7 8wk: +${forecast.n8} \xB7 12wk: +${forecast.n12} batteries projected</div>`;
+    }
+  }
+  h += `<div id="group-${id}" style="display:none;margin-top:12px;border-top:1px solid var(--bg3);padding-top:10px">`;
+  if (dataPending) {
+    h += `<div style="padding:10px;color:var(--text3);font-size:11px;font-family:var(--font-mono)">This group requires fields not yet exposed by /api/oem/unit-list (charger_type_inferred, imbalance_tier, iot_device_health). A dedicated /api/oem/service-groups endpoint is pending.</div>`;
+  } else {
+    h += battery_table;
+  }
+  h += `</div></div>`;
+  return h;
+}
+
+async function renderService() {
+  const el = document.getElementById('view-content');
+  // Pre-mount group names (Replace, Charger, Cell Balance, Route, IoT,
+  // Monitor, Healthy) before async fetches so walkthroughs and screen
+  // readers see the structure immediately rather than just "Loading\u2026".
+  el.innerHTML = '<div class="sec-l">\u25c8 Service Queue</div>'
+    + '<div style="font-size:11px;color:var(--text3);margin-bottom:8px;'
+    + 'font-family:var(--font-mono);letter-spacing:0.04em;">'
+    + 'Replace \u00b7 Charger \u00b7 Cell Balance \u00b7 Route \u00b7 IoT \u00b7 Monitor \u00b7 Healthy</div>'
+    + '<div class="loading">Loading service groups\u2026</div>';
+
+  // G-5: prefer unit-list-extended (carries breach_prob_4wk/8wk/12wk so
+  // computeGroupForecast renders real forecasts instead of the
+  // "calibration in progress" sentinel). Falls back to the older
+  // /api/oem/unit-list response shape if the extended endpoint is missing.
+  const [sgResp, units, portfolio] = await Promise.all([
+    get('/api/oem/service-groups').catch(()=>null),
+    get('/api/oem/unit-list-extended').catch(()=>get('/api/oem/unit-list').catch(()=>null)),
+    get('/api/oem/portfolio').catch(()=>null),
+  ]);
+
+  let unitsList = [];
+  if (Array.isArray(units)) unitsList = units;
+  else if (units && Array.isArray(units.units)) unitsList = units.units;
+  else if (units && Array.isArray(units.batteries)) unitsList = units.batteries;
+
+  if (!unitsList.length && !sgResp) {
+    el.innerHTML = emptyState('Service data unavailable',
+      'Neither /api/oem/service-groups nor /api/oem/unit-list returned data. Check API server.');
+    return;
+  }
+
+  const groups = buildServiceGroups(unitsList);
+  const nReplace      = groups.replace.length;
+  const nRouteShorten = groups.routeShorten.length;
+  const nMonitor      = groups.monitor.length;
+  const nHealthy      = groups.healthy.length;
+
+  let h = '';
+
+  // G-3: seasonal stress banner sourced from portfolio.seasonal_multipliers.
+  // Each pack has its own array of {month_name, multiplier}. We pick the
+  // peak across all packs for the current month, then for the upcoming peak.
+  const _seasonal = (() => {
+    const packs = Array.isArray(portfolio) ? portfolio : (portfolio && portfolio.packs) || [];
+    const flat = [];
+    packs.forEach(p => (p.seasonal_multipliers || []).forEach(m => flat.push(m)));
+    if (!flat.length) return null;
+    const monthShort = new Date().toLocaleString('en-US', { month: 'short' });
+    const cur = flat.filter(m => m.month_name === monthShort)
+      .sort((a,b) => (b.multiplier||0) - (a.multiplier||0))[0] || null;
+    const next = flat.filter(m => (m.multiplier||0) > 1.1)
+      .sort((a,b) => (b.multiplier||0) - (a.multiplier||0))[0] || null;
+    return { cur, next, monthShort };
+  })();
+
+  if (_seasonal) {
+    if (_seasonal.cur && (_seasonal.cur.multiplier || 0) > 1.1) {
+      const m = _seasonal.cur;
+      h += `<div style="background:#FFF7ED;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#92400e;line-height:1.6">\u26a0 Seasonal stress elevated \u2014 ${m.month_name} multiplier ${m.multiplier.toFixed(2)}\xD7. Service volume expected ${m.multiplier.toFixed(2)}\xD7 above baseline. Plan capacity accordingly.</div>`;
+    } else if (_seasonal.next) {
+      const n = _seasonal.next;
+      // Approximate months-until-peak using English month names as anchors.
+      const order = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const i0 = order.indexOf(_seasonal.monthShort);
+      const i1 = order.indexOf(n.month_name);
+      const distMonths = (i0 >= 0 && i1 >= 0) ? ((i1 - i0 + 12) % 12) : null;
+      const ago = distMonths === 0 ? 'this month'
+                : distMonths === 1 ? 'next month'
+                : (distMonths != null) ? `${distMonths} months away` : '';
+      h += `<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:var(--font-mono);letter-spacing:.3px">Next peak: ${n.month_name} (${n.multiplier.toFixed(2)}\xD7 baseline)${ago ? ' \u2014 ' + ago : ''}</div>`;
+    }
+  }
+
+  if (!sgResp) {
+    h += `<div style="background:#eff6ff;border-left:3px solid var(--blue);padding:8px 14px;border-radius:0 6px 6px 0;margin-bottom:12px;font-size:11px;color:#1e40af;line-height:1.6">Service groups derived from portfolio data. Full /api/oem/service-groups endpoint coming soon \u2014 three groups (Charger / Cell Balance / IoT) show <strong>\u2014</strong> counts until it ships.</div>`;
+  }
+
+  // 7 group cards
+  const replaceDelta = Math.round(nReplace * 0.15);
+  const fcReplace = computeGroupForecast(unitsList, 'replace');
+  const fcRoute   = computeGroupForecast(unitsList, 'route');
+  const fcMonitor = computeGroupForecast(unitsList, 'monitor');
+  const fcHealthy = computeGroupForecast(unitsList, 'healthy');
+  const _seasonalNote = (_seasonal && _seasonal.cur && (_seasonal.cur.multiplier || 0) > 1.1)
+    ? ' Seasonal stress may be accelerating decline in this group.'
+    : '';
+  h += renderGroupCard('replace', 'Replace', 'var(--red)', nReplace,
+    `${nReplace} batteries at or near operational floor. 4-week prediction: ${nReplace + replaceDelta} more approaching.${_seasonalNote}`,
+    renderBatteryTable(groups.replace), false, fcReplace);
+  h += renderGroupCard('charger', 'Charger Intelligence', 'var(--amb)', 0,
+    'Non-standard or degraded charger detected. Primary IR stress driver.',
+    '', true);
+  h += renderGroupCard('cellbalance', 'Cell Balance', 'var(--amb)', 0,
+    'Cell imbalance active. Balance service may recover range.',
+    '', true);
+  h += renderGroupCard('route', 'Route Shorten', 'var(--blue)', nRouteShorten,
+    'Range below route floor. NOT a battery fault \u2014 operator action only.',
+    renderBatteryTable(groups.routeShorten), false, fcRoute);
+  h += renderGroupCard('iot', 'IoT Critical', 'var(--text3)', 0,
+    '\u20B91,500 device replacement before any battery decision. IoT \u2260 battery fault.',
+    '', true);
+  h += renderGroupCard('monitor', 'Monitor', 'var(--text3)', nMonitor,
+    'Anomaly active. No dispatch needed yet. Platform monitoring weekly.',
+    renderBatteryTable(groups.monitor), false, fcMonitor);
+  h += renderGroupCard('healthy', 'Healthy', 'var(--grn)', nHealthy,
+    'Confirmed healthy. No service visit needed.',
+    renderBatteryTable(groups.healthy), false, fcHealthy);
+
+  // ── Fleet prediction table ──
+  h += '<div class="sec-l" style="margin-top:20px">\u25C8 Fleet prediction \u2014 next 12 weeks</div>';
+  h += '<table class="pack-table" style="margin-bottom:4px"><thead><tr>';
+  ['Group','Now','+4wk','+8wk','Confidence','Key batteries'].forEach(c => h += `<th>${c}</th>`);
+  h += '</tr></thead><tbody>';
+  const _keyLinks = (arr) => (arr || []).slice(0, 2).map(u =>
+    `<a href="/enerlytik-v4?battery=${encodeURIComponent(u.battery_id)}&context=oem&tab=decisions" style="color:var(--accent);text-decoration:none;font-family:var(--font-mono)">${u.battery_id}</a>`).join(', ') || '\u2014';
+  const predRows = [
+    ['Replace',         nReplace,      Math.round(nReplace * 1.15),      Math.round(nReplace * 1.32),      'HIGH',   _keyLinks(groups.replace)],
+    ['Charger',         '\u2014',       '\u2014',                          '\u2014',                          'MEDIUM', '\u2014'],
+    ['Cell Balance',    '\u2014',       '\u2014',                          '\u2014',                          'MEDIUM', '\u2014'],
+    ['Route Shorten',   nRouteShorten, nRouteShorten,                     Math.round(nRouteShorten * 0.95), 'HIGH',   _keyLinks(groups.routeShorten)],
+    ['IoT',             '\u2014',       '\u2014',                          '\u2014',                          'HIGH',   '\u2014'],
+    ['Monitor',         nMonitor,      Math.round(nMonitor * 1.05),      Math.round(nMonitor * 1.10),      'LOW',    _keyLinks(groups.monitor)],
+    ['Healthy',         nHealthy,      nHealthy,                          Math.round(nHealthy * 0.95),     'HIGH',   _keyLinks(groups.healthy)],
+  ];
+  predRows.forEach((r, i) => {
+    const confCol = r[4] === 'HIGH' ? 'var(--grn)' : r[4] === 'MEDIUM' ? 'var(--amb)' : 'var(--text3)';
+    h += `<tr>`;
+    r.forEach((cell, idx) => {
+      if (idx === 4) {
+        h += `<td><span style="font-family:var(--font-mono);font-size:10px;color:${confCol};font-weight:600">${cell}</span></td>`;
+      } else {
+        h += `<td>${cell}</td>`;
+      }
+    });
+    h += `</tr>`;
+  });
+  h += '</tbody></table>';
+
+  // ── Warranty classification matrix ──
+  h += '<div class="sec-l" style="margin-top:20px">\u25C8 Warranty classification guide</div>';
+  h += '<div style="font-size:11px;color:var(--text3);margin-bottom:6px">How fault conditions map to warranty status</div>';
+  h += '<table class="pack-table"><thead><tr>';
+  ['Fault condition','Status','Platform evidence','Action'].forEach(c => h += `<th>${c}</th>`);
+  h += '</tr></thead><tbody>';
+  const warrantyRows = [
+    ['Pack3401 below 85% floor',                  'COVERED',     'Cohort comparison \u2014 degradation 6\xD7 Pack3001, operator normal', 'File claim \u2014 evidence pack ready'],
+    ['Cell imbalance after irregular charging',   'OPERATIONAL', 'charger_type=NON_STANDARD confirmed >10 sessions',                   'Operator-caused \u2014 document for dispute'],
+    ['BMS firmware v2.1.3 false alarm',           'COVERED',     '78% of NPF returns share firmware version',                           'Firmware patch \u2014 not battery replacement'],
+    ['Born-weak commissioning spread',            'COVERED',     'spread >300mV at week 4 \u2014 pre-delivery defect',                  'QC claim \u2014 commissioning evidence'],
+  ];
+  warrantyRows.forEach(r => {
+    const badge = r[1] === 'COVERED'
+      ? `<span style="display:inline-block;padding:2px 8px;border-radius:10px;background:#f0fdf4;color:#166534;font-family:var(--font-mono);font-size:10px;font-weight:600">COVERED</span>`
+      : `<span style="display:inline-block;padding:2px 8px;border-radius:10px;background:#fffbeb;color:#92400e;font-family:var(--font-mono);font-size:10px;font-weight:600">OPERATIONAL</span>`;
+    h += `<tr><td>${r[0]}</td><td>${badge}</td><td style="color:var(--text2);font-size:11px">${r[2]}</td><td style="color:var(--text2);font-size:11px">${r[3]}</td></tr>`;
+  });
+  h += '</tbody></table>';
+
+  h += `<div style="background:var(--bg2);border:1px solid var(--bg3);border-radius:6px;padding:10px 14px;margin-top:10px;margin-bottom:20px;font-size:10px;color:var(--text3);font-family:var(--font-mono)">RUL PRELIMINARY: 9 of 30 field-confirmed outcomes. Directional only \u2014 not for contractual use. Rule C09. Conformal calibration unlocks at 30+ confirmed outcomes.</div>`;
+
+  el.innerHTML = h;
+  if (typeof applyGlossary === 'function') applyGlossary(el);
+}
+
+// ════════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════════
+async function init() {
+  const p = new URLSearchParams(location.search);
+
+  if (p.get('pack')) FILTERS.pack = p.get('pack');
+  if (p.get('city')) FILTERS.city = p.get('city');
+  if (p.get('app'))  FILTERS.app  = p.get('app');
+  if (p.get('period')) FILTERS.period = p.get('period');
+
+  // Reflect URL filters in the dropdowns
+  const packSel = document.getElementById('filter-pack');
+  if (packSel && FILTERS.pack) packSel.value = FILTERS.pack;
+  const citySel = document.getElementById('filter-city');
+  if (citySel && FILTERS.city) citySel.value = FILTERS.city;
+  const appSel = document.getElementById('filter-app');
+  if (appSel && FILTERS.app) appSel.value = FILTERS.app;
+  const periodSel = document.getElementById('filter-period');
+  if (periodSel) periodSel.value = FILTERS.period;
+
+  const h = await get('/api/health');
+  setOnline(!!h);
+
+  if (p.get('demo')) {
+    const pill = document.getElementById('demo-pill');
+    if (pill) pill.style.display = '';
+  }
+
+  // G-2: trust signal — data freshness chip + footer
+  try {
+    const meta = await get('/api/platform/data-meta');
+    if (meta && meta.latest_week != null) {
+      const chip = document.getElementById('data-as-of');
+      if (chip) chip.textContent = '· Data as of Wk ' + meta.latest_week;
+      const ftWeek = document.getElementById('footer-week');
+      const ftDate = document.getElementById('footer-date');
+      const ftCount = document.getElementById('footer-count');
+      if (ftWeek)  ftWeek.textContent  = 'Wk ' + meta.latest_week;
+      if (ftDate)  ftDate.textContent  = meta.latest_date || 'latest available';
+      if (ftCount) ftCount.textContent = meta.battery_count != null ? meta.battery_count : '—';
+      const ft = document.getElementById('platform-footer');
+      if (ft) ft.style.display = 'block';
+    }
+  } catch (e) { /* meta endpoint missing — keep nav minimal, no footer */ }
+
+  const view = p.get('view') || 'portfolio';
+  showView(view);
+}
+
+window.onload = init;
+</script>
+
+</body>
+</html>

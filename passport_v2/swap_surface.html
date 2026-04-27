@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik // SWAP</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafaf8;--card:#ffffff;--border:rgba(0,0,0,0.08);--text:#0d0d0b;--muted:#6b7280;--red:#ef4444;--amber:#f59e0b;--green:#22c55e;--orange:#f97316;--teal:#14b8a6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans','DM Mono',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── SHARED SURFACE STANDARDS (dark) ── */
+.jump-nav{position:sticky;top:0;z-index:100;background:#0F172A;padding:8px 20px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #F97316;box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.jump-nav-label{font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap}
+.jump-nav select{flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;padding:6px 10px;border-radius:6px;cursor:pointer;max-width:300px}
+.jump-nav select option{background:#1E293B}
+.drill-breadcrumb{display:flex;align-items:center;gap:6px;font-size:11px;color:#666;padding:8px 0;margin-bottom:12px}
+.drill-breadcrumb .crumb{cursor:pointer}.drill-breadcrumb .crumb:hover{color:#F97316}
+.drill-breadcrumb .sep{color:#333}.drill-breadcrumb .crumb.active{color:#e5e5e5;font-weight:600;cursor:default}
+.section-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#666;margin:24px 0 10px;padding-bottom:6px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center}
+.section-head .section-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#1a1a1a;color:#666}
+.drill-panel{background:#0a0a0a;border:1px solid #333;border-radius:8px;padding:16px;margin-top:8px;margin-bottom:16px;animation:slideDown 0.2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.drill-panel-title{font-size:13px;font-weight:700;color:#e5e5e5;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.drill-close{font-size:16px;cursor:pointer;color:#666;line-height:1}.drill-close:hover{color:#e5e5e5}
+.battery-list-compact{background:#111;border:1px solid #222;border-radius:8px;overflow:hidden;margin-bottom:16px}
+.blc-header{display:grid;padding:6px 12px;background:#0a0a0a;border-bottom:1px solid #222;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#666}
+.blc-row{display:grid;padding:8px 12px;border-bottom:1px solid #1a1a1a;align-items:center;cursor:pointer;transition:background 0.1s;font-size:12px}
+.blc-row:last-child{border-bottom:none}.blc-row:hover{background:#1a1a0a}
+.blc-id{font-family:'DM Mono',monospace;font-weight:600;color:#F97316;font-size:11px}
+.blc-action-pill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.pill-replace{background:#450a0a;color:#ef4444}.pill-service{background:#451a03;color:#f59e0b}.pill-monitor{background:#172554;color:#3b82f6}.pill-ok{background:#052e16;color:#22c55e}
+
+/* Page-specific */
+.dark-hero{background:#0F172A;color:#fff;padding:24px 28px;border-radius:12px;margin-bottom:24px}
+.dark-hero .identity{font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);margin-bottom:8px}
+.dark-hero .headline{font-size:22px;font-weight:700;line-height:1.3;margin-bottom:10px;font-family:'Outfit'}
+.dark-hero .story{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6}
+.hero-tiles{display:flex;gap:12px;margin-top:16px}
+.hero-tile{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;flex:1}
+.hero-tile .ht-label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.hero-tile .ht-val{font-size:20px;font-weight:700;font-family:'Outfit'}
+.status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.status-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:all 0.15s;position:relative}
+.status-card:hover{border-color:var(--orange)}.status-card.active{border-color:var(--orange);background:#1a1a0a}
+.sc-label{font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase}
+.sc-count{font-family:'Outfit';font-size:36px;font-weight:700;line-height:1}
+.sc-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.sc-drill{position:absolute;top:8px;right:10px;font-size:10px;color:var(--orange);opacity:0;transition:opacity 0.15s}
+.status-card:hover .sc-drill{opacity:1}
+.stage-flow{display:flex;align-items:center;gap:0;margin:16px 0}
+.stage-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;flex:1;text-align:center}
+.stage-arrow{font-size:20px;color:var(--muted);padding:0 8px}
+.route-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.route-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;cursor:pointer;transition:all 0.15s;position:relative}
+.route-card:hover{border-color:var(--orange)}.route-card.active{border-color:var(--orange);background:#1a1a0a}
+.route-name{font-family:'Outfit';font-size:14px;font-weight:700;margin-bottom:4px}
+.route-n{font-size:28px;font-weight:700;font-family:'Outfit';margin:4px 0}
+.route-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.pool-table{width:100%;border-collapse:collapse;font-size:11px}
+.pool-table th{text-align:left;padding:8px 10px;color:var(--muted);border-bottom:1px solid var(--border);font-size:10px;letter-spacing:1px;cursor:pointer}
+.pool-table th:hover{color:var(--text)}
+.pool-table td{padding:8px 10px;border-bottom:1px solid #1a1a1a}
+.pool-table tr:hover{background:#0f0f0f}
+.bid{color:var(--orange);text-decoration:none;border-bottom:1px dotted var(--orange)}.bid:hover{color:#fff}
+.loading{color:var(--muted);font-size:12px;padding:20px;text-align:center}
+.show-all-btn{display:block;width:100%;padding:8px;text-align:center;font-size:12px;color:var(--orange);background:#111;border:1px solid #222;border-top:none;cursor:pointer;border-radius:0 0 8px 8px}
+.show-all-btn:hover{background:#1a1a1a}
+</style>
+</head>
+<body>
+
+<!-- JUMP NAV -->
+<div class="jump-nav">
+  <div style="display:flex;align-items:center;gap:10px;margin-right:12px">
+    <div style="width:28px;height:28px;background:#F97316;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-weight:900;font-size:14px;font-family:'Outfit',sans-serif;letter-spacing:-1px">e</span></div>
+    <div><div style="color:#F8FAFC;font-weight:700;font-size:15px;font-family:'Outfit',sans-serif;letter-spacing:-0.3px;line-height:1">enerlytik</div><div style="color:#F97316;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;line-height:1;margin-top:2px">Intelligence Applied</div></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.1);margin:0 4px"></div>
+    <span style="color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:0.06em">Pool Intelligence</span>
+  </div>
+  <select id="jump-select" onchange="jumpTo(this.value)"></select>
+  <a href="javascript:history.back()" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none;margin-left:auto">&larr; Back</a>
+</div>
+
+<div style="padding:16px 48px">
+
+<div class="drill-breadcrumb" id="breadcrumb">
+  <span class="crumb active">Pool Overview</span>
+</div>
+
+<!-- Section 1: Dark Story Header -->
+<div id="section-overview">
+  <div id="pool-hero" class="dark-hero">
+    <div class="identity">Pool Intelligence &middot; Loading...</div>
+    <div class="headline">Loading pool intelligence...</div>
+  </div>
+</div>
+
+<!-- Section 2: Pool Status Cards -->
+<div class="section-head" id="section-status">Pool Status <span class="section-badge" id="status-total"></span></div>
+<div class="status-grid" id="statusGrid"><div class="loading">Loading...</div></div>
+<div id="status-drill-container"></div>
+
+<!-- Section 3: Stage Summary -->
+<div class="section-head" id="section-stages">Stage Analysis</div>
+<div id="stageSummary"><div class="loading">Loading...</div></div>
+
+<!-- Section 4: Route Matching -->
+<div class="section-head" id="section-routes">Route Matching</div>
+<div class="route-grid" id="routeGrid"><div class="loading">Loading...</div></div>
+<div id="route-drill-container"></div>
+
+<!-- Section 5: Removal List -->
+<div class="section-head" id="section-remove">Remove List <span class="section-badge" id="remove-count"></span></div>
+<div id="removeTable"><div class="loading">Loading...</div></div>
+
+
+<!-- LOAN AGENT CARD -->
+<div class="loan-agent-card" style="background:#111;border:1px solid #222;border-radius:12px;overflow:hidden;margin:24px auto;max-width:1100px;font-family:'Outfit',sans-serif">
+  <div style="padding:20px 24px 16px;border-bottom:1px solid #222">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;background:rgba(232,80,10,0.15);color:#E8500A;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">// LOAN AGENT</div>
+        <div style="font-size:15px;font-weight:600;color:#F1F0EC;margin-bottom:4px">EV Battery Loan Intelligence</div>
+        <div style="font-size:12px;color:#888;line-height:1.5">Actuarial origination &middot; warranty-split risk &middot; live portfolio monitoring</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:#555">5 profiles assessed</div><div style="font-size:11px;color:#555">Last run: today</div></div>
+    </div>
+  </div>
+  <div style="padding:8px 24px 4px;background:rgba(255,255,255,0.02);border-bottom:1px solid #222"><div style="font-size:10px;font-weight:600;color:#555;letter-spacing:.1em;text-transform:uppercase;padding:8px 0">How loan decisions are made</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr">
+    <div style="padding:16px 24px;border-right:1px solid #222">
+      <div style="font-size:10px;font-weight:600;color:#555;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#444;display:inline-block"></span>Without enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#222;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#888;line-height:1.5">Credit score + fleet size + reference. <span style="color:#C0BFB8;font-weight:500">Flat 18% rate.</span> 36-month tenure. &#8377;40K collateral.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#222;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#888;line-height:1.5">No differentiation by city, pack, or operator behaviour. <span style="color:#C0BFB8;font-weight:500">All operators priced identically.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#222;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#888;line-height:1.5">Portfolio reviewed monthly. <span style="color:#C0BFB8;font-weight:500">Default discovered at missed EMI</span> &mdash; 6&ndash;8 weeks after intervention was possible.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:#222;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#888;line-height:1.5">Collateral by age depreciation. <span style="color:#C0BFB8;font-weight:500">Not measured.</span> All degradation risk on borrower.</div></div>
+    </div>
+    <div style="padding:16px 24px">
+      <div style="font-size:10px;font-weight:600;color:#E8500A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#E8500A;display:inline-block"></span>With enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#888;line-height:1.5">Agent pulls <span style="color:#C0BFB8;font-weight:500">operational P50</span> (OEM failures removed), commissioning stress baseline, city thermal multiplier. <span style="color:#C0BFB8;font-weight:500">Decision in 4 minutes.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#888;line-height:1.5">Pack3001/CU: <span style="color:#C0BFB8;font-weight:500">14-month tenure</span> viable. Pack1201/CU: <span style="color:#C0BFB8;font-weight:500">24-month tenure.</span> Pack3401/SR: warranty claim active.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#888;line-height:1.5">Portfolio monitored <span style="color:#C0BFB8;font-weight:500">weekly.</span> Grade C&rarr;D migration flagged 6 weeks early. Covenant trigger before default.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#888;line-height:1.5"><span style="color:#C0BFB8;font-weight:500">44.6% of failures</span> OEM-design defects &mdash; warranty-backstopped. Only operator risk priced to borrower.</div></div>
+    </div>
+  </div>
+  <div style="padding:6px 24px 4px;border-top:1px solid #222;background:rgba(255,255,255,0.01)"><div style="font-size:10px;font-weight:600;color:#555;letter-spacing:.08em;text-transform:uppercase;padding:8px 0 6px">Last 5 decisions</div></div>
+  <div style="padding:0 24px 16px;display:flex;gap:6px;flex-wrap:wrap">
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.15);color:#4ade80">Meena &middot; APPROVE &middot; 14mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.15);color:#fbbf24">Ravi &middot; CONDITIONS &middot; 10mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.15);color:#fbbf24">GreenRide &middot; CONDITIONS</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.15);color:#4ade80">Sharma &middot; CONDITIONS &middot; 24mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:#222;color:#888">FastDeliver &middot; REFER</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(220,38,38,0.15);color:#f87171">&#9888; Pack3401 warranty claim</span>
+  </div>
+  <div style="padding:14px 24px;border-top:1px solid #222;background:#0d0d0d;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">&#8377;8.4L</div><div style="font-size:10px;color:#555">bad debt prevented</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#F1F0EC">4 min</div><div style="font-size:10px;color:#555">vs 2&ndash;3 days manual</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#F1F0EC">44.6%</div><div style="font-size:10px;color:#555">warranty-backed risk</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">Sharma</div><div style="font-size:10px;color:#555">REFER&rarr;APPROVE (split)</div></div>
+    </div>
+    <button onclick="window.location.href='/loan-approval'" style="background:#E8500A;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Outfit',sans-serif">Open loan agent &rarr;</button>
+  </div>
+</div>
+
+<!-- Section 6: Full Pool Table -->
+<div class="section-head" id="section-pool">Full Pool <span class="section-badge" id="pool-total"></span></div>
+<div id="poolTable"><div class="loading">Loading...</div></div>
+<button class="show-all-btn" id="pool-show-all" style="display:none" onclick="showAllPool()">Show all</button>
+
+<!-- ANALYTICS -->
+<div id="section-analytics" style="margin-top:24px;padding-top:8px">
+  <div class="section-head">&loz; Analytics &mdash; Signal Explorer</div>
+  <div id="analytics-content"><div style="padding:20px;text-align:center;color:#9CA3AF;font-size:13px">Loading analytics...</div></div>
+</div>
+
+</div><!-- end padding -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+const API = '';
+const TOKEN = localStorage.getItem('enerlyst_token') || '{{ api_token }}';
+const HDR = { 'Authorization': 'Bearer ' + TOKEN };
+async function get(ep) { try { const r=await fetch(API+ep,{headers:HDR}); return await r.json(); } catch(e) { return null; } }
+function esc(s) { return s?String(s).replace(/</g,'&lt;'):'--'; }
+function fmtINR(v) { return v!=null?'\u20B9'+Math.round(v).toLocaleString('en-IN'):'--'; }
+
+// ── SHARED HELPERS ──
+function buildJumpNav(sections) {
+  const groups={};sections.forEach(s=>{if(!groups[s.group])groups[s.group]=[];groups[s.group].push(s);});
+  let opts='<option value="">Jump to section...</option>';
+  Object.entries(groups).forEach(([g,items])=>{opts+='<optgroup label="── '+g+' ──">';items.forEach(s=>{opts+='<option value="'+s.id+'">'+s.label+'</option>';});opts+='</optgroup>';});
+  document.getElementById('jump-select').innerHTML=opts;
+}
+function jumpTo(id) { if(!id)return;const el=document.getElementById(id);if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.style.outline='2px solid #F97316';setTimeout(()=>el.style.outline='',1500);}document.getElementById('jump-select').value=''; }
+function setBreadcrumb(l1,l2) {
+  const bc=document.getElementById('breadcrumb');
+  let h='<span class="crumb'+(!l1?' active':'')+'" onclick="closeDrills()">Pool Overview</span>';
+  if(l1){h+='<span class="sep">&rsaquo;</span><span class="crumb'+(!l2?' active':'')+'" onclick="closeDrills()">'+l1+'</span>';}
+  if(l2){h+='<span class="sep">&rsaquo;</span><span class="crumb active">'+l2+'</span>';}
+  bc.innerHTML=h;
+}
+function closeDrills() {
+  ['status-drill-container','route-drill-container'].forEach(id=>{document.getElementById(id).innerHTML='';});
+  document.querySelectorAll('.status-card.active,.route-card.active').forEach(el=>el.classList.remove('active'));
+  setBreadcrumb();
+}
+function openPassport(bid,aud) { window.open('/passport-next?battery='+bid+'&audience='+(aud||'operator'),'_blank'); }
+function actionPill(action) {
+  if(!action) return '<span>\u2014</span>';
+  const a=(action||'').toLowerCase();
+  const cls=a.includes('replace')||a.includes('plan')?'pill-replace':a.includes('service')||a.includes('balance')||a.includes('investigate')?'pill-service':a.includes('monitor')?'pill-monitor':'pill-ok';
+  return '<span class="blc-action-pill '+cls+'">'+action+'</span>';
+}
+// ══ SHARED: makeBatteryTable + sort + filter + expand ══
+function makeBatteryTable(opts) {
+  const {containerId,data,cols,audience,pageSize=15}=opts;
+  window['_tbl_'+containerId]={all:data,filtered:data,sortKey:null,sortDir:'asc',shown:pageSize};
+  _renderTableRows(containerId,cols,audience||'operator',pageSize);
+}
+function _renderTableRows(cid,cols,audience,pageSize) {
+  const state=window['_tbl_'+cid]; if(!state)return;
+  const el=document.getElementById(cid); if(!el)return;
+  const data=state.filtered; const slice=data.slice(0,state.shown);
+  const colTpl=cols.map(c=>c.width||'1fr').join(' ');
+  let h='<div class="battery-list-compact"><div class="blc-header" style="grid-template-columns:'+colTpl+'">';
+  cols.forEach(c=>{
+    if(c.key){const isA=state.sortKey===c.key;const arr=isA?(state.sortDir==='asc'?' \u25B2':' \u25BC'):' \u21C5';
+      h+='<span style="cursor:pointer;user-select:none" onclick="_sortTable(\''+cid+'\',\''+c.key+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">'+c.label+'<span style="font-size:9px;color:#F97316;opacity:'+(isA?1:0.4)+'">'+arr+'</span></span>';
+    } else { h+='<span>'+c.label+'</span>'; }
+  });
+  h+='</div>';
+  if(!slice.length){h+='<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:13px">No batteries in this group.</div>';}
+  else{slice.forEach(b=>{h+='<div class="blc-row" style="grid-template-columns:'+colTpl+'" onclick="openPassport(\''+b.battery_id+'\',\''+audience+'\')">';cols.forEach(c=>{h+='<span>'+(c.render?c.render(b):(b[c.key]!=null?b[c.key]:'\u2014'))+'</span>';});h+='</div>';});}
+  h+='<div style="padding:7px 12px;background:#F9FAFB;border-top:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;border-radius:0 0 8px 8px"><span style="font-size:11px;color:#9CA3AF">'+slice.length+' of '+data.length+' batteries</span><div style="display:flex;gap:8px">';
+  if(state.shown<data.length){h+='<button class="action-btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="window[\'_tbl_'+cid+'\'].shown+=15;_renderTableRows(\''+cid+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">+15 more \u2193</button>';}
+  if(state.shown>pageSize){h+='<button class="action-btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="window[\'_tbl_'+cid+'\'].shown='+pageSize+';_renderTableRows(\''+cid+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">Show less \u2191</button>';}
+  h+='</div></div></div>';
+  el.innerHTML=h;
+}
+function _sortTable(cid,key,cols,audience,pageSize) {
+  const state=window['_tbl_'+cid]; if(!state)return;
+  const dir=state.sortKey===key&&state.sortDir==='asc'?'desc':'asc';
+  state.sortKey=key; state.sortDir=dir;
+  state.filtered=[...state.filtered].sort((a,b)=>{const av=a[key],bv=b[key];if(av==null)return 1;if(bv==null)return -1;const n=parseFloat(av);if(!isNaN(n)&&!isNaN(parseFloat(bv)))return dir==='asc'?n-parseFloat(bv):parseFloat(bv)-n;return dir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));});
+  state.shown=pageSize; _renderTableRows(cid,cols,audience,pageSize);
+}
+function buildFilterChips(containerId,chips,activeFn) {
+  const el=document.getElementById(containerId); if(!el)return;
+  let active='all';
+  function render(){
+    el.innerHTML=chips.map(c=>'<button class="filter-chip'+(c.value===active?' active':'')+'" data-chip="'+c.value+'"'+(c.colour&&c.value!==active?' style="border-left:3px solid '+c.colour+'"':'')+'>'+c.label+(c.count!=null?'<span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:0 5px;font-size:9px;margin-left:3px">'+c.count+'</span>':'')+'</button>').join('');
+    el.querySelectorAll('button[data-chip]').forEach(btn=>btn.addEventListener('click',()=>{active=btn.dataset.chip;render();activeFn(active);}));
+  }
+  render();
+}
+function renderBatteryList(containerId,data,cols,audience,limit) {
+  makeBatteryTable({containerId:containerId,data:data||[],cols:cols,audience:audience||'operator',pageSize:limit||15});
+}
+
+let poolData=[], routeData=null, poolLimit=15;
+const STATUS_COLORS={REMOVE_IMMEDIATELY:'var(--red)',ROTATE_LIGHTER:'var(--amber)',MONITOR:'#3b82f6',CONTINUE:'var(--green)'};
+const STATUS_LABELS={REMOVE_IMMEDIATELY:'Remove Now',ROTATE_LIGHTER:'Rotate Lighter',MONITOR:'Monitor',CONTINUE:'Continue'};
+const ACTION_PLAIN={PHYSICS_REPLACE_PLAN:'Confirmed decline \u2014 replace',REPLACE_PLAN:'Schedule replacement',ACUTE_BREACH_WATCH:'Cell instability \u2014 service',CELL_BALANCE_PRIORITY:'Cell balance needed',MONITOR_INVESTIGATE:'Investigate',MONITOR_WEEKLY:'Monitor weekly',NO_ACTION:'Continue'};
+
+async function loadSwap() {
+  const [pool,routes]=await Promise.all([get('/api/swap/pool-intelligence'),get('/api/swap/route-matching')]);
+  if(!pool||pool.error){document.getElementById('pool-hero').innerHTML='<div class="headline" style="color:var(--red)">API error</div>';return;}
+  poolData=pool.pool_batteries||[];
+  routeData=routes;
+
+  // Hero
+  const n=pool.narrative||{};
+  let tiles='<div class="hero-tiles">';
+  tiles+='<div class="hero-tile"><div class="ht-label">Pool Value</div><div class="ht-val" style="color:var(--green)">'+fmtINR(pool.total_value)+'</div></div>';
+  const removeN=(pool.remove_list||[]).length;
+  tiles+='<div class="hero-tile"><div class="ht-label">Remove Now</div><div class="ht-val" style="color:var(--red)">'+removeN+'</div></div>';
+  const rotateN=poolData.filter(b=>b.pool_status==='ROTATE_LIGHTER').length;
+  tiles+='<div class="hero-tile"><div class="ht-label">Rotate</div><div class="ht-val" style="color:var(--amber)">'+rotateN+'</div></div>';
+  tiles+='</div>';
+  document.getElementById('pool-hero').innerHTML='<div class="identity">Pool Intelligence &middot; Week '+pool.week+' &middot; '+poolData.length+' batteries</div>'
+    +'<div class="headline">'+(n.headline||'Pool loaded')+'</div><div class="story">'+(n.story||'')+'</div>'+tiles;
+
+  // Status cards
+  const counts={};
+  poolData.forEach(b=>{counts[b.pool_status]=(counts[b.pool_status]||0)+1;});
+  document.getElementById('status-total').textContent=poolData.length+' batteries';
+  let sh='';
+  ['CONTINUE','ROTATE_LIGHTER','MONITOR','REMOVE_IMMEDIATELY'].forEach(s=>{
+    const n2=counts[s]||0;const col=STATUS_COLORS[s]||'var(--muted)';
+    sh+='<div class="status-card" onclick="drillStatus(\''+s+'\')" data-status="'+s+'" style="border-top:3px solid '+col+'">';
+    sh+='<div class="sc-drill">&rsaquo;</div><div class="sc-label">'+(STATUS_LABELS[s]||s)+'</div>';
+    sh+='<div class="sc-count" style="color:'+col+'">'+n2+'</div><div class="sc-sub">batteries</div></div>';
+  });
+  document.getElementById('statusGrid').innerHTML=sh;
+
+  // Stage summary
+  const ss=pool.stage_summary||{};
+  const s1=ss.STAGE1_ACTIVE||{n:0,total_value:0};const s2=ss.STAGE2_SECONDLIFE||{n:0,total_value:0};const s3=ss.STAGE3_SCRAP||{n:0,total_value:0};
+  let stg='<div class="stage-flow">';
+  stg+='<div class="stage-card" style="border-top:3px solid var(--green)"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Stage 1 \u2014 Active</div><div style="font-family:Outfit;font-size:28px;font-weight:700">'+s1.n+'</div><div style="font-size:12px;color:var(--muted);margin-top:4px">'+fmtINR(s1.total_value)+'</div></div>';
+  stg+='<div class="stage-arrow">&rarr;</div>';
+  stg+='<div class="stage-card" style="border-top:3px solid var(--amber)"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Stage 2 \u2014 Second-life</div><div style="font-family:Outfit;font-size:28px;font-weight:700">'+s2.n+'</div><div style="font-size:12px;color:var(--muted);margin-top:4px">'+fmtINR(s2.total_value)+'</div></div>';
+  stg+='<div class="stage-arrow">&rarr;</div>';
+  stg+='<div class="stage-card" style="border-top:3px solid var(--red)"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Stage 3 \u2014 Retire</div><div style="font-family:Outfit;font-size:28px;font-weight:700">'+s3.n+'</div><div style="font-size:12px;color:var(--muted);margin-top:4px">'+fmtINR(s3.total_value)+'</div></div>';
+  stg+='</div><div style="font-size:11px;color:var(--muted);margin-top:8px;font-style:italic">Stage 2 batteries can be redeployed on lighter routes for 4-8 weeks additional life.</div>';
+  document.getElementById('stageSummary').innerHTML=stg;
+
+  // Route cards
+  if(routes&&!routes.error){
+    const routeInfo=[
+      {key:'QUICK_COMMERCE',name:'Quick Commerce',desc:'BHS>70, Range>80km, NOT Pack3401.',color:'var(--green)'},
+      {key:'STANDARD_URBAN',name:'Standard Urban',desc:'56km+ floor. Stage 1 + suitable Stage 2.',color:'var(--teal)'},
+      {key:'LIGHT_USE',name:'Light Use / Feeder',desc:'45km+ floor. Good for Stage 2 extension.',color:'var(--amber)'}
+    ];
+    let rh='';
+    routeInfo.forEach(ri=>{
+      const rd=routes[ri.key]||{};
+      rh+='<div class="route-card" onclick="drillRoute(\''+ri.key+'\')" data-route="'+ri.key+'" style="border-top:3px solid '+ri.color+'">';
+      rh+='<div class="sc-drill">&rsaquo;</div><div class="route-name">'+ri.name+'</div>';
+      rh+='<div class="route-n" style="color:'+ri.color+'">'+(rd.eligible||0)+'</div>';
+      rh+='<div style="font-size:10px;color:var(--muted)">batteries eligible</div>';
+      rh+='<div class="route-desc" style="margin-top:8px">'+ri.desc+'</div></div>';
+    });
+    document.getElementById('routeGrid').innerHTML=rh;
+  }
+
+  // Removal list
+  const removes=pool.remove_list||[];
+  document.getElementById('remove-count').textContent=removes.length+' batteries';
+  if(removes.length){
+    renderBatteryList('removeTable',removes,[
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'pack_model',label:'Pack',width:'1.5fr',render:b=>((b.pack_model||'').replace('GF_LFP_',''))},
+      {key:'city',label:'City',width:'1fr'},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'0.7fr'},
+      {key:'pool_note',label:'Reason',width:'2fr',render:b=>'<span style="font-size:10px;color:var(--red)">'+(ACTION_PLAIN[b.rul_action_v2]||b.pool_note||'Remove')+'</span>'}
+    ],'operator',10);
+  } else { document.getElementById('removeTable').innerHTML='<div style="color:var(--green);font-size:12px">No batteries require immediate removal.</div>'; }
+
+  // Full pool table
+  document.getElementById('pool-total').textContent=poolData.length+' batteries';
+  renderPoolTable();
+}
+
+function renderPoolTable() {
+  const rows=poolData.slice(0,poolLimit);
+  const stageMap={STAGE1_ACTIVE:'S1 Active',STAGE2_SECONDLIFE:'S2 2nd Life',STAGE3_SCRAP:'S3 Retire'};
+  let h='<table class="pool-table"><thead><tr><th>Battery</th><th>Pack</th><th>City</th><th>Range</th><th>BHS</th><th>Stage</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+  rows.forEach(b=>{
+    const sc=STATUS_COLORS[b.pool_status]||'var(--muted)';
+    h+='<tr onclick="openPassport(\''+b.battery_id+'\',\'operator\')">';
+    h+='<td><a class="bid" href="/passport-next?battery='+b.battery_id+'" target="_blank" onclick="event.stopPropagation()">'+b.battery_id+'</a></td>';
+    h+='<td>'+((b.pack_model||'').replace('GF_LFP_',''))+'</td><td>'+(b.city||'--')+'</td>';
+    h+='<td>'+(b.range_p50!=null?Math.round(b.range_p50)+' km':'--')+'</td>';
+    h+='<td style="font-weight:600">'+(b.bhs_score_v2||'--')+'</td>';
+    h+='<td style="font-size:10px">'+(stageMap[b.resale_stage]||'--')+'</td>';
+    h+='<td style="color:'+sc+';font-weight:600;font-size:10px">'+(STATUS_LABELS[b.pool_status]||b.pool_status)+'</td>';
+    h+='<td style="font-size:10px">'+(b.pool_note||'--')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('poolTable').innerHTML=h;
+  const btn=document.getElementById('pool-show-all');
+  if(poolData.length>poolLimit){btn.style.display='block';btn.textContent='Show all '+poolData.length+' batteries';}else{btn.style.display='none';}
+}
+function showAllPool(){poolLimit=9999;renderPoolTable();}
+
+// ── DRILL FUNCTIONS ──
+function drillStatus(status) {
+  closeDrills();
+  document.querySelector('[data-status="'+status+'"]')?.classList.add('active');
+  setBreadcrumb(STATUS_LABELS[status]||status);
+  const container=document.getElementById('status-drill-container');
+  const bats=poolData.filter(b=>b.pool_status===status);
+  const notes={REMOVE_IMMEDIATELY:'These batteries should not remain in rotation. Replace or retire.',ROTATE_LIGHTER:'Suitable for STANDARD_URBAN or FEEDER routes only.',MONITOR:'Watch closely \u2014 do not assign heavy routes.',CONTINUE:'Healthy batteries. Continue in pool.'};
+  let h='<div class="drill-panel"><div class="drill-panel-title"><span>'+(STATUS_LABELS[status]||status)+' \u2014 '+bats.length+' batteries</span><span class="drill-close" onclick="closeDrills()">&times;</span></div>';
+  h+='<div style="font-size:12px;color:var(--muted);margin-bottom:12px">'+(notes[status]||'')+'</div>';
+  h+='<div id="drill-status-bats"></div></div>';
+  container.innerHTML=h;
+  renderBatteryList('drill-status-bats',bats,[
+    {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+    {key:'pack_model',label:'Pack',width:'1.5fr',render:b=>((b.pack_model||'').replace('GF_LFP_',''))},
+    {key:'city',label:'City',width:'1fr'},
+    {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+    {key:'bhs_score_v2',label:'BHS',width:'0.7fr'},
+    {key:'pool_note',label:'Reason',width:'2fr'}
+  ],'operator',15);
+  container.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function drillRoute(routeType) {
+  closeDrills();
+  document.querySelector('[data-route="'+routeType+'"]')?.classList.add('active');
+  const routeNames={QUICK_COMMERCE:'Quick Commerce',STANDARD_URBAN:'Standard Urban',LIGHT_USE:'Light Use / Feeder'};
+  setBreadcrumb(routeNames[routeType]||routeType);
+  const container=document.getElementById('route-drill-container');
+  const rd=routeData&&routeData[routeType]?routeData[routeType]:{eligible:0,batteries:[]};
+  let h='<div class="drill-panel"><div class="drill-panel-title"><span>'+(routeNames[routeType]||routeType)+' \u2014 '+rd.eligible+' eligible</span><span class="drill-close" onclick="closeDrills()">&times;</span></div>';
+  h+='<div id="drill-route-bats"></div></div>';
+  container.innerHTML=h;
+  renderBatteryList('drill-route-bats',rd.batteries||[],[
+    {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+    {key:'pack_model',label:'Pack',width:'1.5fr',render:b=>((b.pack_model||'').replace('GF_LFP_',''))},
+    {key:'city',label:'City',width:'1fr'},
+    {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+    {key:'bhs_score_v2',label:'BHS',width:'0.7fr'}
+  ],'operator',15);
+  container.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ── SIDEBAR COLLAPSE (stub) ──
+function closeSidebar(){}function reopenSidebar(){}
+
+// ── BOOT ──
+buildJumpNav([
+  {id:'section-overview',label:'Pool Overview',group:'Overview'},
+  {id:'section-status',label:'Pool Status',group:'Status'},
+  {id:'section-stages',label:'Stage Analysis',group:'Analysis'},
+  {id:'section-routes',label:'Route Matching',group:'Analysis'},
+  {id:'section-remove',label:'Remove List',group:'Actions'},
+  {id:'section-pool',label:'Full Pool',group:'Actions'},
+  {id:'section-analytics',label:'Analytics',group:'Deep Data'}
+]);
+// Analytics stub — renders when pool data loads
+function renderSwapAnalytics(){const el=document.getElementById('analytics-content');if(!el||!poolData.length)return;const counts={};poolData.forEach(b=>{const s=b.pool_status||'UNKNOWN';counts[s]=(counts[s]||0)+1;});const labels=Object.keys(counts);const values=Object.values(counts);const colours={REMOVE_IMMEDIATELY:'rgba(239,68,68,0.7)',ROTATE_LIGHTER:'rgba(245,158,11,0.7)',MONITOR:'rgba(59,130,246,0.7)',CONTINUE:'rgba(34,197,94,0.7)'};el.innerHTML='<div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:14px;margin-bottom:12px"><canvas id="swap-chart" style="height:200px"></canvas></div><div id="swap-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>';const canvas=document.getElementById('swap-chart');if(canvas){new Chart(canvas,{type:'bar',data:{labels:labels.map(l=>l.replace('_',' ')),datasets:[{data:values,backgroundColor:labels.map(l=>colours[l]||'#ccc'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:9}}}}}});}document.getElementById('swap-stats').innerHTML=[['Total',poolData.length],['Remove',counts.REMOVE_IMMEDIATELY||0],['Rotate',counts.ROTATE_LIGHTER||0],['Continue',counts.CONTINUE||0]].map(([l,v])=>'<div style="background:#F9FAFB;border-radius:6px;padding:8px 10px"><div style="font-size:9px;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">'+l+'</div><div style="font-size:14px;font-weight:700;color:#111827">'+v+'</div></div>').join('');}
+loadSwap();
+setTimeout(renderSwapAnalytics,3000);
+</script>
+</body>
+</html>

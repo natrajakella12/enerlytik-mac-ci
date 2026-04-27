@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik · Intelligence Chains</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:,">
+<style>
+:root {
+  --bg:#fafaf8;--bg2:#ffffff;--bg3:#f4f3f0;--border:rgba(0,0,0,0.08);
+  --border2:rgba(0,0,0,0.12);--text:#0d0d0b;--text2:#6b7280;--text3:#9ca3af;
+  --orange:#F97316;--amber:#F59E0B;--red:#EF4444;--green:#22C55E;--cyan:#06B6D4;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans','Outfit',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.header{background:#0f172a;border-bottom:2px solid var(--orange);padding:24px 40px 16px;color:#F1F5F9}
+.header-brand{font-family:'DM Mono',monospace;font-size:11px;color:var(--orange);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px}
+.header-title{font-size:24px;font-weight:700;color:#F1F5F9}
+.header-sub{font-size:12px;color:#94A3B8;margin-top:4px}
+.back-link{font-size:12px;color:var(--orange);text-decoration:none;margin-top:6px;display:inline-block}
+.back-link:hover{text-decoration:underline}
+
+.container{max-width:1280px;margin:0 auto;padding:0 40px 60px}
+
+/* Chain tabs */
+.chain-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0;overflow-x:auto;flex-shrink:0;margin-bottom:24px}
+.chain-tab{padding:12px 18px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Outfit',sans-serif;white-space:nowrap}
+.chain-tab:hover{color:var(--text)}
+.chain-tab.active{color:var(--orange);border-bottom-color:var(--orange)}
+
+/* Flow diagram */
+.flow-wrap{overflow-x:auto;padding:20px 0 10px;margin-bottom:20px}
+.flow{display:flex;align-items:center;gap:0;min-width:max-content}
+.flow-node{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:16px 20px;min-width:170px;max-width:220px;cursor:pointer;transition:all 0.2s;flex-shrink:0}
+.flow-node:hover{border-color:var(--orange);transform:translateY(-2px)}
+.flow-node.expanded{border-color:var(--orange);box-shadow:0 0 20px rgba(249,115,22,0.15)}
+.node-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:6px}
+.node-value{font-family:'DM Mono',monospace;font-size:24px;font-weight:600;color:var(--text);line-height:1.2}
+.node-unit{font-size:12px;color:var(--text2);margin-top:2px}
+.node-source{font-size:9px;color:var(--text3);margin-top:6px;font-family:'DM Mono',monospace}
+.flow-arrow{display:flex;align-items:center;padding:0 6px;flex-shrink:0;color:var(--orange);font-size:18px}
+
+/* Detail panel */
+.detail-panel{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin-bottom:24px;display:none;font-size:13px;color:var(--text2);line-height:1.6}
+.detail-panel.visible{display:block}
+.detail-label{font-size:10px;color:var(--orange);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:4px}
+
+/* Audience framings */
+.framings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:8px}
+@media(max-width:800px){.framings{grid-template-columns:1fr}}
+.framing-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.framing-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:8px}
+.framing-title.op{color:var(--green)}
+.framing-title.nbfc{color:var(--cyan)}
+.framing-title.oem{color:var(--orange)}
+.framing-text{font-size:13px;color:var(--text2);line-height:1.5}
+
+.section-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600;margin-bottom:12px}
+
+.chain-desc{font-size:13px;color:var(--text2);margin-bottom:16px}
+.demo-badge{display:inline-block;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(249,115,22,0.15);color:var(--orange);margin-bottom:12px;font-family:'DM Mono',monospace}
+
+.loading{text-align:center;padding:40px;color:var(--text3);font-size:12px}
+
+@media(max-width:800px){
+  .container{padding:0 16px 40px}
+  .header{padding:20px 16px}
+  .flow-node{min-width:140px;padding:12px 14px}
+  .node-value{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">enerlytik</div>
+  <div class="header-title">Intelligence Chains</div>
+  <div class="header-sub">Live end-to-end signal flows from telemetry to action</div>
+  <a href="/oem" class="back-link">&larr; Back to Portfolio</a>
+</div>
+
+<div class="container">
+  <div class="chain-tabs" id="chain-tabs"></div>
+
+  <div id="chain-content">
+    <div class="loading">Loading chains...</div>
+  </div>
+</div>
+
+<script>
+const API='';
+const TOKEN=localStorage.getItem('enerlyst_token')||'{{ api_token }}';
+const HDR={'Authorization':'Bearer '+TOKEN};
+
+async function get(ep){try{const r=await fetch(API+ep,{headers:HDR});if(!r.ok)return null;return await r.json()}catch(e){return null}}
+
+const CHAINS=[
+  {id:1,name:'Decline Detection'},
+  {id:2,name:'Behavior-to-Degradation'},
+  {id:3,name:'Pack Design Gap'},
+  {id:4,name:'Systematic Fault'},
+  {id:5,name:'Aggressive Driver'},
+  {id:6,name:'Use Case Destruction'},
+  {id:7,name:'Service Negligence'}
+];
+
+let activeChain=1;
+let expandedNode=null;
+
+function buildTabs(){
+  const params=new URLSearchParams(window.location.search);
+  const startChain=parseInt(params.get('chain'))||1;
+  activeChain=startChain;
+
+  let html='';
+  CHAINS.forEach(c=>{
+    html+=`<button class="chain-tab${c.id===activeChain?' active':''}" onclick="selectChain(${c.id})">${c.name}</button>`;
+  });
+  document.getElementById('chain-tabs').innerHTML=html;
+}
+
+async function selectChain(id){
+  activeChain=id;
+  expandedNode=null;
+  document.querySelectorAll('.chain-tab').forEach((t,i)=>{
+    t.classList.toggle('active',CHAINS[i].id===id);
+  });
+  document.getElementById('chain-content').innerHTML='<div class="loading">Loading chain data...</div>';
+
+  const data=await get(`/api/intelligence/chain/${id}/data`);
+  if(!data||data.error){
+    document.getElementById('chain-content').innerHTML='<div class="loading">Error loading chain</div>';
+    return;
+  }
+  renderChain(data);
+}
+
+function renderChain(data){
+  const nodes=data.nodes||[];
+  const framings=data.audience_framings||{};
+  const chainMeta=CHAINS.find(c=>c.id===data.chain_id)||{};
+
+  let html='';
+
+  // Chain description + demo battery badge
+  html+=`<div class="chain-desc">${chainMeta.name||''}</div>`;
+  if(data.demo_battery){
+    html+=`<div class="demo-badge">Focus: ${data.demo_battery}</div>`;
+  }
+
+  // Flow diagram
+  html+='<div class="flow-wrap"><div class="flow">';
+  nodes.forEach((n,i)=>{
+    const isExpanded=expandedNode===n.id;
+    html+=`<div class="flow-node${isExpanded?' expanded':''}" onclick="toggleDetail('${n.id}',${JSON.stringify(n.expandable_detail||'').replace(/'/g,"\\'")})" id="node-${n.id}">
+      <div class="node-label">${esc(n.label)}</div>
+      <div class="node-value">${esc(n.value)}</div>
+      <div class="node-unit">${esc(n.unit)}</div>
+      <div class="node-source">${esc(n.signal_source)}</div>
+    </div>`;
+    if(i<nodes.length-1){
+      html+='<div class="flow-arrow">&rarr;</div>';
+    }
+  });
+  html+='</div></div>';
+
+  // Detail panel
+  html+='<div class="detail-panel" id="detail-panel"><div class="detail-label">Signal Detail</div><div id="detail-text"></div></div>';
+
+  // Audience framings
+  html+='<div class="section-label" style="margin-top:24px">Audience Framings</div>';
+  html+='<div class="framings">';
+  html+=`<div class="framing-card"><div class="framing-title op">Operator</div><div class="framing-text">${esc(framings.operator)}</div></div>`;
+  html+=`<div class="framing-card"><div class="framing-title nbfc">NBFC</div><div class="framing-text">${esc(framings.nbfc)}</div></div>`;
+  html+=`<div class="framing-card"><div class="framing-title oem">OEM</div><div class="framing-text">${esc(framings.oem)}</div></div>`;
+  html+='</div>';
+
+  document.getElementById('chain-content').innerHTML=html;
+}
+
+function toggleDetail(nodeId,detail){
+  const panel=document.getElementById('detail-panel');
+  const textEl=document.getElementById('detail-text');
+  if(!panel||!textEl)return;
+
+  if(expandedNode===nodeId){
+    expandedNode=null;
+    panel.classList.remove('visible');
+    document.querySelectorAll('.flow-node').forEach(n=>n.classList.remove('expanded'));
+    return;
+  }
+
+  expandedNode=nodeId;
+  textEl.textContent=detail||'No additional detail available.';
+  panel.classList.add('visible');
+  document.querySelectorAll('.flow-node').forEach(n=>n.classList.remove('expanded'));
+  const el=document.getElementById('node-'+nodeId);
+  if(el)el.classList.add('expanded');
+}
+
+function esc(s){return s!=null?String(s).replace(/</g,'&lt;'):'--'}
+
+buildTabs();
+selectChain(activeChain);
+</script>
+</body>
+</html>

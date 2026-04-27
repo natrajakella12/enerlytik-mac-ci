@@ -1,0 +1,39 @@
+# Never commit these
+*.duckdb
+enerlytik_30sec.duckdb
+enerlytik_production.db
+enerlytik_dev_359.db
+enerlytik_demo_100.db
+
+# Python build artefacts
+__pycache__/
+*.pyc
+*.pyo
+build/
+dist/
+*.egg-info/
+_MEI*/
+
+# Tauri build artefacts
+/tauri_bundle/enerlytik-app/src-tauri/target/
+/tauri_bundle/enerlytik-app/src-tauri/gen/
+/tauri_bundle/enerlytik-app/src-tauri/sidecars/
+/tauri_bundle/enerlytik-app/src-tauri/resources/
+/tauri_bundle/enerlytik-app/src-tauri/icon_source.png
+
+# Logs
+*.log
+smoke_*.log
+rag_diag.log
+rag_direct.log
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Secrets (never push real tokens — only .env.example)
+.env
+*_api_token*
+secrets.json

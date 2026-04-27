@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik &middot; Lender Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#FAFAF8;--card:#fff;--border:rgba(0,0,0,0.08);--text:#111827;--text2:#6B7280;--text3:#9CA3AF;--orange:#F97316;--red:#EF4444;--green:#22C55E;--amber:#F59E0B;--blue:#3B82F6;--teal:#14B8A6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max-width:1200px;margin:0 auto}
+
+/* ── SHARED SURFACE STANDARDS ── */
+.drill-breadcrumb{display:flex;align-items:center;gap:6px;font-size:11px;color:#9CA3AF;padding:8px 0;margin-bottom:12px}
+.drill-breadcrumb .crumb{cursor:pointer}.drill-breadcrumb .crumb:hover{color:#F97316}
+.drill-breadcrumb .sep{color:#E5E7EB}.drill-breadcrumb .crumb.active{color:#111827;font-weight:600;cursor:default}
+.jump-nav{position:sticky;top:0;z-index:100;background:#0F172A;padding:8px 20px;display:flex;align-items:center;gap:8px;border-bottom:2px solid #F97316;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.jump-nav-label{font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;white-space:nowrap}
+.jump-nav select{flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);color:#fff;font-size:13px;padding:6px 10px;border-radius:6px;cursor:pointer;max-width:300px}
+.jump-nav select option{background:#1E293B}
+.section-head{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#6B7280;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #F3F4F6;display:flex;justify-content:space-between;align-items:center}
+.section-head .section-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#F3F4F6;color:#6B7280}
+.stat-row{display:grid;gap:10px;margin-bottom:16px}.stat-row-4{grid-template-columns:repeat(4,1fr)}.stat-row-3{grid-template-columns:repeat(3,1fr)}.stat-row-2{grid-template-columns:repeat(2,1fr)}
+.stat-tile{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:10px 14px}
+.stat-tile.accent{border-left:3px solid #F97316}.stat-tile.green{border-left:3px solid #16A34A}.stat-tile.amber{border-left:3px solid #F59E0B}.stat-tile.red{border-left:3px solid #EF4444}.stat-tile.teal{border-left:3px solid #0D9488}
+.stat-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#9CA3AF;margin-bottom:3px}
+.stat-value{font-size:20px;font-weight:700;color:#111827;line-height:1}.stat-sub{font-size:11px;color:#9CA3AF;margin-top:2px}
+.segment-grid{display:grid;gap:8px;margin-bottom:16px}.segment-grid-3{grid-template-columns:repeat(3,1fr)}.segment-grid-4{grid-template-columns:repeat(4,1fr)}
+.segment-card{background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;cursor:pointer;transition:all 0.15s;position:relative}
+.segment-card:hover{border-color:#F97316;box-shadow:0 2px 8px rgba(249,115,22,0.15)}.segment-card.active{border-color:#F97316;background:#FFF7ED}
+.segment-card .sc-label{font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:4px}
+.segment-card .sc-value{font-size:16px;font-weight:700;color:#111827}.segment-card .sc-sub{font-size:10px;color:#9CA3AF;margin-top:2px}
+.segment-card .sc-drill{position:absolute;top:8px;right:10px;font-size:10px;color:#F97316;opacity:0;transition:opacity 0.15s}.segment-card:hover .sc-drill{opacity:1}
+.battery-list-compact{background:#fff;border:1px solid #E5E7EB;border-radius:8px;overflow:hidden;margin-bottom:16px}
+.blc-header{display:grid;padding:6px 12px;background:#F9FAFB;border-bottom:1px solid #E5E7EB;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9CA3AF}
+.blc-row{display:grid;padding:8px 12px;border-bottom:1px solid #F3F4F6;align-items:center;cursor:pointer;transition:background 0.1s;font-size:12px}
+.blc-row:last-child{border-bottom:none}.blc-row:hover{background:#FFF7ED}
+.blc-id{font-family:'DM Mono',monospace;font-weight:600;color:#F97316;font-size:11px}
+.blc-action-pill{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.pill-replace{background:#FEE2E2;color:#DC2626}.pill-service{background:#FEF3C7;color:#B45309}.pill-monitor{background:#DBEAFE;color:#1D4ED8}.pill-ok{background:#DCFCE7;color:#16A34A}
+.drill-panel{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:16px;margin-top:8px;margin-bottom:16px;animation:slideDown 0.2s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.drill-panel-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.drill-close{font-size:16px;cursor:pointer;color:#9CA3AF;line-height:1}.drill-close:hover{color:#374151}
+.filter-group{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.filter-chip{padding:4px 12px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #E5E7EB;background:#fff;color:#6B7280;transition:all 0.15s}
+.filter-chip:hover{border-color:#F97316;color:#F97316}.filter-chip.active{background:#F97316;color:#fff;border-color:#F97316}
+
+/* Page-specific */
+.dark-hero{background:#0F172A;color:#fff;padding:24px 28px;border-radius:12px;margin-bottom:20px}
+.dark-hero .identity{font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.4);margin-bottom:8px}
+.dark-hero .headline{font-size:20px;font-weight:700;line-height:1.3;margin-bottom:10px;font-family:'Outfit'}
+.dark-hero .story{font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6}
+.hero-tiles{display:flex;gap:12px;margin-top:16px}
+.hero-tile{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;flex:1}
+.hero-tile .ht-label{font-size:10px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.hero-tile .ht-val{font-size:18px;font-weight:700}
+.stage-flow{display:flex;align-items:center;gap:0;margin:16px 0}
+.stage-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;flex:1;text-align:center;cursor:pointer;transition:all 0.15s}
+.stage-card:hover{border-color:var(--orange);box-shadow:0 2px 8px rgba(249,115,22,0.15)}
+.stage-card.active{border-color:var(--orange);background:#FFF7ED}
+.stage-arrow{font-size:20px;color:var(--text3);padding:0 8px}
+.chain-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px}
+.chain-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.chain-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.loading{text-align:center;padding:40px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- JUMP NAV -->
+<div class="jump-nav">
+  <div style="display:flex;align-items:center;gap:10px;margin-right:12px">
+    <div style="width:28px;height:28px;background:#F97316;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="color:#fff;font-weight:900;font-size:14px;font-family:'Outfit',sans-serif;letter-spacing:-1px">e</span></div>
+    <div><div style="color:#F8FAFC;font-weight:700;font-size:15px;font-family:'Outfit',sans-serif;letter-spacing:-0.3px;line-height:1">enerlytik</div><div style="color:#F97316;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;font-family:'DM Mono',monospace;line-height:1;margin-top:2px">Intelligence Applied</div></div>
+    <div style="width:1px;height:28px;background:rgba(255,255,255,0.1);margin:0 4px"></div>
+    <span style="color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:0.06em">Lender Intelligence</span>
+  </div>
+  <select id="jump-select" onchange="jumpTo(this.value)"></select>
+  <a href="javascript:history.back()" style="font-size:11px;color:rgba(255,255,255,0.5);text-decoration:none;margin-left:auto">&larr; Back</a>
+</div>
+
+<div style="padding:16px 32px">
+
+<!-- BREADCRUMB -->
+<div class="drill-breadcrumb" id="breadcrumb">
+  <span class="crumb active">Portfolio Overview</span>
+</div>
+
+<!-- L0: DARK HERO -->
+<div id="section-overview">
+  <div id="nbfc-story-header" class="dark-hero">
+    <div class="identity">Lender Intelligence &middot; Loading...</div>
+    <div class="headline">Loading portfolio intelligence...</div>
+  </div>
+</div>
+
+<!-- Covenant -->
+<div style="background:#EFF6FF;border:1px solid #BFDBFE;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px">
+  <strong style="color:#1E40AF">Covenant readiness:</strong>
+  <span style="color:#374151">RUL estimates are directional only. Income coverage ratio: pending loan data connection.</span>
+</div>
+
+
+<!-- LOAN AGENT CARD -->
+<div class="loan-agent-card" style="background:#F5F4F0;border:1px solid #E5E4DF;border-radius:12px;overflow:hidden;margin:24px auto;max-width:1100px;font-family:'Outfit',sans-serif">
+  <div style="padding:20px 24px 16px;border-bottom:1px solid #E5E4DF">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;background:rgba(232,80,10,0.15);color:#E8500A;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase">// LOAN AGENT</div>
+        <div style="font-size:15px;font-weight:600;color:#1F2937;margin-bottom:4px">EV Battery Loan Intelligence</div>
+        <div style="font-size:12px;color:#6B7280;line-height:1.5">Actuarial origination &middot; warranty-split risk &middot; live portfolio monitoring</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:#9CA3AF">5 profiles assessed</div><div style="font-size:11px;color:#9CA3AF">Last run: today</div></div>
+    </div>
+  </div>
+  <div style="padding:8px 24px 4px;background:rgba(0,0,0,0.02);border-bottom:1px solid #E5E4DF"><div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.1em;text-transform:uppercase;padding:8px 0">How loan decisions are made</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr">
+    <div style="padding:16px 24px;border-right:1px solid #E5E4DF">
+      <div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#D1D5DB;display:inline-block"></span>Without enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Credit score + fleet size + reference. <span style="color:#374151;font-weight:500">Flat 18% rate.</span> 36-month tenure. &#8377;40K collateral.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#6B7280;line-height:1.5">No differentiation by city, pack, or operator behaviour. <span style="color:#374151;font-weight:500">All operators priced identically.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Portfolio reviewed monthly. <span style="color:#374151;font-weight:500">Default discovered at missed EMI</span> &mdash; 6&ndash;8 weeks after intervention was possible.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:#E5E4DF;color:#9CA3AF;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Collateral by age depreciation. <span style="color:#374151;font-weight:500">Not measured.</span> All degradation risk on borrower.</div></div>
+    </div>
+    <div style="padding:16px 24px">
+      <div style="font-size:10px;font-weight:600;color:#E8500A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:#E8500A;display:inline-block"></span>With enerlytik</div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">1</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Agent pulls <span style="color:#374151;font-weight:500">operational P50</span> (OEM failures removed), commissioning stress baseline, city thermal multiplier. <span style="color:#374151;font-weight:500">Decision in 4 minutes.</span></div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">2</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Pack3001/CU: <span style="color:#374151;font-weight:500">14-month tenure</span> viable. Pack1201/CU: <span style="color:#374151;font-weight:500">24-month tenure.</span> Pack3401/SR: warranty claim active.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">3</div><div style="font-size:12px;color:#6B7280;line-height:1.5">Portfolio monitored <span style="color:#374151;font-weight:500">weekly.</span> Grade C&rarr;D migration flagged 6 weeks early. Covenant trigger before default.</div></div>
+      <div style="display:flex;align-items:flex-start;gap:8px"><div style="width:18px;height:18px;border-radius:50%;background:rgba(232,80,10,0.15);color:#E8500A;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px">4</div><div style="font-size:12px;color:#6B7280;line-height:1.5"><span style="color:#374151;font-weight:500">44.6% of failures</span> OEM-design defects &mdash; warranty-backstopped. Only operator risk priced to borrower.</div></div>
+    </div>
+  </div>
+  <div style="padding:6px 24px 4px;border-top:1px solid #E5E4DF;background:rgba(0,0,0,0.01)"><div style="font-size:10px;font-weight:600;color:#9CA3AF;letter-spacing:.08em;text-transform:uppercase;padding:8px 0 6px">Last 5 decisions</div></div>
+  <div style="padding:0 24px 16px;display:flex;gap:6px;flex-wrap:wrap">
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.12);color:#16A34A">Meena &middot; APPROVE &middot; 14mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.12);color:#D97706">Ravi &middot; CONDITIONS &middot; 10mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(217,119,6,0.12);color:#D97706">GreenRide &middot; CONDITIONS</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(21,128,61,0.12);color:#16A34A">Sharma &middot; CONDITIONS &middot; 24mo</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:#E5E4DF;color:#6B7280">FastDeliver &middot; REFER</span>
+    <span style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;background:rgba(220,38,38,0.1);color:#DC2626">&#9888; Pack3401 warranty claim</span>
+  </div>
+  <div style="padding:14px 24px;border-top:1px solid #E5E4DF;background:#EEEDEA;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">&#8377;8.4L</div><div style="font-size:10px;color:#9CA3AF">bad debt prevented</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#1F2937">4 min</div><div style="font-size:10px;color:#9CA3AF">vs 2&ndash;3 days manual</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#1F2937">44.6%</div><div style="font-size:10px;color:#9CA3AF">warranty-backed risk</div></div>
+      <div><div style="font-size:16px;font-weight:600;color:#E8500A">Sharma</div><div style="font-size:10px;color:#9CA3AF">REFER&rarr;APPROVE (split)</div></div>
+    </div>
+    <button onclick="window.location.href='/loan-approval'" style="background:#E8500A;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Outfit',sans-serif">Open loan agent &rarr;</button>
+  </div>
+</div>
+
+<!-- GRADE CARDS -->
+<div class="section-head" id="section-grades">Grade Analysis <span class="section-badge" id="grade-total"></span></div>
+<div class="segment-grid segment-grid-4" id="grade-cards"><div class="loading">Loading...</div></div>
+<div id="grade-drill-container"></div>
+
+<!-- COLLATERAL CHAIN -->
+<div class="section-head" id="section-collateral">Collateral Flow</div>
+<div id="collateral-chain"><div class="loading">Loading...</div></div>
+<div id="stage-drill-container"></div>
+
+<!-- FAULT→GRADE CHAIN -->
+<div class="section-head" id="section-risk">Risk Chains</div>
+<div id="risk-chains"><div class="loading">Loading...</div></div>
+<div id="risk-chain-drill-container"></div>
+
+<!-- BEST PROFILE -->
+<div class="section-head" id="section-profile">Best Financed Profile</div>
+<div id="best-profile"><div class="loading">Loading...</div></div>
+
+<!-- AT-RISK TABLE -->
+<div class="section-head" id="section-atrisk">At-Risk Batteries <span class="section-badge" id="atrisk-count"></span></div>
+<div id="at-risk-table"><div class="loading">Loading...</div></div>
+
+<!-- ANALYTICS -->
+<div id="section-analytics" style="margin-top:24px;padding-top:8px">
+  <div class="section-head">&loz; Analytics &mdash; Signal Explorer</div>
+  <div id="analytics-content"><div style="padding:20px;text-align:center;color:#9CA3AF;font-size:13px">Loading analytics...</div></div>
+</div>
+
+</div><!-- end padding -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+const API = '';
+const TOKEN = localStorage.getItem('enerlyst_token') || '{{ api_token }}';
+const HDR = { 'Authorization': 'Bearer ' + TOKEN };
+
+async function get(ep) { try { const r = await fetch(API+ep,{headers:HDR}); return await r.json(); } catch(e) { return null; } }
+function esc(s) { return s ? String(s).replace(/</g,'&lt;') : '--'; }
+function inr(v) { return v!=null?'\u20B9'+Math.round(v).toLocaleString('en-IN'):'--'; }
+
+// ── SHARED HELPERS ──
+function buildJumpNav(sections) {
+  const groups = {};
+  sections.forEach(s => { if(!groups[s.group]) groups[s.group]=[]; groups[s.group].push(s); });
+  let opts = '<option value="">Jump to section...</option>';
+  Object.entries(groups).forEach(([g,items]) => { opts+='<optgroup label="── '+g+' ──">'; items.forEach(s=>{opts+='<option value="'+s.id+'">'+s.label+'</option>';}); opts+='</optgroup>'; });
+  document.getElementById('jump-select').innerHTML = opts;
+}
+function jumpTo(id) { if(!id)return; const el=document.getElementById(id); if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.style.outline='2px solid #F97316';setTimeout(()=>el.style.outline='',1500);} document.getElementById('jump-select').value=''; }
+function setBreadcrumb(l1,l2) {
+  const bc=document.getElementById('breadcrumb');
+  let h='<span class="crumb'+(!l1?' active':'')+'" onclick="drillUp(0)">Portfolio Overview</span>';
+  if(l1){h+='<span class="sep">&rsaquo;</span><span class="crumb'+(!l2?' active':'')+'" onclick="drillUp(1)">'+l1+'</span>';}
+  if(l2){h+='<span class="sep">&rsaquo;</span><span class="crumb active">'+l2+'</span>';}
+  bc.innerHTML=h;
+}
+function drillUp(level) { if(level===0){closeDrills();setBreadcrumb();} }
+function closeDrills() {
+  ['grade-drill-container','stage-drill-container'].forEach(id=>{document.getElementById(id).innerHTML='';});
+  document.querySelectorAll('.segment-card.active,.stage-card.active').forEach(el=>el.classList.remove('active'));
+  setBreadcrumb();
+}
+function openPassport(bid,audience) { window.open('/passport-next?battery='+bid+'&audience='+(audience||'nbfc'),'_blank'); }
+function actionPill(action) {
+  if(!action) return '<span>&mdash;</span>';
+  const a=(action||'').toLowerCase();
+  const cls=a.includes('replace')||a.includes('plan')?'pill-replace':a.includes('service')||a.includes('balance')||a.includes('investigate')?'pill-service':a.includes('monitor')?'pill-monitor':'pill-ok';
+  return '<span class="blc-action-pill '+cls+'">'+action+'</span>';
+}
+// ══ SHARED: makeBatteryTable + sort + filter + expand ══
+function makeBatteryTable(opts) {
+  const {containerId,data,cols,audience,pageSize=15}=opts;
+  window['_tbl_'+containerId]={all:data,filtered:data,sortKey:null,sortDir:'asc',shown:pageSize};
+  _renderTableRows(containerId,cols,audience||'nbfc',pageSize);
+}
+function _renderTableRows(cid,cols,audience,pageSize) {
+  const state=window['_tbl_'+cid]; if(!state)return;
+  const el=document.getElementById(cid); if(!el)return;
+  const data=state.filtered; const slice=data.slice(0,state.shown);
+  const colTpl=cols.map(c=>c.width||'1fr').join(' ');
+  let h='<div class="battery-list-compact"><div class="blc-header" style="grid-template-columns:'+colTpl+'">';
+  cols.forEach(c=>{
+    if(c.key){const isA=state.sortKey===c.key;const arr=isA?(state.sortDir==='asc'?' \u25B2':' \u25BC'):' \u21C5';
+      h+='<span style="cursor:pointer;user-select:none" onclick="_sortTable(\''+cid+'\',\''+c.key+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">'+c.label+'<span style="font-size:9px;color:#F97316;opacity:'+(isA?1:0.4)+'">'+arr+'</span></span>';
+    } else { h+='<span>'+c.label+'</span>'; }
+  });
+  h+='</div>';
+  if(!slice.length){h+='<div style="padding:20px;text-align:center;color:#9CA3AF;font-size:13px">No batteries in this group.</div>';}
+  else{slice.forEach(b=>{h+='<div class="blc-row" style="grid-template-columns:'+colTpl+'" onclick="openPassport(\''+b.battery_id+'\',\''+audience+'\')">';cols.forEach(c=>{h+='<span>'+(c.render?c.render(b):(b[c.key]!=null?b[c.key]:'\u2014'))+'</span>';});h+='</div>';});}
+  h+='<div style="padding:7px 12px;background:#F9FAFB;border-top:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;border-radius:0 0 8px 8px"><span style="font-size:11px;color:#9CA3AF">'+slice.length+' of '+data.length+' batteries</span><div style="display:flex;gap:8px">';
+  if(state.shown<data.length){h+='<button class="action-btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="window[\'_tbl_'+cid+'\'].shown+=15;_renderTableRows(\''+cid+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">+15 more \u2193</button>';}
+  if(state.shown>pageSize){h+='<button class="action-btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="window[\'_tbl_'+cid+'\'].shown='+pageSize+';_renderTableRows(\''+cid+'\','+JSON.stringify(cols).replace(/'/g,"\\'")+',\''+audience+'\','+pageSize+')">Show less \u2191</button>';}
+  h+='</div></div></div>';
+  el.innerHTML=h;
+}
+function _sortTable(cid,key,cols,audience,pageSize) {
+  const state=window['_tbl_'+cid]; if(!state)return;
+  const dir=state.sortKey===key&&state.sortDir==='asc'?'desc':'asc';
+  state.sortKey=key; state.sortDir=dir;
+  state.filtered=[...state.filtered].sort((a,b)=>{const av=a[key],bv=b[key];if(av==null)return 1;if(bv==null)return -1;const n=parseFloat(av);if(!isNaN(n)&&!isNaN(parseFloat(bv)))return dir==='asc'?n-parseFloat(bv):parseFloat(bv)-n;return dir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));});
+  state.shown=pageSize; _renderTableRows(cid,cols,audience,pageSize);
+}
+function buildFilterChips(containerId,chips,activeFn) {
+  const el=document.getElementById(containerId); if(!el)return;
+  let active='all';
+  function render(){
+    el.innerHTML=chips.map(c=>'<button class="filter-chip'+(c.value===active?' active':'')+'" data-chip="'+c.value+'"'+(c.colour&&c.value!==active?' style="border-left:3px solid '+c.colour+'"':'')+'>'+c.label+(c.count!=null?'<span style="background:rgba(0,0,0,0.08);border-radius:8px;padding:0 5px;font-size:9px;margin-left:3px">'+c.count+'</span>':'')+'</button>').join('');
+    el.querySelectorAll('button[data-chip]').forEach(btn=>btn.addEventListener('click',()=>{active=btn.dataset.chip;render();activeFn(active);}));
+  }
+  render();
+}
+function renderBatteryList(containerId,data,cols,audience,limit) {
+  makeBatteryTable({containerId:containerId,data:data||[],cols:cols,audience:audience||'nbfc',pageSize:limit||15});
+}
+
+let portfolioData=null, intelData=null, atRiskData=[];
+
+async function loadNBFC() {
+  const [portfolio,atRisk,intel] = await Promise.all([
+    get('/api/nbfc/portfolio'), get('/api/nbfc/at-risk'), get('/api/nbfc/portfolio-intelligence')
+  ]);
+  portfolioData=portfolio; intelData=intel; atRiskData=atRisk||[];
+  window._nbfcAtRisk=atRiskData;
+  window._nbfcEarlyWarningCount=(intel&&intel.early_warning)?intel.early_warning.n:0;
+
+  // Story header
+  if(intel&&intel.narrative){
+    const n=intel.narrative;
+    let tiles='<div class="hero-tiles">';
+    tiles+='<div class="hero-tile"><div class="ht-label">Total Collateral</div><div class="ht-val">'+inr(intel.total_value)+'</div></div>';
+    tiles+='<div class="hero-tile"><div class="ht-label">At Risk (Grade D)</div><div class="ht-val" style="color:#FCA5A5">'+inr(intel.at_risk_value)+'</div></div>';
+    const ewN=intel.early_warning?intel.early_warning.n:0;
+    tiles+='<div class="hero-tile"><div class="ht-label">Early Warning</div><div class="ht-val" style="color:#5EEAD4">'+ewN+'</div></div>';
+    tiles+='</div>';
+    document.getElementById('nbfc-story-header').innerHTML='<div class="identity">Lender Intelligence &middot; '+(portfolio?portfolio.total:'--')+' batteries</div>'
+      +'<div class="headline">'+n.headline+'</div><div class="story">'+n.story+'</div>'+tiles;
+  }
+
+  // Grade cards (drill triggers)
+  if(portfolio&&portfolio.grades){
+    const gradeColors={A:'#16A34A',B:'#0D9488',C:'#F59E0B',D:'#EF4444'};
+    const gradeLabels={A:'Low risk',B:'Watch zone',C:'Elevated risk',D:'High risk'};
+    document.getElementById('grade-total').textContent=portfolio.total+' batteries';
+    let h='';
+    portfolio.grades.forEach(g=>{
+      const borderCls=g.grade==='D'?'red':g.grade==='C'?'amber':g.grade==='B'?'teal':'green';
+      h+='<div class="segment-card '+borderCls+'" onclick="drillGrade(\''+g.grade+'\')" data-grade="'+g.grade+'">';
+      h+='<div class="sc-drill">&rsaquo;</div>';
+      h+='<div style="font-size:32px;font-weight:800;color:'+(gradeColors[g.grade]||'#ccc')+';font-family:Outfit">'+g.grade+'</div>';
+      h+='<div class="sc-value">'+g.n+' batteries</div>';
+      h+='<div class="sc-sub">'+(gradeLabels[g.grade]||'')+' &middot; '+g.pct+'%'+(g.avg_resale?' &middot; Avg '+inr(g.avg_resale):'')+'</div></div>';
+    });
+    document.getElementById('grade-cards').innerHTML=h;
+  }
+
+  // Collateral chain
+  if(intel&&intel.collateral_by_stage){
+    const stages=intel.collateral_by_stage;
+    const s1=stages.find(s=>s.resale_stage==='STAGE1_ACTIVE')||{};
+    const s2=stages.find(s=>s.resale_stage==='STAGE2_SECONDLIFE')||{};
+    const s3=stages.find(s=>s.resale_stage==='STAGE3_SCRAP')||{};
+    let ch='<div class="stage-flow">';
+    ch+='<div class="stage-card" style="border-top:3px solid var(--green)" onclick="drillStage(\'STAGE1_ACTIVE\')" data-stage="STAGE1_ACTIVE"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Stage 1 &mdash; Active</div><div style="font-family:Outfit;font-size:28px;font-weight:700">'+(s1.n||0)+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px">avg '+inr(s1.avg_value)+'</div></div>';
+    ch+='<div class="stage-arrow">&rarr;</div>';
+    ch+='<div class="stage-card" style="border-top:3px solid var(--amber)" onclick="drillStage(\'STAGE2_SECONDLIFE\')" data-stage="STAGE2_SECONDLIFE"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Stage 2 &mdash; Second-life</div><div style="font-family:Outfit;font-size:28px;font-weight:700">'+(s2.n||0)+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px">avg '+inr(s2.avg_value)+'</div></div>';
+    ch+='<div class="stage-arrow">&rarr;</div>';
+    ch+='<div class="stage-card" style="border-top:3px solid var(--red)" onclick="drillStage(\'STAGE3_SCRAP\')" data-stage="STAGE3_SCRAP"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:4px">Stage 3 &mdash; Scrap</div><div style="font-family:Outfit;font-size:28px;font-weight:700">'+(s3.n||0)+'</div><div style="font-size:12px;color:var(--text2);margin-top:4px">avg '+inr(s3.avg_value)+'</div></div>';
+    ch+='</div>';
+    const ew=intel.early_warning||{};
+    if(ew.n>0){const preservable=ew.n*((s1.avg_value||0)-(s2.avg_value||0));ch+='<div style="background:#FFFBEB;border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:12px 16px;margin-top:12px;font-size:12px;color:#92400E;line-height:1.6">'+ew.n+' batteries at risk of Stage 1&rarr;2 transition. Preservable collateral: '+inr(preservable>0?preservable:0)+'. Cost of intervention: ~\u20B92,000 per battery.</div>';}
+    document.getElementById('collateral-chain').innerHTML=ch;
+  }
+
+  // Fault→Grade chain (clickable)
+  if(intel&&intel.fault_grade_chain){
+    const fgc=intel.fault_grade_chain;
+    const chronicD=fgc.filter(f=>f.fault_profile_tier==='CHRONIC_WORSENING'&&f.nbfc_grade==='D').reduce((s,f)=>s+f.n,0);
+    const activeCD=fgc.filter(f=>f.fault_profile_tier==='ACTIVE_WORSENING').reduce((s,f)=>s+f.n,0);
+    const ewN=(intel.early_warning||{}).n||0;
+    const chains=[
+      {fault:'CHRONIC_WORSENING',label:'CHRONIC_WORSENING \u2192 Grade D',colour:'#EF4444',n:chronicD,desc:'batteries with chronic worsening faults in Grade D. Fault duration drives risk.'},
+      {fault:'ACTIVE_WORSENING',label:'ACTIVE_WORSENING \u2192 Grade C/D',colour:'#F59E0B',n:activeCD,desc:'batteries with active worsening faults.'},
+      {fault:'EARLY_WARNING',label:'EARLY_WARNING \u2192 Grade at risk',colour:'#0D9488',n:ewN,desc:'in early warning \u2014 Grade B today, Grade C/D if untreated in 8 weeks.'}
+    ];
+    let fh='';
+    chains.forEach(ch=>{
+      if(ch.n>0){
+        fh+='<div class="segment-card" style="border-left:3px solid '+ch.colour+';margin-bottom:8px;cursor:pointer" onclick="drillRiskChain(\''+ch.fault+'\',\''+ch.colour+'\',\''+ch.label.replace(/'/g,"\\'")+'\')">';
+        fh+='<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:12px;font-weight:700;color:'+ch.colour+'">'+ch.label+'</div>';
+        fh+='<div style="display:flex;align-items:center;gap:8px"><span style="font-size:18px;font-weight:700;color:'+ch.colour+'">'+ch.n+'</span><span style="font-size:11px;color:#F97316">View \u2192</span></div></div>';
+        fh+='<div style="font-size:12px;color:#6B7280;margin-top:4px">'+ch.n+' '+ch.desc+'</div></div>';
+      }
+    });
+    if(!fh) fh='<div style="font-size:12px;color:var(--text3)">No active fault-grade chains detected.</div>';
+    document.getElementById('risk-chains').innerHTML=fh;
+  }
+
+  // Best profile
+  if(intel&&intel.best_profile&&intel.best_profile.length){
+    const bp=intel.best_profile[0];
+    let bh='<div style="background:#fff;border:1px solid #E5E7EB;border-left:4px solid var(--green);border-radius:8px;padding:16px;margin-bottom:10px">';
+    bh+='<div style="font-size:14px;font-weight:700;color:var(--green);margin-bottom:8px">Best profile: '+esc(bp.pack_model)+' + '+esc(bp.city)+' + '+esc(bp.driver_stress_tier)+' stress</div>';
+    bh+='<div style="font-size:12px;color:var(--text2);line-height:1.6">'+bp.n+' batteries &rarr; avg BHS '+bp.avg_bhs+' &rarr; Grade A</div></div>';
+    bh+='<div style="background:#fff;border:1px solid #E5E7EB;border-left:4px solid var(--red);border-radius:8px;padding:16px">';
+    bh+='<div style="font-size:14px;font-weight:700;color:var(--red);margin-bottom:8px">Highest risk: Pack3401 + HIGH stress</div>';
+    bh+='<div style="font-size:12px;color:var(--text2);line-height:1.6">Grade D probability: 67% &mdash; 6&times; replacement risk vs best profile.</div>'
+      +'<a href="/platform-in-action?chain=7" target="_blank" style="font-size:10px;color:#F97316;font-weight:600;text-decoration:none;display:inline-block;margin-top:6px">How does enerlytik grade your portfolio? \u2192</a></div>';
+    document.getElementById('best-profile').innerHTML=bh;
+  }
+
+  // At-risk table
+  if(atRiskData.length){
+    document.getElementById('atrisk-count').textContent=atRiskData.length+' batteries';
+    renderBatteryList('at-risk-table',atRiskData,[
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'nbfc_grade',label:'Grade',width:'0.7fr',render:b=>{const c={A:'#16A34A',B:'#0D9488',C:'#F59E0B',D:'#EF4444'};return '<span style="font-weight:700;color:'+(c[b.nbfc_grade]||'#999')+'">'+b.nbfc_grade+'</span>';}},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'0.7fr'},
+      {key:'fault_profile_tier',label:'Fault',width:'1.2fr',render:b=>{const m={CHRONIC_WORSENING:'\uD83D\uDD34 Chronic',ACTIVE_WORSENING:'\uD83D\uDFE0 Active',ACTIVE_STABLE:'\uD83D\uDFE1 Stable',RECOVERING:'\uD83D\uDFE2 Recover',CLEAN:'\u26AA Clean'};return '<span style="font-size:11px">'+(m[b.fault_profile_tier]||'--')+'</span>';}},
+      {key:'stage_plain',label:'Stage',width:'1fr'},
+      {key:'divergence_note',label:'Signal',width:'2fr',render:b=>'<span style="font-size:11px;color:'+(b.divergence_note?'var(--amber)':'var(--text3)')+'">'+(b.divergence_note||'--')+'</span>'}
+    ],'nbfc',15);
+  }
+}
+
+// ── DRILL FUNCTIONS ──
+async function drillGrade(grade) {
+  closeDrills();
+  document.querySelector('[data-grade="'+grade+'"]')?.classList.add('active');
+  setBreadcrumb('Grade '+grade);
+  const container=document.getElementById('grade-drill-container');
+  container.innerHTML='<div style="padding:20px;color:#9CA3AF">Loading...</div>';
+  try {
+    const r=await fetch(API+'/api/fleet/segment-batteries?grade='+grade,{headers:HDR});
+    const bats=await r.json();
+    const gradeData=(portfolioData?.grades||[]).find(g=>g.grade===grade)||{};
+    // Pack breakdown within grade
+    const packs={};
+    bats.forEach(b=>{const p=b.pack_model||'Unknown';if(!packs[p])packs[p]={n:0};packs[p].n++;});
+    // City breakdown
+    const cities={};
+    bats.forEach(b=>{const c=b.city||'Unknown';if(!cities[c])cities[c]={n:0};cities[c].n++;});
+
+    let h='<div class="drill-panel"><div class="drill-panel-title"><span>Grade '+grade+' &mdash; '+(gradeData.n||bats.length)+' batteries</span><span class="drill-close" onclick="closeDrills()">&times;</span></div>';
+    h+='<div class="stat-row stat-row-3">';
+    h+='<div class="stat-tile"><div class="stat-label">Avg Collateral</div><div class="stat-value">'+inr(gradeData.avg_resale)+'</div></div>';
+    h+='<div class="stat-tile red"><div class="stat-label">At Risk Value</div><div class="stat-value">'+inr(gradeData.total_resale||((gradeData.avg_resale||0)*(gradeData.n||0)))+'</div></div>';
+    h+='<div class="stat-tile"><div class="stat-label">Avg Risk</div><div class="stat-value">'+(gradeData.avg_risk||'--')+'</div></div>';
+    h+='</div>';
+    // Pack breakdown as clickable cards
+    const packEntries=Object.entries(packs).sort((a,b)=>b[1].n-a[1].n);
+    if(packEntries.length>1){
+      h+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin-bottom:6px">Pack breakdown</div>';
+      h+='<div class="segment-grid" style="grid-template-columns:repeat('+Math.min(packEntries.length,4)+',1fr)">';
+      packEntries.forEach(([p,d])=>{
+        h+='<div class="segment-card" onclick="drillGradePack(\''+grade+'\',\''+p+'\')"><div class="sc-drill">&rsaquo;</div><div class="sc-label">'+(p||'').replace('GF_LFP_','')+'</div><div class="sc-value">'+d.n+'</div><div class="sc-sub">'+Math.round(d.n/(gradeData.n||1)*100)+'% of Grade '+grade+'</div></div>';
+      });
+      h+='</div>';
+    }
+    // City breakdown
+    if(Object.keys(cities).length>1){
+      h+='<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#9CA3AF;margin:12px 0 6px">City breakdown</div>';
+      h+='<div class="segment-grid" style="grid-template-columns:repeat('+Math.min(Object.keys(cities).length,4)+',1fr)">';
+      Object.entries(cities).sort((a,b)=>b[1].n-a[1].n).forEach(([c,d])=>{
+        h+='<div class="stat-tile"><div class="stat-label">'+c+'</div><div class="stat-value">'+d.n+'</div></div>';
+      });
+      h+='</div>';
+    }
+    h+='<div id="drill-grade-bats"></div></div>';
+    container.innerHTML=h;
+    renderBatteryList('drill-grade-bats',bats,[
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'0.7fr'},
+      {key:'resale_value_inr',label:'Resale',width:'1.2fr',render:b=>inr(b.resale_value_inr)},
+      {key:'fault_profile_tier',label:'Fault',width:'1fr',render:b=>{const m={CHRONIC_WORSENING:'\uD83D\uDD34',ACTIVE_WORSENING:'\uD83D\uDFE0',ACTIVE_STABLE:'\uD83D\uDFE1',RECOVERING:'\uD83D\uDFE2',CLEAN:'\u26AA'};return (m[b.fault_profile_tier]||'--');}},
+      {key:'rul_action_plain',label:'Action',width:'2fr',render:b=>actionPill(b.rul_action_plain)}
+    ],'nbfc',15);
+    container.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e){container.innerHTML='<div class="drill-panel" style="color:var(--red)">Error loading data</div>';}
+}
+
+async function drillGradePack(grade,pack) {
+  setBreadcrumb('Grade '+grade,(pack||'').replace('GF_LFP_',''));
+  const container=document.getElementById('grade-drill-container');
+  try {
+    const r=await fetch(API+'/api/fleet/segment-batteries?grade='+grade+'&pack='+encodeURIComponent(pack),{headers:HDR});
+    const bats=await r.json();
+    let h='<div class="drill-panel"><div class="drill-panel-title"><span>Grade '+grade+' &times; '+(pack||'').replace('GF_LFP_','')+' &mdash; '+bats.length+' batteries</span><span class="drill-close" onclick="drillGrade(\''+grade+'\')">&times;</span></div>';
+    h+='<div id="drill-gp-bats"></div></div>';
+    container.innerHTML=h;
+    renderBatteryList('drill-gp-bats',bats,[
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'city',label:'City',width:'1fr'},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'0.7fr'},
+      {key:'resale_value_inr',label:'Resale',width:'1.2fr',render:b=>inr(b.resale_value_inr)},
+      {key:'rul_action_plain',label:'Action',width:'2fr',render:b=>actionPill(b.rul_action_plain)}
+    ],'nbfc',15);
+  } catch(e){}
+}
+
+async function drillStage(stage) {
+  closeDrills();
+  document.querySelector('[data-stage="'+stage+'"]')?.classList.add('active');
+  const stageLabels={STAGE1_ACTIVE:'Stage 1 Active',STAGE2_SECONDLIFE:'Stage 2 Second-life',STAGE3_SCRAP:'Stage 3 Scrap'};
+  setBreadcrumb(stageLabels[stage]||stage);
+  const container=document.getElementById('stage-drill-container');
+  container.innerHTML='<div style="padding:20px;color:#9CA3AF">Loading...</div>';
+  try {
+    // Use at-risk data filtered by stage, or segment-batteries
+    const stageData=(intelData?.collateral_by_stage||[]).find(s=>s.resale_stage===stage)||{};
+    const r=await fetch(API+'/api/fleet/segment-batteries?limit=50',{headers:HDR});
+    const allBats=await r.json();
+    const bats=allBats.filter(b=>b.resale_stage===stage);
+    let h='<div class="drill-panel"><div class="drill-panel-title"><span>'+(stageLabels[stage]||stage)+' &mdash; '+(stageData.n||bats.length)+' batteries &middot; avg '+inr(stageData.avg_value)+'</span><span class="drill-close" onclick="closeDrills()">&times;</span></div>';
+    h+='<div id="drill-stage-bats"></div></div>';
+    container.innerHTML=h;
+    renderBatteryList('drill-stage-bats',bats,[
+      {key:'battery_id',label:'Battery',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+      {key:'nbfc_grade',label:'Grade',width:'0.7fr',render:b=>{const c={A:'#16A34A',B:'#0D9488',C:'#F59E0B',D:'#EF4444'};return '<span style="font-weight:700;color:'+(c[b.nbfc_grade]||'#999')+'">'+b.nbfc_grade+'</span>';}},
+      {key:'range_p50',label:'Range',width:'1fr',render:b=>(b.range_p50?Math.round(b.range_p50)+'km':'--')},
+      {key:'bhs_score_v2',label:'BHS',width:'0.7fr'},
+      {key:'resale_value_inr',label:'Resale',width:'1.2fr',render:b=>inr(b.resale_value_inr)},
+      {key:'rul_action_plain',label:'Action',width:'2fr',render:b=>actionPill(b.rul_action_plain)}
+    ],'nbfc',15);
+    container.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } catch(e){container.innerHTML='<div class="drill-panel" style="color:var(--red)">Error loading data</div>';}
+}
+
+// ── RISK CHAIN DRILL ──
+async function drillRiskChain(faultType,colour,label) {
+  // Remove existing drill
+  const existing=document.getElementById('risk-chain-drill');
+  if(existing)existing.remove();
+  // Filter at-risk data
+  let batteries=window._nbfcAtRisk||[];
+  if(faultType==='EARLY_WARNING'){batteries=batteries.filter(b=>b.divergence_quadrant==='EARLY_WARNING');}
+  else if(faultType==='CHRONIC_WORSENING'){batteries=batteries.filter(b=>b.fault_profile_tier==='CHRONIC_WORSENING');}
+  else if(faultType==='ACTIVE_WORSENING'){batteries=batteries.filter(b=>b.fault_profile_tier==='ACTIVE_WORSENING');}
+  // If no cached data, fetch
+  if(!batteries.length&&(window._nbfcAtRisk||[]).length===0){
+    const r=await fetch(API+'/api/nbfc/at-risk',{headers:HDR});
+    const all=await r.json();
+    window._nbfcAtRisk=all;
+    if(faultType==='EARLY_WARNING')batteries=all.filter(b=>b.divergence_quadrant==='EARLY_WARNING');
+    else batteries=all.filter(b=>b.fault_profile_tier===faultType);
+  }
+  setBreadcrumb(label);
+  const COLS=[
+    {key:'battery_id',label:'BATTERY',width:'2fr',render:b=>'<span class="blc-id">'+b.battery_id+'</span>'},
+    {key:'nbfc_grade',label:'GRADE',width:'0.7fr',render:b=>{const c={A:'#16A34A',B:'#0D9488',C:'#F59E0B',D:'#EF4444'};return '<span style="font-weight:700;color:'+(c[b.nbfc_grade]||'#999')+'">'+b.nbfc_grade+'</span>';}},
+    {key:'range_p50',label:'RANGE',width:'0.8fr',render:b=>b.range_p50?Math.round(b.range_p50)+'km':'\u2014'},
+    {key:'resale_value_inr',label:'COLLATERAL',width:'1.2fr',render:b=>b.resale_value_inr?'\u20B9'+Math.round(b.resale_value_inr).toLocaleString('en-IN'):'\u2014'},
+    {key:'stage_plain',label:'STAGE',width:'1fr'},
+    {key:'fault_profile_tier',label:'FAULT',width:'1.5fr',render:b=>{const t=b.fault_profile_tier;const c=(t||'').includes('WORSENING')?'#EF4444':(t||'').includes('ACTIVE')?'#F59E0B':'#16A34A';return t&&t!=='CLEAN'?'<span style="color:'+c+'">&#9679;</span> '+t.replace(/_/g,' ').toLowerCase():'\u2014';}},
+    {key:'divergence_quadrant',label:'DIVERGE',width:'0.9fr',render:b=>{const q=b.divergence_quadrant;if(!q||q==='ALIGNED_HEALTHY')return'\u2014';const c=q==='EARLY_WARNING'?'#F59E0B':q==='CONFIRMED_DECLINE'||q==='ALIGNED_DECLINE'?'#EF4444':'#6B7280';return'<span style="color:'+c+';font-size:10px" title="'+q.replace(/_/g,' ')+': Relationship between efficiency trend and health trend">'+q.replace(/_/g,' ').split(' ').map(w=>w[0]).join('')+'</span>';}},
+    {key:'physical_risk_flag',label:'\u26a0',width:'0.4fr',render:b=>b.physical_risk_flag&&b.physical_risk_flag!=='LOW'?'<span style="color:#F59E0B;cursor:help" title="Physical risk signal elevated \u2014 qualitative flag only. Not included in numeric risk score.">\u26a0</span>':'\u2014'},
+    {key:'rul_action_plain',label:'ACTION',width:'1.5fr',render:b=>actionPill(b.action_plain||b.rul_action_plain)}
+  ];
+  const container=document.getElementById('risk-chain-drill-container');
+  let h='<div class="drill-panel" id="risk-chain-drill"><div class="drill-panel-title"><span style="color:'+colour+'">'+label+'</span><span class="drill-close" onclick="document.getElementById(\'risk-chain-drill\').remove();setBreadcrumb()">&times;</span></div>';
+  h+='<div style="font-size:12px;color:#6B7280;margin-bottom:10px">'+batteries.length+' batteries in this risk group. Click any battery for full lender intelligence.</div>';
+  h+='<div id="chain-drill-chips" class="filter-group"></div>';
+  h+='<div id="chain-drill-list"></div></div>';
+  container.innerHTML=h;
+  container.scrollIntoView({behavior:'smooth',block:'start'});
+  // Filter chips
+  const chipGroups=[
+    {label:'All',value:'all',count:batteries.length},
+    {label:'Grade D',value:'D',count:batteries.filter(b=>b.nbfc_grade==='D').length,colour:'#EF4444'},
+    {label:'Grade C',value:'C',count:batteries.filter(b=>b.nbfc_grade==='C').length,colour:'#F59E0B'}
+  ].filter(c=>c.count>0);
+  buildFilterChips('chain-drill-chips',chipGroups,(val)=>{
+    const filtered=val==='all'?batteries:batteries.filter(b=>b.nbfc_grade===val);
+    makeBatteryTable({containerId:'chain-drill-list',data:filtered,cols:COLS,audience:'nbfc',pageSize:15});
+  });
+  makeBatteryTable({containerId:'chain-drill-list',data:batteries,cols:COLS,audience:'nbfc',pageSize:15});
+}
+
+// ── SIDEBAR COLLAPSE (stub) ──
+function closeSidebar(){}function reopenSidebar(){}
+
+// ── BOOT ──
+buildJumpNav([
+  {id:'section-overview',label:'Portfolio Overview',group:'Overview'},
+  {id:'section-grades',label:'Grade Analysis',group:'Analysis'},
+  {id:'section-collateral',label:'Collateral Flow',group:'Analysis'},
+  {id:'section-risk',label:'Risk Chains',group:'Risk'},
+  {id:'section-profile',label:'Best Profile',group:'Risk'},
+  {id:'section-atrisk',label:'At-Risk Batteries',group:'Batteries'},
+  {id:'section-analytics',label:'Analytics',group:'Deep Data'}
+]);
+// Analytics renderer (shared)
+function renderSurfaceAnalytics(cid,defaultY){const el=document.getElementById(cid);if(!el)return;const GROUPS={'Risk':[{v:'avg_risk',l:'Risk Score'},{v:'n',l:'Battery count'}],'Value':[{v:'avg_resale',l:'Avg Resale (\u20B9)'},{v:'pct',l:'Portfolio %'}]};let yO='';Object.entries(GROUPS).forEach(([g,ss])=>{yO+='<optgroup label="\u2500\u2500 '+g+' \u2500\u2500">';ss.forEach(s=>{yO+='<option value="'+s.v+'"'+(s.v===defaultY?' selected':'')+'>'+s.l+'</option>';});yO+='</optgroup>';});el.innerHTML='<div style="display:flex;gap:12px;margin-bottom:14px;align-items:flex-end"><div><div style="font-size:10px;color:#9CA3AF;margin-bottom:4px">Signal</div><select id="'+cid+'-y" onchange="updateNBFCChart()" style="padding:6px 10px;border-radius:6px;border:1px solid #E5E7EB;font-size:12px;background:#fff">'+yO+'</select></div></div><div style="background:#fff;border:1px solid #E5E7EB;border-radius:8px;padding:14px;margin-bottom:12px"><canvas id="'+cid+'-chart" style="height:200px"></canvas></div><div id="'+cid+'-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>';updateNBFCChart();}
+async function updateNBFCChart(){const yKey=document.getElementById('analytics-content-y')?.value;if(!yKey||!portfolioData?.grades)return;const g=portfolioData.grades;const labels=g.map(x=>x.grade);const values=g.map(x=>x[yKey]!=null?parseFloat(x[yKey]):null);const canvas=document.getElementById('analytics-content-chart');if(!canvas)return;if(window._nc)try{window._nc.destroy();}catch(e){}const gc={A:'rgba(22,163,74,0.7)',B:'rgba(13,148,136,0.7)',C:'rgba(245,158,11,0.7)',D:'rgba(239,68,68,0.7)'};window._nc=new Chart(canvas,{type:'bar',data:{labels:labels.map(l=>'Grade '+l),datasets:[{data:values,backgroundColor:labels.map(l=>gc[l]||'#ccc'),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{y:{grid:{color:'rgba(0,0,0,0.04)'}},x:{ticks:{font:{size:11}}}}}});}
+loadNBFC();
+setTimeout(()=>renderSurfaceAnalytics('analytics-content','n'),2000);
+</script>
+</body>
+</html>

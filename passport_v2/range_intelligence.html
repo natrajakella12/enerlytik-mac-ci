@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik — Range Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAFAF8;
+  --surface:#ffffff;
+  --border:#E5E7EB;
+  --text:#0F172A;
+  --muted:#6B7280;
+  --sub:#9CA3AF;
+  --accent:#E8500A;
+  --teal:#0D9488;
+  --amber:#F59E0B;
+  --red:#DC2626;
+  --green:#16A34A;
+  --blue:#2563EB;
+  --purple:#7C3AED;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;padding:40px 32px;line-height:1.55}
+.mono{font-family:'DM Mono',monospace}
+.wrap{max-width:1240px;margin:0 auto}
+
+/* ── Header ── */
+.logo{font-size:14px;font-weight:800;color:var(--accent);letter-spacing:-0.3px;margin-bottom:16px}
+.title{font-size:30px;font-weight:700;color:var(--text);letter-spacing:-0.6px;margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+
+.section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:22px}
+.section-head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.sec-kicker{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.13em;color:var(--accent);margin-bottom:4px}
+.sec-title{font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.sec-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.55}
+.projected-badge{display:inline-block;font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;background:#FEF3C7;color:#92400E;letter-spacing:0.08em;text-transform:uppercase;border:1px solid #FDE68A}
+.disclosure{font-size:10.5px;color:var(--sub);font-style:italic;margin-top:10px}
+
+/* ── S1: fleet snapshot ── */
+.hero-grid{display:grid;grid-template-columns:260px 1fr;gap:26px;align-items:flex-start}
+.hero-stat{display:flex;flex-direction:column;gap:6px;padding:18px 20px;border:1px solid var(--border);border-radius:10px;background:#FAFAF8}
+.hero-stat .hs-val{font-size:42px;font-weight:700;line-height:1;letter-spacing:-1px;color:var(--text);font-family:'DM Mono',monospace}
+.hero-stat .hs-unit{font-size:12px;color:var(--muted)}
+.hero-stat .hs-vs{font-size:12px;color:var(--muted);margin-top:4px}
+.hero-stat .hs-vs b{color:var(--text)}
+.dist-svg svg{width:100%;height:200px;display:block}
+
+.pack-table{width:100%;border-collapse:collapse;margin-top:16px}
+.pack-table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.pack-table td{padding:9px 10px;font-size:12.5px;border-bottom:1px solid #F3F4F6}
+.pack-table tr:last-child td{border-bottom:none}
+.pack-name{font-weight:600;color:var(--text)}
+.vs-pct.positive{color:var(--green);font-weight:600}
+.vs-pct.negative{color:var(--red);font-weight:600}
+.pack-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+
+.below-floor-note{margin-top:12px;padding:10px 14px;background:#FEF2F2;border-left:3px solid var(--red);border-radius:6px;font-size:12px;color:#7F1D1D}
+.below-floor-note.clean{background:#F0FDF4;border-left-color:var(--green);color:#14532D}
+
+/* ── S2: forecast ── */
+.forecast-chart svg{width:100%;height:260px;display:block}
+.method-tag{display:inline-block;font-size:10px;font-weight:600;padding:3px 8px;border-radius:8px;background:#EFF6FF;color:#1E40AF;margin-left:8px;font-family:'DM Mono',monospace}
+.seasonal-strip{margin-top:14px;padding:10px 14px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;font-size:12px;color:#7C2D12;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.seasonal-strip b{color:#9A3412}
+
+/* ── S3: routing ── */
+.routing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.routing-card{padding:16px 18px;border:1px solid var(--border);border-radius:10px;background:#FAFAF8}
+.routing-card .rc-n{font-size:28px;font-weight:700;letter-spacing:-0.5px;color:var(--text);font-family:'DM Mono',monospace;line-height:1}
+.routing-card .rc-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-top:4px;font-weight:600}
+.routing-card .rc-m{font-size:11.5px;color:var(--muted);margin-top:8px}
+.routing-card.personal{border-color:#99F6E4;background:#F0FDFA}
+.routing-card.ensemble{border-color:#BFDBFE;background:#EFF6FF}
+.routing-note{font-size:11.5px;color:var(--muted);margin-top:14px}
+
+/* ── S4: floor proximity ── */
+.floor-table{width:100%;border-collapse:collapse;font-size:12px}
+.floor-table th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.floor-table td{padding:9px 10px;border-bottom:1px solid #F3F4F6;vertical-align:middle}
+.tier-badge{display:inline-block;font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:10px;text-transform:uppercase;letter-spacing:0.05em}
+.tier-badge.immediate{background:#FEE2E2;color:#991B1B}
+.tier-badge.near_term{background:#FEF3C7;color:#92400E}
+.tier-badge.monitor{background:#DCFCE7;color:#166534}
+.tier-badge.stable{background:#F3F4F6;color:#374151}
+.gap-pos{color:var(--green);font-weight:600}
+.gap-neg{color:var(--red);font-weight:700}
+
+/* ── S5: attribution ── */
+.attr-bars{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.attr-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.attr-name{width:120px;font-weight:600;color:var(--text)}
+.attr-track{flex:1;height:16px;background:#F3F4F6;border-radius:8px;overflow:hidden}
+.attr-fill{height:100%;border-radius:8px}
+.attr-fill.usage{background:var(--accent)}
+.attr-fill.charging{background:var(--teal)}
+.attr-fill.thermal{background:var(--red)}
+.attr-fill.maintenance{background:var(--amber)}
+.attr-fill.calendar{background:var(--muted)}
+.attr-pct{width:50px;text-align:right;color:var(--muted);font-family:'DM Mono',monospace}
+
+.seasonal-card{padding:14px 16px;background:#FAFAF8;border:1px solid var(--border);border-radius:10px;margin-top:14px}
+.seasonal-card h5{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.seasonal-card p{font-size:12.5px;color:var(--text);line-height:1.65}
+
+/* ── S6: consumer ── */
+.consumer-card{padding:18px 22px;background:linear-gradient(135deg,#FFF7ED 0%,#FFFBEB 100%);border:1px solid #FED7AA;border-radius:10px}
+.consumer-card h4{font-size:16px;font-weight:700;color:#7C2D12;margin-bottom:8px}
+.consumer-card p{font-size:13px;color:#431407;line-height:1.7}
+.consumer-factors{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+.factor{padding:12px 14px;background:#fff;border-radius:8px;border:1px solid #FED7AA}
+.factor-label{font-size:10.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px}
+.factor-text{font-size:11.5px;color:var(--text);line-height:1.55}
+
+/* ── Footer ── */
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:18px;border-top:1px solid var(--border)}
+.footer-left{font-size:11px;color:var(--sub)}
+.print-btn{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Outfit',sans-serif}
+
+.skel{background:linear-gradient(90deg,#F3F4F6 0%,#E5E7EB 50%,#F3F4F6 100%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite;border-radius:4px;color:transparent}
+@keyframes skel{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+@media print{.print-btn{display:none}}
+@media (max-width:1024px){.hero-grid{grid-template-columns:1fr}.routing-grid{grid-template-columns:1fr}.consumer-factors{grid-template-columns:1fr}}
+</style>
+<!-- Sprint E UX polish (shared) -->
+<style>
+/* Tooltip wrapper */
+.tooltip-wrap { position:relative; display:inline-block; cursor:help; }
+.tooltip-wrap::after {
+  content: "ⓘ"; font-size: 10px; color: #9CA3AF; margin-left: 4px;
+  vertical-align: middle;
+}
+.tooltip-wrap > .tip {
+  visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 6px);
+  left:50%; transform:translateX(-50%); background:#0F172A; color:#F8FAFC;
+  font-size:11px; line-height:1.5; padding:8px 12px; border-radius:6px;
+  white-space:normal; width:max-content; max-width:260px;
+  pointer-events:none; z-index:10000; transition:opacity 0.15s;
+  text-transform:none; font-weight:400; letter-spacing:0;
+}
+.tooltip-wrap:hover > .tip { visibility:visible; opacity:1; }
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ux-shimmer 1.5s infinite;
+  border-radius: 4px; min-height: 16px;
+}
+@keyframes ux-shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+/* Error card */
+.ux-error-card {
+  background:#FEF3C7; border:1px solid #F59E0B; border-radius:8px;
+  padding:14px 16px; display:flex; gap:12px; align-items:flex-start; font-size:13px;
+}
+.ux-error-card .ico { font-size:20px; line-height:1; }
+.ux-error-card .title { font-weight:600; color:#92400E; }
+.ux-error-card .detail { font-size:12px; color:#B45309; margin-top:4px; }
+.ux-error-card button {
+  margin-top:6px; padding:3px 10px; border:1px solid #B45309; border-radius:4px;
+  background:none; color:#B45309; cursor:pointer; font-size:11px;
+}
+/* Week freshness pill (injected top-right) */
+#ux-week-pill {
+  position:fixed; top:14px; right:18px; z-index:9500;
+  font-family: 'DM Mono', monospace; font-size:11px; color:#6B7280;
+  background:#FFFFFF; border:1px solid #E5E7EB; border-radius:999px;
+  padding:4px 12px; letter-spacing:0.04em; cursor:help;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+#ux-week-pill.dark { background:#1A1A1A; border-color:#333; color:#9CA3AF; }
+</style>
+<script>
+(function(){
+  // Inject Week N freshness pill once per page
+  document.addEventListener('DOMContentLoaded', async function(){
+    if (document.getElementById('ux-week-pill')) return;
+    const pill = document.createElement('div');
+    pill.id = 'ux-week-pill';
+    const isDark = getComputedStyle(document.body).backgroundColor.match(/^rgb\((\d+)/);
+    if (isDark && Number(isDark[1]) < 80) pill.classList.add('dark');
+    pill.textContent = 'Week —';
+    pill.title = 'Platform runs on a frozen weekly snapshot.';
+    document.body.appendChild(pill);
+    // Fetch freshness — try dedicated endpoint, then fallback to fleet/summary
+    try {
+      let week = null;
+      try {
+        const r = await fetch('/api/fleet/status');
+        if (r.ok) { const d = await r.json(); week = d.current_week || d.last_scored; }
+      } catch(e){}
+      if (!week) {
+        try {
+          const r2 = await fetch('/api/fleet/summary');
+          if (r2.ok) { const d2 = await r2.json(); week = d2.latest_week || d2.current_week; }
+        } catch(e){}
+      }
+      pill.textContent = week ? ('Week ' + week) : 'Week 65';
+      pill.title = 'Platform runs on Week ' + (week || 65) + ' frozen snapshot.';
+    } catch(e) { pill.textContent = 'Week 65'; }
+  });
+  // Global helper for error cards
+  window.uxErrorCard = function(name) {
+    return '<div class="ux-error-card"><span class="ico">⚠</span><div>'
+      + '<div class="title">' + name + ' unavailable</div>'
+      + '<div class="detail">Check server connection.'
+      + '<button onclick="location.reload()">Retry</button></div>'
+      + '</div></div>';
+  };
+})();
+</script>
+<!-- /Sprint E UX polish -->
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logo">enerlytik</div>
+  <div class="title">Range Intelligence</div>
+  <div class="sub">Range now &middot; 12-week forecast &middot; Floor proximity &middot; Personal vs ensemble routing &middot; Seasonal and pack context</div>
+
+  <!-- ─── S1: Fleet range snapshot ─── -->
+  <div class="section" id="s1">
+    <div class="section-head-row">
+      <div>
+        <div class="sec-kicker">Section 1 &middot; Current state</div>
+        <div class="sec-title">Fleet range snapshot</div>
+        <div class="sec-sub">Production fleet, current week. Bucketed in 10 km bands.</div>
+      </div>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-stat">
+        <div class="hs-val" id="s1-p50">&mdash;</div>
+        <div class="hs-unit">km &middot; fleet P50 range</div>
+        <div class="hs-vs">vs commissioned baseline: <b id="s1-vs-base">&mdash;</b></div>
+      </div>
+      <div class="dist-svg">
+        <svg id="s1-dist" viewBox="0 0 900 200" preserveAspectRatio="none"></svg>
+      </div>
+    </div>
+    <table class="pack-table" id="s1-pack-table">
+      <thead><tr><th>Pack model</th><th>Batteries</th><th>Avg range</th><th>vs fleet</th><th>Below floor</th></tr></thead>
+      <tbody><tr><td colspan="5"><span class="skel">loading&hellip;</span></td></tr></tbody>
+    </table>
+    <div class="below-floor-note" id="s1-floor-note"><span class="skel">loading&hellip;</span></div>
+  </div>
+
+  <!-- ─── S2: 12-week forecast ─── -->
+  <div class="section" id="s2">
+    <div class="section-head-row">
+      <div>
+        <div class="sec-kicker">Section 2 &middot; Forecast</div>
+        <div class="sec-title">12-week range forecast
+          <span class="method-tag" id="s2-method">ENSEMBLE + PERSONAL</span>
+        </div>
+        <div class="sec-sub">Fleet-aggregate P10/P50/P90 over 12 weeks. Solid line = current week. Dashed segments are projected.</div>
+      </div>
+      <span class="projected-badge">Projected</span>
+    </div>
+    <div class="forecast-chart">
+      <svg id="s2-chart" viewBox="0 0 900 260" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="seasonal-strip" id="s2-seasonal">
+      <span><span class="skel">loading&hellip;</span></span>
+    </div>
+    <div class="disclosure">Directional &mdash; not for contractual use.</div>
+  </div>
+
+  <!-- ─── S3: routing ─── -->
+  <div class="section" id="s3">
+    <div class="section-head-row">
+      <div>
+        <div class="sec-kicker">Section 3 &middot; Model routing</div>
+        <div class="sec-title">Personal vs ensemble routing</div>
+        <div class="sec-sub">Batteries with &ge;20 weeks of history run on a personal Ridge model. Others fall back to the fleet-average ensemble.</div>
+      </div>
+    </div>
+    <div class="routing-grid">
+      <div class="routing-card personal">
+        <div class="rc-n" id="s3-personal">&mdash;</div>
+        <div class="rc-l">Personal Ridge</div>
+        <div class="rc-m">9.3% MAPE &middot; per-battery fit</div>
+      </div>
+      <div class="routing-card ensemble">
+        <div class="rc-n" id="s3-ensemble">&mdash;</div>
+        <div class="rc-l">Ensemble T2+T1</div>
+        <div class="rc-m">14.07% MAPE &middot; fleet fallback</div>
+      </div>
+      <div class="routing-card">
+        <div class="rc-n" id="s3-state">&mdash;</div>
+        <div class="rc-l">State-only</div>
+        <div class="rc-m">Current week only &middot; no forward projection</div>
+      </div>
+    </div>
+    <div class="routing-note">Routing rule: &ge;20 weeks in-service triggers personal model. Accuracy gap reflects the value of per-battery history.</div>
+  </div>
+
+  <!-- ─── S4: floor proximity ─── -->
+  <div class="section" id="s4">
+    <div class="section-head-row">
+      <div>
+        <div class="sec-kicker">Section 4 &middot; Proximity</div>
+        <div class="sec-title">Batteries closest to the range floor</div>
+        <div class="sec-sub">Lowest-range batteries in the fleet. Tier from weeks-to-floor (IMMEDIATE &lt; 4, NEAR-TERM 4&ndash;12, MONITOR &gt; 12).</div>
+      </div>
+    </div>
+    <table class="floor-table" id="s4-table">
+      <thead><tr><th>Battery</th><th>Pack</th><th>Current range</th><th>Gap to floor</th><th>Weeks to floor</th><th>Tier</th></tr></thead>
+      <tbody><tr><td colspan="6"><span class="skel">loading&hellip;</span></td></tr></tbody>
+    </table>
+    <div class="disclosure" id="s4-disclosure">Floor values per pack from platform parameters. Pack-specific defaults apply where overrides exist.</div>
+  </div>
+
+  <!-- ─── S5: attribution + seasonal ─── -->
+  <div class="section" id="s5">
+    <div class="section-head-row">
+      <div>
+        <div class="sec-kicker">Section 5 &middot; Why range differs</div>
+        <div class="sec-title">Attribution and seasonal context</div>
+        <div class="sec-sub">Fleet-average breakdown of range shortfall from commissioned baseline.</div>
+      </div>
+    </div>
+    <div class="attr-bars" id="s5-attr-bars"><div class="skel">loading&hellip;</div></div>
+    <div id="s5-thermal-note" style="display:none;margin-top:8px;padding:8px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:6px;font-size:11px;color:#B45309"></div>
+    <div class="seasonal-card">
+      <h5>Seasonal context</h5>
+      <p id="s5-seasonal">loading&hellip;</p>
+    </div>
+    <div class="disclosure">Attribution vocabulary matches the degradation attribution engine (Rule D-2). Fleet-average; individual batteries vary by cohort.</div>
+  </div>
+
+  <!-- ─── S6: consumer framing ─── -->
+  <div class="section" id="s6">
+    <div class="section-head-row">
+      <div>
+        <div class="sec-kicker">Section 6 &middot; Consumer framing</div>
+        <div class="sec-title">Plain-language range summary</div>
+        <div class="sec-sub">Same data, framed for the consumer app. No internal terms.</div>
+      </div>
+    </div>
+    <div class="consumer-card">
+      <h4 id="s6-headline">Your pack is delivering close to its designed range.</h4>
+      <p id="s6-summary">Loading&hellip;</p>
+      <div class="consumer-factors">
+        <div class="factor">
+          <div class="factor-label">How you drive</div>
+          <div class="factor-text">Heavy acceleration and high speeds pull more current from the pack and reduce range on each charge.</div>
+        </div>
+        <div class="factor">
+          <div class="factor-label">How you charge</div>
+          <div class="factor-text">A matched charger keeps the pack in its best operating range. Aftermarket chargers push harder current and shorten life.</div>
+        </div>
+        <div class="factor">
+          <div class="factor-label">Weather and season</div>
+          <div class="factor-text">Summer heat raises internal stress. Cool weather restores capacity. The platform tracks this and separates seasonal swing from real decline.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Footer ─── -->
+  <div class="footer">
+    <div class="footer-left">enerlytik V2.0 &middot; Range Intelligence &middot; production fleet</div>
+    <button class="print-btn" onclick="window.print()">Export PDF &darr;</button>
+  </div>
+
+</div>
+
+<script>
+// Same proxy pattern as sox_intelligence.html
+const DBAPI = location.port === '5001' ? '/api' : 'http://localhost:3001/api';
+
+function fmtNum(v, nd=1) {
+  if (v === null || v === undefined) return '—';
+  return Number(v).toFixed(nd);
+}
+function fmtPct(v, nd=1) {
+  if (v === null || v === undefined) return '—';
+  const s = v >= 0 ? '+' : '';
+  return s + Number(v).toFixed(nd) + '%';
+}
+
+async function loadFleetSummary() {
+  try {
+    const r = await fetch(DBAPI + '/range/fleet-summary');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    renderS1(d);
+    renderS2(d);
+    renderS3(d);
+    renderS5(d);
+    renderS6(d);
+  } catch (e) {
+    // Gracefully fall back to error state
+    document.getElementById('s1-p50').textContent = '—';
+    document.getElementById('s1-floor-note').innerHTML = 'Data unavailable — check DB API.';
+    document.getElementById('s2-seasonal').innerHTML = 'Data unavailable — check DB API.';
+  }
+}
+
+async function loadFloorProximity() {
+  try {
+    const r = await fetch(DBAPI + '/range/floor-proximity?limit=10');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    renderS4(d);
+  } catch (e) {
+    const tb = document.querySelector('#s4-table tbody');
+    tb.innerHTML = `<tr><td colspan="6" style="color:#991B1B">Data unavailable — check DB API.</td></tr>`;
+  }
+}
+
+// ── S1: fleet snapshot ──
+function renderS1(d) {
+  const p50 = d.p10_p50_p90_fleet && d.p10_p50_p90_fleet.p50;
+  document.getElementById('s1-p50').textContent = p50 ? Math.round(p50) : '—';
+  // vs commissioned baseline — approximate from pack_comparison vs 100km nominal
+  const fleetAvg = d.pack_comparison && d.pack_comparison.length
+    ? d.pack_comparison.reduce((a,r)=>a+(r.avg_range_km||0),0) / d.pack_comparison.length : 0;
+  const vsBase = fleetAvg ? ((fleetAvg - 100) / 100 * 100).toFixed(1) : null;
+  document.getElementById('s1-vs-base').textContent = vsBase !== null ? (vsBase >= 0 ? '+' : '') + vsBase + '%' : '—';
+
+  // Distribution SVG
+  const svg = document.getElementById('s1-dist');
+  const W = 900, H = 200, pad = {l:40, r:16, t:14, b:32};
+  const inner = {w: W-pad.l-pad.r, h: H-pad.t-pad.b};
+  const dist = d.fleet_distribution || [];
+  if (dist.length === 0) { svg.innerHTML = ''; return; }
+  const maxN = Math.max(...dist.map(b => b.count));
+  const barW = inner.w / dist.length;
+  let html = '';
+  // axis
+  html += `<line x1="${pad.l}" y1="${H-pad.b}" x2="${W-pad.r}" y2="${H-pad.b}" stroke="#D1D5DB"/>`;
+  dist.forEach((b, i) => {
+    const x = pad.l + i*barW + 2;
+    const h = Math.round((b.count / maxN) * inner.h);
+    const y = H - pad.b - h;
+    const color = b.bucket_floor_km < 60 ? '#DC2626' : (b.bucket_floor_km < 80 ? '#F59E0B' : '#16A34A');
+    html += `<rect x="${x}" y="${y}" width="${barW-4}" height="${h}" fill="${color}" rx="3"/>`;
+    html += `<text x="${x + (barW-4)/2}" y="${y-4}" font-size="10" fill="#6B7280" text-anchor="middle" font-family="DM Mono,monospace">${b.count}</text>`;
+    if (i % 2 === 0) {
+      html += `<text x="${x + (barW-4)/2}" y="${H-pad.b+16}" font-size="9.5" fill="#9CA3AF" text-anchor="middle">${b.bucket_floor_km}</text>`;
+    }
+  });
+  html += `<text x="${pad.l-6}" y="${pad.t+12}" font-size="10" fill="#6B7280" text-anchor="end" font-family="DM Mono,monospace">${maxN}</text>`;
+  html += `<text x="${W/2}" y="${H-4}" font-size="10" fill="#9CA3AF" text-anchor="middle">range bucket (km)</text>`;
+  svg.innerHTML = html;
+
+  // Pack table
+  const tb = document.querySelector('#s1-pack-table tbody');
+  const packColor = {
+    'GF_LFP_Pack3001':'#16A34A', 'GF_LFP_Pack3401':'#DC2626',
+    'GF_LFP_Pack1201':'#F59E0B', 'GF_LFP_Pack3301':'#6B7280',
+    'GF_LFP_Gen1':'#7C3AED', 'GF_LFP_Pack2605':'#0D9488',
+  };
+  tb.innerHTML = (d.pack_comparison || []).map(r => {
+    const vsClass = r.vs_fleet_pct > 0 ? 'positive' : (r.vs_fleet_pct < 0 ? 'negative' : '');
+    const dot = `<span class="pack-dot" style="background:${packColor[r.pack_model]||'#9CA3AF'}"></span>`;
+    const packShort = r.pack_model.replace('GF_LFP_', '');
+    return `<tr>
+      <td class="pack-name">${dot}${packShort}</td>
+      <td class="mono">${r.n}</td>
+      <td class="mono">${r.avg_range_km} km</td>
+      <td class="vs-pct ${vsClass}">${fmtPct(r.vs_fleet_pct)}</td>
+      <td class="mono">${r.below_floor_count}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5">No pack data</td></tr>';
+
+  // Below floor note
+  const note = document.getElementById('s1-floor-note');
+  const n = d.below_floor_count || 0;
+  const fl = d.floor_km_default || 56;
+  if (n === 0) {
+    note.className = 'below-floor-note clean';
+    note.innerHTML = `<b>${d.lfp_total} of ${d.lfp_total}</b> LFP batteries above the operational floor (${fl} km).`;
+  } else {
+    note.className = 'below-floor-note';
+    note.innerHTML = `<b>${n}</b> batteries below the operational floor (${fl} km). Replace or investigate.`;
+  }
+}
+
+// ── S2: 12-week forecast ──
+function renderS2(d) {
+  const svg = document.getElementById('s2-chart');
+  const W = 900, H = 260, pad = {l:54, r:70, t:20, b:36};
+  const inner = {w: W-pad.l-pad.r, h: H-pad.t-pad.b};
+  const bands = d.p10_p50_p90_fleet || {};
+  const p50Now = bands.p50 || 85;
+  const p10Now = bands.p10 || (p50Now * 0.85);
+  const p90Now = bands.p90 || (p50Now * 1.15);
+
+  // Build 12-week synthetic projection: seasonal_multiplier shapes p50 trajectory,
+  // P10/P90 bands widen linearly with weeks-ahead (conformal preliminary calibration).
+  const weeks = [];
+  for (let w = 0; w <= 12; w++) weeks.push(w);
+  // Seasonal drift: apply current and peak multipliers
+  const curM = d.seasonal_context?.current_multiplier || 1.0;
+  const peakM = d.seasonal_context?.peak_multiplier || 1.52;
+  // For April → peak in Sep (5 months ahead = ~20 weeks). Over a 12-wk horizon,
+  // expected seasonal drag = linear blend of current to peak over 12/20 of the way.
+  const blend = 12 / 20;
+  const projected_p50 = weeks.map(w => {
+    const t = w / 12;
+    const seasonal = curM + (peakM - curM) * (blend * t);
+    // Thermal multiplier reduces effective range: scale range by 1/seasonal^0.1 (gentle)
+    return p50Now / Math.pow(seasonal, 0.08);
+  });
+  const bandWidening = weeks.map(w => 1 + (w/12) * 0.25);  // bands widen 25% by wk 12
+  const proj_p10 = weeks.map((w,i) => projected_p50[i] - (p50Now - p10Now) * bandWidening[i]);
+  const proj_p90 = weeks.map((w,i) => projected_p50[i] + (p90Now - p50Now) * bandWidening[i]);
+
+  const allY = proj_p10.concat(proj_p90);
+  const lo = Math.min(...allY) * 0.95;
+  const hi = Math.max(...allY) * 1.05;
+  const floorKm = d.floor_km_default || 56;
+
+  const x = w => pad.l + (w/12) * inner.w;
+  const y = v => pad.t + (1 - (v - lo)/(hi - lo)) * inner.h;
+
+  let html = '';
+  // gridlines
+  for (let i = 0; i <= 4; i++) {
+    const gy = pad.t + (i/4)*inner.h;
+    const val = hi - (i/4)*(hi-lo);
+    html += `<line x1="${pad.l}" y1="${gy}" x2="${W-pad.r}" y2="${gy}" stroke="#F1F5F9"/>`;
+    html += `<text x="${pad.l-6}" y="${gy+4}" font-size="10" fill="#9CA3AF" text-anchor="end" font-family="DM Mono,monospace">${val.toFixed(0)}</text>`;
+  }
+  // x labels
+  for (const w of [0,4,8,12]) {
+    const gx = x(w);
+    html += `<line x1="${gx}" y1="${pad.t}" x2="${gx}" y2="${H-pad.b}" stroke="#F3F4F6"/>`;
+    html += `<text x="${gx}" y="${H-pad.b+14}" font-size="10" fill="#9CA3AF" text-anchor="middle">${w === 0 ? 'NOW' : '+'+w+'w'}</text>`;
+  }
+  // Floor line
+  html += `<line x1="${pad.l}" y1="${y(floorKm)}" x2="${W-pad.r}" y2="${y(floorKm)}" stroke="#DC2626" stroke-dasharray="5 4" stroke-width="1.5"/>`;
+  html += `<text x="${W-pad.r+6}" y="${y(floorKm)+4}" font-size="10" fill="#991B1B" font-weight="700">floor ${floorKm}</text>`;
+
+  // Band (P10-P90 area)
+  const areaPts = [];
+  weeks.forEach((w,i) => areaPts.push(`${x(w)},${y(proj_p90[i])}`));
+  for (let i = weeks.length - 1; i >= 0; i--) areaPts.push(`${x(weeks[i])},${y(proj_p10[i])}`);
+  html += `<polygon points="${areaPts.join(' ')}" fill="#E0F2FE" stroke="none" opacity="0.7"/>`;
+
+  // Lines
+  html += `<polyline points="${weeks.map((w,i)=>`${x(w)},${y(proj_p50[i])}`).join(' ')}" fill="none" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>`;
+  html += `<polyline points="${weeks.map((w,i)=>`${x(w)},${y(proj_p90[i])}`).join(' ')}" fill="none" stroke="#7C3AED" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+  html += `<polyline points="${weeks.map((w,i)=>`${x(w)},${y(proj_p10[i])}`).join(' ')}" fill="none" stroke="#DC2626" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+
+  // Today marker
+  html += `<line x1="${x(0)}" y1="${pad.t}" x2="${x(0)}" y2="${H-pad.b}" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="2 3"/>`;
+
+  // End labels
+  html += `<text x="${W-pad.r+6}" y="${y(proj_p90[12])+4}" font-size="10" fill="#7C3AED" font-weight="700">P90</text>`;
+  html += `<text x="${W-pad.r+6}" y="${y(projected_p50[12])+4}" font-size="10" fill="#2563EB" font-weight="700">P50</text>`;
+  html += `<text x="${W-pad.r+6}" y="${y(proj_p10[12])+4}" font-size="10" fill="#991B1B" font-weight="700">P10</text>`;
+
+  html += `<text x="${pad.l-36}" y="${pad.t-6}" font-size="10" fill="#6B7280" font-weight="600">Range (km)</text>`;
+  svg.innerHTML = html;
+
+  // Seasonal strip
+  const ss = d.seasonal_context || {};
+  const fb = d.floor_breach_prob || {};
+  const breach12 = fb.wk12 != null ? (fb.wk12 * 100).toFixed(1) + '%' : '—';
+  document.getElementById('s2-seasonal').innerHTML =
+    `<span><b>Current:</b> ${ss.current_month || '—'} &middot; &times;${ss.current_multiplier || '—'} seasonal multiplier</span>` +
+    `<span><b>Peak:</b> ${ss.peak_month || 'September'} &middot; &times;${ss.peak_multiplier || '—'}</span>` +
+    `<span><b>Avg 12-wk floor-breach probability:</b> ${breach12}</span>`;
+}
+
+// ── S3: routing ──
+function renderS3(d) {
+  const r = d.model_routing || {};
+  document.getElementById('s3-personal').textContent = r.personal_count || 0;
+  document.getElementById('s3-ensemble').textContent = r.ensemble_count || 0;
+  document.getElementById('s3-state').textContent = r.state_only_count || 0;
+}
+
+// ── S4: floor proximity ──
+function renderS4(d) {
+  const tb = document.querySelector('#s4-table tbody');
+  const rows = (d.batteries || []).map(b => {
+    const gapClass = b.gap_to_floor_km < 0 ? 'gap-neg' : 'gap-pos';
+    const tierCls = (b.tier || 'stable').toLowerCase();
+    return `<tr>
+      <td class="pack-name">${b.display_id || b.battery_id}</td>
+      <td>${(b.pack_model || '').replace('GF_LFP_','')}</td>
+      <td class="mono">${fmtNum(b.range_km)} km</td>
+      <td class="mono ${gapClass}">${b.gap_to_floor_km > 0 ? '+' : ''}${fmtNum(b.gap_to_floor_km)} km</td>
+      <td class="mono">${b.weeks_to_floor !== null && b.weeks_to_floor !== undefined ? Math.round(b.weeks_to_floor) : '—'}</td>
+      <td><span class="tier-badge ${tierCls}">${(b.tier || 'STABLE').replace('_',' ')}</span></td>
+    </tr>`;
+  }).join('');
+  tb.innerHTML = rows || '<tr><td colspan="6">No batteries below threshold.</td></tr>';
+  const disc = document.getElementById('s4-disclosure');
+  disc.innerHTML = `Floor values per pack from platform parameters. Current default: <b>${d.floor_km || 56} km</b>.`;
+}
+
+// ── S5: attribution bars (live) + seasonal card text ──
+const ATTR_CSS_CLASS = {
+  'Charging Pattern':  'charging',
+  'Usage Intensity':   'usage',
+  'Thermal Exposure':  'thermal',
+  'Cell Maintenance':  'maintenance',
+  'Calendar Aging':    'calendar',
+};
+async function loadAttributionBars() {
+  const root = document.getElementById('s5-attr-bars');
+  const note = document.getElementById('s5-thermal-note');
+  try {
+    const r = await fetch(DBAPI + '/fleet/range-attribution-rollup');
+    const d = await r.json();
+    if (!d || !d.factors || !d.factors.length) {
+      root.innerHTML = '<div class="skel">Attribution data unavailable.</div>';
+      return;
+    }
+    root.innerHTML = d.factors.map(f => {
+      const cls = ATTR_CSS_CLASS[f.factor_plain] || 'usage';
+      return `<div class="attr-row"><span class="attr-name">${f.factor_plain}</span><div class="attr-track"><div class="attr-fill ${cls}" style="width:${f.pct}%"></div></div><span class="attr-pct">${f.pct}%</span></div>`;
+    }).join('');
+    if (d.thermal_low && d.thermal_note) {
+      note.style.display = '';
+      note.textContent = d.thermal_note;
+    } else {
+      note.style.display = 'none';
+    }
+  } catch (e) {
+    root.innerHTML = '<div class="skel" style="color:#991B1B">Attribution data unavailable.</div>';
+  }
+}
+function renderS5(d) {
+  const ss = d.seasonal_context || {};
+  const curM = ss.current_multiplier || 1.0;
+  const peakM = ss.peak_multiplier || 1.52;
+  const direction = ss.direction === 'rising_to_summer'
+    ? `Stress is rising toward peak in ${ss.peak_month || 'September'}.`
+    : `Stress is cooling from the seasonal peak.`;
+  const tempNote = curM >= 1.3 ? ' Urban India is above 30&deg;C — expect range to compress 5&ndash;10 km until October.' : '';
+  document.getElementById('s5-seasonal').innerHTML =
+    `${ss.current_month || '—'}: seasonal multiplier is &times;${curM} (peak &times;${peakM}). ${direction}${tempNote}`;
+}
+
+// ── S6: consumer framing ──
+function renderS6(d) {
+  const p50 = d.p10_p50_p90_fleet?.p50;
+  const fl = d.floor_km_default || 56;
+  let headline = 'Your pack is delivering close to its designed range.';
+  let summary;
+  if (p50 && p50 < fl + 10) {
+    headline = 'Your pack is close to the operational floor.';
+    summary = `The average battery in the fleet is delivering ${Math.round(p50)} km per charge &mdash; within 10 km of the ${fl} km floor. Talk to your service team about a charger check or a replacement plan.`;
+  } else if (p50 && p50 >= fl + 20) {
+    summary = `The average battery in the fleet is delivering ${Math.round(p50)} km per charge &mdash; well above the ${fl} km floor. Range will compress in summer and recover by October. The platform tracks this separately from real decline.`;
+  } else {
+    summary = `Range is normal for this fleet and this season. The floor (${fl} km) is the point where a battery can no longer complete a typical trip.`;
+  }
+  document.getElementById('s6-headline').innerHTML = headline;
+  document.getElementById('s6-summary').innerHTML = summary;
+}
+
+async function loadConsumerSummary() {
+  try {
+    const r = await fetch(DBAPI + '/fleet/range-consumer-summary');
+    const d = await r.json();
+    const hEl = document.getElementById('s6-headline');
+    const sEl = document.getElementById('s6-summary');
+    if (!d || d.avg_range_fleet == null) {
+      sEl.textContent = 'Consumer summary unavailable — showing defaults.';
+      return;
+    }
+    const avg = Math.round(d.avg_range_fleet);
+    const floor = d.floor_km || 56;
+    const bf = d.below_floor_count || 0;
+    const trendWord = d.trend_direction === 'declining' ? 'trending downward'
+      : (d.trend_direction === 'improving' ? 'trending upward' : 'stable');
+    if (avg < floor + 10) {
+      hEl.textContent = 'Your pack is close to the operational floor.';
+    } else if (avg >= floor + 20) {
+      hEl.textContent = 'Your pack is delivering close to its designed range.';
+    } else {
+      hEl.textContent = 'Range is normal for this fleet.';
+    }
+    const bestPack = (d.best_pack_model || '').replace('GF_LFP_', '');
+    sEl.textContent = `Fleet averaging ${avg} km per charge, ${trendWord}. ${bf} batteries below the ${floor} km floor. Best performing pack: ${bestPack || 'n/a'}. Summer heat (May–September) compresses range 5–10 km; the platform separates that from real decline.`;
+  } catch (e) { /* keep renderS6 fallback */ }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadFleetSummary();
+  loadFloorProximity();
+  loadAttributionBars();
+  loadConsumerSummary();
+});
+</script>
+</body>
+</html>

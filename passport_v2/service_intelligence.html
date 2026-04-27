@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>enerlytik — Service Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────── */
+:root{
+  --bg:#060C08; --bg1:#0A1210; --bg2:#0E1914; --bg3:#121E16;
+  --border:#1C2B22; --border2:#243420;
+  --orange:#F97316; --teal:#0D9488; --green:#22C55E;
+  --red:#EF4444; --amber:#F59E0B; --blue:#3B82F6;
+  --white:#F0F4F1; --muted:#8FA89A; --dim:#4A6356;
+  --font-ui:'Syne',sans-serif;
+  --font-body:'DM Sans',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --r:8px; --nav:52px; --strip:40px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:var(--font-body);font-size:13px;line-height:1.6;overflow-x:hidden}
+
+/* ─── TOP BAR ────────────────────────────────────────── */
+.topbar{position:sticky;top:0;z-index:100;height:var(--nav);background:rgba(6,12,8,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:20px}
+.logo{font-family:var(--font-ui);font-size:16px;font-weight:800;letter-spacing:-.4px;white-space:nowrap}
+.logo em{color:var(--orange);font-style:normal}
+.logo-sub{font-family:var(--font-mono);font-size:8.5px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.topbar-kpis{display:flex;gap:10px;margin-left:12px}
+.kp{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:3px 10px;display:flex;align-items:center;gap:6px;cursor:default}
+.kp-v{font-family:var(--font-mono);font-size:13px;font-weight:700}
+.kp-l{font-size:9.5px;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.api-status{font-family:var(--font-mono);font-size:9px;padding:4px 10px;border-radius:5px;border:1px solid var(--border)}
+.api-status.live{border-color:var(--green);color:var(--green)}
+.api-status.err{border-color:var(--red);color:var(--red)}
+.bat-sel{background:var(--bg2);border:1px solid var(--border2);color:var(--white);font-family:var(--font-mono);font-size:10.5px;padding:5px 10px;border-radius:6px;outline:none;cursor:pointer}
+.bat-sel:focus{border-color:var(--orange)}
+
+/* ─── NAV STRIP ──────────────────────────────────────── */
+.strip{position:sticky;top:var(--nav);z-index:90;height:var(--strip);background:rgba(10,18,16,.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding:0 24px}
+.strip::-webkit-scrollbar{display:none}
+.sn{height:var(--strip);padding:0 16px;display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);white-space:nowrap;border-bottom:2px solid transparent;cursor:pointer;transition:all .18s}
+.sn:hover{color:var(--muted)}
+.sn.on{color:var(--orange);border-bottom-color:var(--orange)}
+.sn-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6}
+.sn.alert .sn-dot{background:var(--red);opacity:1;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ─── LAYOUT ─────────────────────────────────────────── */
+.main{padding:0 24px 80px}
+.sec{padding:28px 0;border-bottom:1px solid var(--border)}
+.sec-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px}
+.sec-tag{font-family:var(--font-mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:4px}
+.sec-title{font-family:var(--font-ui);font-size:19px;font-weight:700;letter-spacing:-.3px}
+.sec-meta{font-family:var(--font-mono);font-size:9px;color:var(--muted);text-align:right;line-height:1.7}
+
+/* ─── GRID ───────────────────────────────────────────── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.g-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+
+/* ─── CARDS ──────────────────────────────────────────── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:11px}
+.lbl{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+.big{font-family:var(--font-mono);font-size:30px;font-weight:700;line-height:1}
+.sub{font-size:10.5px;color:var(--muted);margin-top:3px}
+.bar-wrap{background:var(--bg3);border-radius:3px;height:5px;overflow:hidden;margin-top:8px}
+.bar{height:100%;border-radius:3px;transition:width .4s}
+
+/* ─── TABLE ──────────────────────────────────────────── */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:7px 11px;border-bottom:1px solid var(--border);text-align:left;font-weight:600}
+.tbl td{padding:8px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg2)}
+
+/* ─── BADGES ─────────────────────────────────────────── */
+.bdg{display:inline-flex;align-items:center;font-family:var(--font-mono);font-size:8.5px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:4px;border:1px solid currentColor;white-space:nowrap}
+.bdg-red{color:var(--red);background:rgba(239,68,68,.08)}
+.bdg-amber{color:var(--amber);background:rgba(245,158,11,.08)}
+.bdg-green{color:var(--green);background:rgba(34,197,94,.08)}
+.bdg-teal{color:var(--teal);background:rgba(13,148,136,.08)}
+.bdg-orange{color:var(--orange);background:rgba(249,115,22,.08)}
+.bdg-dim{color:var(--muted);background:rgba(143,168,154,.08)}
+
+/* ─── PROPORTION BAR ────────────────────────────────── */
+.prop-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;gap:2px}
+.prop-seg{display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:8px;font-weight:700;color:#000;transition:flex .4s}
+
+/* ─── SIGNAL CHIPS ───────────────────────────────────── */
+.chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:8.5px;padding:3px 8px;border-radius:4px;background:var(--bg3);border:1px solid var(--border);color:var(--muted)}
+.chip-on{border-color:var(--teal);color:var(--teal);background:rgba(13,148,136,.07)}
+.chip-warn{border-color:var(--amber);color:var(--amber);background:rgba(245,158,11,.07)}
+.chip-crit{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.07)}
+.chip-blind{border-style:dashed;color:var(--dim)}
+
+/* ─── SOX TIER COLOURS ───────────────────────────────── */
+.sox-HEALTHY{color:var(--green)}
+.sox-POWER_DEGRADED{color:var(--amber)}
+.sox-EARLY_WARNING{color:var(--orange)}
+.sox-CRITICAL{color:var(--red)}
+.sox-SILENT_SOX{color:var(--teal)}
+
+/* ─── CELL VOLTAGE METER ─────────────────────────────── */
+.cv-meter{display:flex;align-items:center;gap:8px;margin:6px 0}
+.cv-track{flex:1;background:var(--bg3);border-radius:3px;height:8px;overflow:hidden;position:relative}
+.cv-fill{height:100%;border-radius:3px;transition:width .5s}
+.cv-mark{position:absolute;top:0;height:100%;width:2px;background:rgba(255,255,255,.2)}
+
+/* ─── DPP ────────────────────────────────────────────── */
+.dpp-grid{display:grid;grid-template-columns:280px 1fr;gap:14px}
+.dpp-side{background:var(--bg1);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:sticky;top:calc(var(--nav) + var(--strip) + 8px);max-height:calc(100vh - var(--nav) - var(--strip) - 24px);overflow-y:auto}
+.dpp-id{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--orange)}
+.dpp-pack{font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-top:3px}
+.dpp-scores{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.dpp-score{background:var(--bg2);border-radius:6px;padding:10px;text-align:center}
+.dpp-score-v{font-family:var(--font-mono);font-size:26px;font-weight:800;line-height:1}
+.dpp-score-l{font-size:9px;color:var(--muted);margin-top:3px}
+.dpp-quad{padding:8px 10px;border-radius:6px;margin-bottom:12px;font-size:11px}
+.dpp-sig{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px}
+.dpp-sig:last-child{border-bottom:none}
+.dpp-sig-v{font-family:var(--font-mono);font-size:11px;font-weight:600}
+.layer{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:10px}
+.layer-title{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+
+/* ─── LOADING ────────────────────────────────────────── */
+.loading{text-align:center;padding:32px;color:var(--dim);font-family:var(--font-mono);font-size:11px}
+.loading::after{content:'';display:inline-block;width:12px;height:12px;border:2px solid var(--dim);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin-left:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err-box{padding:12px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:6px;color:var(--red);font-family:var(--font-mono);font-size:10px}
+
+/* ─── SCROLLBAR ──────────────────────────────────────── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ─── CHAIN FLOW ─────────────────────────────────────── */
+.chain{display:flex;align-items:center;gap:0;overflow-x:auto;padding:10px 0}
+.cn{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:9px 13px;min-width:130px;flex-shrink:0}
+.cn-tag{font-family:var(--font-mono);font-size:7.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.cn-v{font-size:11px;color:var(--white)}
+.arr{padding:0 6px;flex-shrink:0}
+.arr-line{width:24px;height:2px;background:var(--orange);position:relative}
+.arr-line::after{content:'';position:absolute;right:-4px;top:-4px;border:4px solid transparent;border-left-color:var(--orange)}
+</style>
+<!-- Sprint E UX polish (shared) -->
+<style>
+/* Tooltip wrapper */
+.tooltip-wrap { position:relative; display:inline-block; cursor:help; }
+.tooltip-wrap::after {
+  content: "ⓘ"; font-size: 10px; color: #9CA3AF; margin-left: 4px;
+  vertical-align: middle;
+}
+.tooltip-wrap > .tip {
+  visibility:hidden; opacity:0; position:absolute; bottom:calc(100% + 6px);
+  left:50%; transform:translateX(-50%); background:#0F172A; color:#F8FAFC;
+  font-size:11px; line-height:1.5; padding:8px 12px; border-radius:6px;
+  white-space:normal; width:max-content; max-width:260px;
+  pointer-events:none; z-index:10000; transition:opacity 0.15s;
+  text-transform:none; font-weight:400; letter-spacing:0;
+}
+.tooltip-wrap:hover > .tip { visibility:visible; opacity:1; }
+/* Skeleton */
+.skeleton {
+  background: linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ux-shimmer 1.5s infinite;
+  border-radius: 4px; min-height: 16px;
+}
+@keyframes ux-shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+/* Error card */
+.ux-error-card {
+  background:#FEF3C7; border:1px solid #F59E0B; border-radius:8px;
+  padding:14px 16px; display:flex; gap:12px; align-items:flex-start; font-size:13px;
+}
+.ux-error-card .ico { font-size:20px; line-height:1; }
+.ux-error-card .title { font-weight:600; color:#92400E; }
+.ux-error-card .detail { font-size:12px; color:#B45309; margin-top:4px; }
+.ux-error-card button {
+  margin-top:6px; padding:3px 10px; border:1px solid #B45309; border-radius:4px;
+  background:none; color:#B45309; cursor:pointer; font-size:11px;
+}
+/* Week freshness pill (injected top-right) */
+#ux-week-pill {
+  position:fixed; top:14px; right:18px; z-index:9500;
+  font-family: 'DM Mono', monospace; font-size:11px; color:#6B7280;
+  background:#FFFFFF; border:1px solid #E5E7EB; border-radius:999px;
+  padding:4px 12px; letter-spacing:0.04em; cursor:help;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+#ux-week-pill.dark { background:#1A1A1A; border-color:#333; color:#9CA3AF; }
+</style>
+<script>
+(function(){
+  // Inject Week N freshness pill once per page
+  document.addEventListener('DOMContentLoaded', async function(){
+    if (document.getElementById('ux-week-pill')) return;
+    const pill = document.createElement('div');
+    pill.id = 'ux-week-pill';
+    const isDark = getComputedStyle(document.body).backgroundColor.match(/^rgb\((\d+)/);
+    if (isDark && Number(isDark[1]) < 80) pill.classList.add('dark');
+    pill.textContent = 'Week —';
+    pill.title = 'Platform runs on a frozen weekly snapshot.';
+    document.body.appendChild(pill);
+    // Fetch freshness — try dedicated endpoint, then fallback to fleet/summary
+    try {
+      let week = null;
+      try {
+        const r = await fetch('/api/fleet/status');
+        if (r.ok) { const d = await r.json(); week = d.current_week || d.last_scored; }
+      } catch(e){}
+      if (!week) {
+        try {
+          const r2 = await fetch('/api/fleet/summary');
+          if (r2.ok) { const d2 = await r2.json(); week = d2.latest_week || d2.current_week; }
+        } catch(e){}
+      }
+      pill.textContent = week ? ('Week ' + week) : 'Week 65';
+      pill.title = 'Platform runs on Week ' + (week || 65) + ' frozen snapshot.';
+    } catch(e) { pill.textContent = 'Week 65'; }
+  });
+  // Global helper for error cards
+  window.uxErrorCard = function(name) {
+    return '<div class="ux-error-card"><span class="ico">⚠</span><div>'
+      + '<div class="title">' + name + ' unavailable</div>'
+      + '<div class="detail">Check server connection.'
+      + '<button onclick="location.reload()">Retry</button></div>'
+      + '</div></div>';
+  };
+})();
+</script>
+<!-- /Sprint E UX polish -->
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:0">
+    <svg id="svg-d1" xmlns="http://www.w3.org/2000/svg" width="220" height="36" viewBox="0 0 441 72" style="overflow:visible;font-family:'Outfit',sans-serif">
+      <defs>
+        <linearGradient id="wg-d1" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+          <stop offset="0%" stop-color="#FB923C"/>
+          <stop offset="100%" stop-color="#EA580C"/>
+        </linearGradient>
+        <linearGradient id="ig-d1" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+          <stop offset="0%" stop-color="#FB923C"/>
+          <stop offset="100%" stop-color="#EA580C"/>
+        </linearGradient>
+      </defs>
+      <rect width="72" height="72" rx="14" fill="rgba(249,115,22,0.08)" stroke="#EA580C" stroke-width="2"/>
+      <g transform="translate(14.0,14.0) scale(1.375)">
+        <rect x="6" y="6" width="16" height="3" rx="1.5" fill="url(#ig-d1)"/>
+        <rect x="6" y="14.5" width="12" height="3" rx="1.5" fill="url(#ig-d1)" opacity=".55"/>
+        <rect x="6" y="23" width="16" height="3" rx="1.5" fill="url(#ig-d1)"/>
+        <rect x="6" y="6" width="3" height="20" rx="1.5" fill="url(#ig-d1)"/>
+        <circle cx="25" cy="8" r="2.5" fill="url(#ig-d1)" opacity=".4"/>
+        <circle cx="25" cy="8" r="1.2" fill="url(#ig-d1)"/>
+      </g>
+      <text x="92" y="36" font-family="'Outfit',sans-serif" font-size="38" font-weight="700" letter-spacing="3.8" dominant-baseline="central" fill="url(#wg-d1)">enerlytik</text>
+      <text x="94" y="36" font-family="'DM Sans',sans-serif" font-size="12" font-weight="400" letter-spacing="0.6" dominant-baseline="central" dy="27" fill="rgba(251,146,60,0.7)"><tspan font-weight="800" font-size="14" fill="#FB923C">I</tspan>ntelligence <tspan font-weight="800" font-size="14" fill="#FB923C">A</tspan>pplied</text>
+    </svg>
+  </div>
+  <div class="topbar-kpis" id="fleetKpis">
+    <div class="kp"><span class="kp-v" style="color:var(--orange)">345</span><span class="kp-l">Active</span></div>
+    <div class="kp"><span class="kp-v" style="color:var(--red)">6</span><span class="kp-l">Replace</span></div>
+    <div class="kp"><span class="kp-v" style="color:var(--teal)">127</span><span class="kp-l">Charger Swap</span></div>
+    <div class="kp"><span class="kp-v" style="color:var(--amber)">41</span><span class="kp-l">Cell Alert</span></div>
+    <div class="kp"><span class="kp-v" style="color:var(--green)">86</span><span class="kp-l">No Action</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="api-status" id="apiStatus">API checking…</div>
+    <select class="bat-sel" id="batSel" onchange="switchBattery(this.value)">
+      <option value="BAT_LFP_109">BAT_LFP_109 — Q4 Replace</option>
+      <option value="BAT_LFP_278">BAT_LFP_278 — Silent SOX</option>
+      <option value="BAT_LFP_308">BAT_LFP_308 — Healthy Q1</option>
+      <option value="BAT_LFP_044">BAT_LFP_044 — Warrant Eligible</option>
+      <option value="BAT_LFP_116">BAT_LFP_116 — Charger Swap</option>
+      <option value="BAT_LFP_013">BAT_LFP_013 — Cell Imbalance</option>
+      <option value="BAT_LFP_021">BAT_LFP_021 — Thermal Risk</option>
+      <option value="BAT_LFP_133">BAT_LFP_133 — Failure Chain</option>
+    </select>
+  </div>
+</div>
+
+<!-- NAV STRIP -->
+<div class="strip" id="navStrip">
+  <div class="sn alert on" onclick="go('s1')"><div class="sn-dot"></div>Fleet Command</div>
+  <div class="sn" onclick="go('s2')"><div class="sn-dot"></div>Charging</div>
+  <div class="sn" onclick="go('s3')"><div class="sn-dot"></div>Cell Chemistry</div>
+  <div class="sn alert" onclick="go('s4')"><div class="sn-dot"></div>Cell Voltage ★</div>
+  <div class="sn" onclick="go('s5')"><div class="sn-dot"></div>SOX · Power</div>
+  <div class="sn" onclick="go('s6')"><div class="sn-dot"></div>Components</div>
+  <div class="sn" onclick="go('s7')"><div class="sn-dot"></div>IoT Quality</div>
+  <div class="sn" onclick="go('s8')"><div class="sn-dot"></div>Failure Chains</div>
+  <div class="sn" onclick="go('s9')"><div class="sn-dot"></div>Predictions</div>
+  <div class="sn" onclick="go('s10')"><div class="sn-dot"></div>DPP · Battery</div>
+</div>
+
+<div class="main">
+
+<!-- ══ S1: FLEET COMMAND ══════════════════════════════════════════════ -->
+<div class="sec" id="s1">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§01 Fleet Command Center</div><div class="sec-title">345 batteries · every signal · complete coverage</div></div>
+    <div class="sec-meta" id="s1meta">Week 65 · Apr 2026<br>Loading…</div>
+  </div>
+  <div class="g5" style="margin-bottom:12px" id="actionKpis">
+    <div class="card-sm" style="border-left:3px solid var(--red)"><div class="lbl">Replace Now/Plan</div><div class="big" style="color:var(--red)" id="kpReplace">—</div><div class="sub">Active breach trajectory</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--teal)"><div class="lbl">Charger Swap</div><div class="big" style="color:var(--teal)" id="kpCharger">—</div><div class="sub">Charger = cause</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--amber)"><div class="lbl">Cell Balance</div><div class="big" style="color:var(--amber)" id="kpCellBalance">—</div><div class="sub">Acute tier</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--amber)"><div class="lbl">Cell Voltage Alert ★</div><div class="big" style="color:var(--amber)" id="cellAlertKp">—</div><div class="sub">New · Path A signal</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--green)"><div class="lbl">No Action</div><div class="big" style="color:var(--green)" id="kpNoAction">—</div><div class="sub">Confirmed healthy</div></div>
+  </div>
+  <!-- Proportion bar -->
+  <div class="card" style="padding:12px 14px;margin-bottom:12px">
+    <div class="lbl" style="margin-bottom:8px">Fleet distribution — all 345 batteries · 259 have an active signal</div>
+    <div class="prop-bar">
+      <div class="prop-seg" style="flex:6;background:var(--red)" title="Replace: 6">6</div>
+      <div class="prop-seg" style="flex:19;background:var(--amber)" title="Cell Balance: 19">19</div>
+      <div class="prop-seg" style="flex:23;background:#B45309;color:#fff" title="Route Shorten: 23">23</div>
+      <div class="prop-seg" style="flex:41;background:#92400E;color:#fff" title="Cell Alert: 41">41</div>
+      <div class="prop-seg" style="flex:64;background:var(--amber);opacity:.75" title="Monitor/Invest: 64">64</div>
+      <div class="prop-seg" style="flex:127;background:var(--teal)" title="Charger Swap: 127">127</div>
+      <div class="prop-seg" style="flex:9;background:var(--dim);color:#fff" title="Monitor Weekly: 9">9</div>
+      <div class="prop-seg" style="flex:86;background:var(--green)" title="No Action: 86">86</div>
+    </div>
+    <div style="display:flex;gap:14px;margin-top:7px;flex-wrap:wrap">
+      <span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--red);border-radius:2px;display:inline-block"></span>Replace</span>
+      <span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--teal);border-radius:2px;display:inline-block"></span>Charger Swap</span>
+      <span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--amber);border-radius:2px;display:inline-block"></span>Cell / Monitor</span>
+      <span style="font-size:9px;color:var(--amber);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:#92400E;border-radius:2px;display:inline-block"></span>Cell Voltage Alert ★ new</span>
+      <span style="font-size:9px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--green);border-radius:2px;display:inline-block"></span>No Action</span>
+    </div>
+  </div>
+  <!-- NBFC + key flags -->
+  <div class="g4" id="nbfcGrades">
+    <div class="card-sm"><div class="lbl">NBFC Grade A</div><div class="big" style="color:var(--green)" id="gradeA">—</div><div class="bar-wrap"><div class="bar" id="gradeABar" style="width:0%;background:var(--green)"></div></div></div>
+    <div class="card-sm"><div class="lbl">NBFC Grade B</div><div class="big" style="color:var(--teal)" id="gradeB">—</div><div class="bar-wrap"><div class="bar" id="gradeBBar" style="width:0%;background:var(--teal)"></div></div></div>
+    <div class="card-sm"><div class="lbl">NBFC Grade C</div><div class="big" style="color:var(--amber)" id="gradeC">—</div><div class="bar-wrap"><div class="bar" id="gradeCBar" style="width:0%;background:var(--amber)"></div></div></div>
+    <div class="card-sm"><div class="lbl">NBFC Grade D</div><div class="big" style="color:var(--red)" id="gradeD">—</div><div class="bar-wrap"><div class="bar" id="gradeDBar" style="width:0%;background:var(--red)"></div></div></div>
+  </div>
+  <!-- Platform finding -->
+  <div style="margin-top:12px;padding:12px 16px;background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.22);border-radius:var(--r)">
+    <div class="lbl" style="color:var(--teal);margin-bottom:5px">Platform ground truth validation</div>
+    <div style="font-size:12px">BMS has fired <strong style="color:var(--white)">0 cell imbalance alerts</strong> in 192M CAN rows. Platform detected 3/3 monitored RTP failures correctly. BAT_LFP_122 false alarm suppression confirmed at plant level. <strong style="color:var(--amber)">41 new cell voltage alerts</strong> now live — signal existed in DuckDB for weeks, was never extracted until Path A.</div>
+  </div>
+</div>
+
+<!-- ══ S2: CHARGING ════════════════════════════════════════════════════ -->
+<div class="sec" id="s2">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§02 Charging Intelligence</div><div class="sec-title">Charger power bands · Location clusters · Behaviour</div></div>
+    <div class="sec-meta" id="s2meta">Loading…</div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Charger power bands — DC-side from CAN current × voltage</div>
+      <div id="chargerBands">
+        <div style="font-size:11px;color:var(--dim);margin-bottom:8px">OEM standard = 1,050W DC (19.8A × 55V confirmed)</div>
+        <!-- Static fallback — will be overridden by API if available -->
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--green);margin-bottom:5px">
+          <span style="width:110px;font-family:var(--font-mono);font-size:9px;color:var(--green)">STANDARD</span>
+          <span style="width:80px;font-size:10px;color:var(--muted)">900–1,300W</span>
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:63%;height:100%;background:var(--green);border-radius:3px"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--green);width:30px">218</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--amber);margin-bottom:5px">
+          <span style="width:110px;font-family:var(--font-mono);font-size:9px;color:var(--amber)">AFTRM. MED</span>
+          <span style="width:80px;font-size:10px;color:var(--muted)">1,300–1,500W</span>
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:15%;height:100%;background:var(--amber);border-radius:3px"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--amber);width:30px">52</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--orange);margin-bottom:5px">
+          <span style="width:110px;font-family:var(--font-mono);font-size:9px;color:var(--orange)">AFTRM. HEAVY</span>
+          <span style="width:80px;font-size:10px;color:var(--muted)">1,500–1,750W</span>
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:9%;height:100%;background:var(--orange);border-radius:3px"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--orange);width:30px">31</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--red);margin-bottom:5px">
+          <span style="width:110px;font-family:var(--font-mono);font-size:9px;color:var(--red)">NON-STANDARD</span>
+          <span style="width:80px;font-size:10px;color:var(--muted)">&gt;1,750W · Void</span>
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:5%;height:100%;background:var(--red);border-radius:3px"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--red);width:30px">18</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--muted)">
+          <span style="width:110px;font-family:var(--font-mono);font-size:9px;color:var(--muted)">DEGRADED</span>
+          <span style="width:80px;font-size:10px;color:var(--muted)">&lt;700W · Failing</span>
+          <div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:8%;height:100%;background:var(--muted);border-radius:3px"></div></div>
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:30px">26</span>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 10px;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.18);border-radius:5px;font-size:10.5px;color:var(--muted)"><strong style="color:var(--orange)">4-week prediction:</strong> 23 batteries cross E11 IR threshold without charger replacement. Range drops 3–8km further.</div>
+    </div>
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Charging behaviour · Location profile</div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:100px;font-size:11px;color:var(--green)">Overnight Full</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:65.4%;height:100%;background:var(--green);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--green);width:36px">65.4%</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:100px;font-size:11px;color:var(--red)">Irregular</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:29%;height:100%;background:var(--red);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--red);width:36px">29%</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:100px;font-size:11px;color:var(--amber)">Partial Top-up</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:7px;overflow:hidden"><div style="width:5.5%;height:100%;background:var(--amber);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--amber);width:36px">5.5%</span></div>
+      </div>
+      <div style="padding:8px 10px;background:rgba(239,68,68,.07);border-radius:5px;font-size:11px;margin-bottom:10px"><span style="color:var(--red);font-weight:600">1.4×</span> faster degradation for Irregular vs Overnight Full · BHS avg 61 vs 73</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="padding:7px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--amber)"><div style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">STREET <span style="color:var(--muted);font-weight:400">220 bats · 577 clusters</span></div><div style="font-size:10px;color:var(--dim);margin-top:2px">Mid-day partial charging. Highest cell imbalance correlation.</div></div>
+        <div style="padding:7px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--green)"><div style="font-family:var(--font-mono);font-size:10px;color:var(--green)">HOME <span style="color:var(--muted);font-weight:400">163 bats · 229 clusters</span></div><div style="font-size:10px;color:var(--dim);margin-top:2px">Overnight fixed. Best SOC ceiling. Strongest compliance.</div></div>
+        <div style="padding:7px 10px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--teal)"><div style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">DEPOT <span style="color:var(--muted);font-weight:400">76 bats · 24 grid cells</span></div><div style="font-size:10px;color:var(--dim);margin-top:2px">Shared infra. One bad charger hits all batteries at same GPS point.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S3: CELL CHEMISTRY ═══════════════════════════════════════════ -->
+<div class="sec" id="s3">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§03 Cell Chemistry Intelligence</div><div class="sec-title">Three severity tiers · NMC transfer learning · Spread trajectories</div></div>
+    <div class="sec-meta">132 chronic<br>19 acute · ~30 early warning</div>
+  </div>
+  <div style="padding:8px 14px;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.18);border-radius:6px;margin-bottom:12px;font-size:10.5px;color:var(--muted)">
+    <span style="color:#818CF8;font-family:var(--font-mono);font-size:8px;letter-spacing:.1em">NMC→LFP TRANSFER · </span>Thresholds calibrated from 4,451 NMC replacement events. WARNING=100mV, CRITICAL=150mV. BMS threshold: 800mV — fired 0 times in 192M rows.
+  </div>
+  <div class="g3">
+    <div class="card" style="border-left:3px solid var(--green)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div><div class="lbl">Early Warning</div><div class="big" style="color:var(--green)">~30</div></div><span class="bdg bdg-green">3–4 WKS AHEAD</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">spread_acceleration &gt;2 mV/wk² for 3+ consecutive weeks. Spread accelerating — not just growing.</div>
+      <table class="tbl" style="font-size:11px">
+        <thead><tr><th>Battery</th><th>Spread</th><th>Accel</th><th>Wks</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--orange);font-family:var(--font-mono)">LFP-013</td><td>247mV</td><td style="color:var(--green)">+3.8/wk²</td><td>3w</td></tr>
+          <tr><td style="color:var(--orange);font-family:var(--font-mono)">LFP-122</td><td>198mV</td><td style="color:var(--green)">+2.3/wk²</td><td>4w</td></tr>
+          <tr><td style="color:var(--orange);font-family:var(--font-mono)">LFP-308</td><td>281mV</td><td style="color:var(--amber)">+4.1/wk²</td><td>5w</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="border-left:3px solid var(--amber)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div><div class="lbl">Acute</div><div class="big" style="color:var(--amber)">19</div></div><span class="bdg bdg-amber">ACT THIS WEEK</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">spread_max &gt;P75×1.5 AND range_volatility_cv &gt;0.25. Weakest cell cutting off early under load.</div>
+      <table class="tbl" style="font-size:11px">
+        <thead><tr><th>Battery</th><th>Spread</th><th>Range Vol.</th><th>Warranty</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--orange);font-family:var(--font-mono)">LFP-078</td><td style="color:var(--amber)">382mV</td><td>cv=0.28</td><td><span class="bdg bdg-green" style="font-size:7.5px">COVERED</span></td></tr>
+          <tr><td style="color:var(--orange);font-family:var(--font-mono)">LFP-044</td><td style="color:var(--red)">521mV</td><td>cv=0.31</td><td><span class="bdg bdg-green" style="font-size:7.5px">COVERED</span></td></tr>
+          <tr><td style="color:var(--orange);font-family:var(--font-mono)">LFP-189</td><td style="color:var(--amber)">341mV</td><td>cv=0.24</td><td><span class="bdg bdg-dim" style="font-size:7.5px">INSPECT</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div><div class="lbl">Chronic / Escalation</div><div class="big" style="color:var(--red)">132</div></div><span class="bdg bdg-red">REPEAT FLAG</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">repeat_alert_flag=1 — CELL_BALANCE fired 2+ times in trailing 8 weeks. Service not performed or permanent mismatch.</div>
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <div style="text-align:center"><div class="big" style="font-size:20px;color:var(--amber)">~89</div><div style="font-size:9.5px;color:var(--dim)">Cause A<br>behaviour</div></div>
+        <div style="text-align:center"><div class="big" style="font-size:20px;color:var(--red)">~43</div><div style="font-size:9.5px;color:var(--dim)">Cause B<br>permanent</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S4: CELL VOLTAGE ★ NEW ════════════════════════════════════════ -->
+<div class="sec" id="s4">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§04 Cell Voltage Intelligence ★ NEW — Path A</div><div class="sec-title">Per-cell minimum voltage · 41 high-risk batteries · RTP-validated</div></div>
+    <div class="sec-meta" id="s4meta">Live from /api/fleet/cell-voltage-alerts<br>Loading…</div>
+  </div>
+
+  <!-- Validation proof -->
+  <div style="padding:12px 16px;background:rgba(34,197,94,.05);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);margin-bottom:14px">
+    <div class="lbl" style="color:var(--green);margin-bottom:5px">Ground truth validation — BAT_LFP_013</div>
+    <div style="font-size:12px">RTP record (Dec 20, 2025): cell 16 = 2.698V at plant-level failure. Platform telemetry weeks 45–53: <strong style="color:var(--white)">8/8 weeks</strong> showed cell_voltage_min_index = 16. Signal was in the 30-sec CAN stream for 8 weeks before the battery reached the plant. Now extracted every week for all 345 batteries.</div>
+  </div>
+
+  <!-- Cell index failure distribution -->
+  <div class="g2" style="margin-bottom:14px">
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Cell index failure distribution — which cell is weakest most often</div>
+      <div style="font-size:10.5px;color:var(--muted);margin-bottom:8px">Position-linked stress. Cell 16 = end-of-string. Cell 8 = mid-string BMS balancing dead zone.</div>
+      <div id="cellIndexDist">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-family:var(--font-mono);font-size:10px;width:60px;color:var(--red)">Cell 16</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:8px;overflow:hidden"><div style="width:54%;height:100%;background:var(--red);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--red);width:50px">4,986×</span><span class="bdg bdg-red" style="font-size:7.5px">END-OF-STRING</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-family:var(--font-mono);font-size:10px;width:60px;color:var(--amber)">Cell 8</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:8px;overflow:hidden"><div style="width:37%;height:100%;background:var(--amber);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--amber);width:50px">3,446×</span><span class="bdg bdg-amber" style="font-size:7.5px">MID-STRING</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-family:var(--font-mono);font-size:10px;width:60px;color:var(--muted)">Cell 9</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:8px;overflow:hidden"><div style="width:13%;height:100%;background:var(--muted);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--muted);width:50px">1,209×</span></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-family:var(--font-mono);font-size:10px;width:60px;color:var(--dim)">Cell 1</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:8px;overflow:hidden"><div style="width:4%;height:100%;background:var(--dim);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--dim);width:50px">~350×</span><span class="bdg bdg-amber" style="font-size:7.5px">K25 LOT RISK</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="font-family:var(--font-mono);font-size:10px;width:60px;color:var(--dim)">Others</span><div style="flex:1;background:var(--bg3);border-radius:3px;height:8px;overflow:hidden"><div style="width:8%;height:100%;background:var(--dim);border-radius:3px"></div></div><span style="font-family:var(--font-mono);font-size:10px;color:var(--dim);width:50px">&lt;300×</span></div>
+      </div>
+      <div style="margin-top:10px;padding:8px 10px;background:rgba(249,115,22,.06);border-radius:5px;font-size:10.5px;color:var(--muted)"><strong style="color:var(--orange)">OEM finding:</strong> Cell 16 end-of-string position shows 44% more failures than mid-string cells. Warrant discussion with Greenfuel on pack assembly geometry and cell matching tolerance.</div>
+    </div>
+    <div class="card">
+      <div class="lbl" style="margin-bottom:10px">Voltage threshold tiers — calibrated from RTP ground truth</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+        <div style="padding:9px 12px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--red)">
+          <div style="display:flex;justify-content:space-between"><span style="font-family:var(--font-mono);font-size:10px;color:var(--red)">DEAD_REVERSAL</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--red)">&lt; 0.15V</span></div>
+          <div style="font-size:10px;color:var(--dim);margin-top:2px">Cell fully reversed. GFLP3001K25: 0.002V. Pack replacement required.</div>
+        </div>
+        <div style="padding:9px 12px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--orange)">
+          <div style="display:flex;justify-content:space-between"><span style="font-family:var(--font-mono);font-size:10px;color:var(--orange)">NEAR_DEAD</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--orange)">0.15 – 0.5V</span></div>
+          <div style="font-size:10px;color:var(--dim);margin-top:2px">Cell failing. K25 service battery: 0.091V. Immediate cell inspection.</div>
+        </div>
+        <div style="padding:9px 12px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--amber)">
+          <div style="display:flex;justify-content:space-between"><span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">WEAK</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--amber)">0.5 – 2.8V</span></div>
+          <div style="font-size:10px;color:var(--dim);margin-top:2px">BAT_LFP_013 c16: 2.698V at failure. Cell balance within 2 weeks.</div>
+        </div>
+        <div style="padding:9px 12px;background:var(--bg2);border-radius:5px;border-left:3px solid var(--green)">
+          <div style="display:flex;justify-content:space-between"><span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">NORMAL</span><span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">&gt; 2.8V</span></div>
+          <div style="font-size:10px;color:var(--dim);margin-top:2px">Healthy LFP cell. Fleet avg min = 3.04V. Monitor weekly.</div>
+        </div>
+      </div>
+      <div class="g2">
+        <div style="text-align:center;padding:10px;background:var(--bg2);border-radius:6px"><div class="big" style="font-size:22px;color:var(--red)">25</div><div style="font-size:10px;color:var(--muted)">Below 2.8V threshold</div></div>
+        <div style="text-align:center;padding:10px;background:var(--bg2);border-radius:6px"><div class="big" style="font-size:22px;color:var(--orange)">40</div><div style="font-size:10px;color:var(--muted)">HIGH RISK compound</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live alert table from API -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="lbl">HIGH RISK cell voltage alerts — live from /api/fleet/cell-voltage-alerts</div>
+      <span class="bdg bdg-orange" id="cellAlertCount">41 batteries</span>
+    </div>
+    <div id="cellVoltageTable"><div class="loading">Fetching cell voltage alerts</div></div>
+  </div>
+</div>
+
+<!-- ══ S5: SOX POWER ═══════════════════════════════════════════════════ -->
+<div class="sec" id="s5">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§05 SOX — State of Power</div><div class="sec-title">5-tier detection · Silent SOX · BMS has never alerted</div></div>
+    <div class="sec-meta" id="s5meta">Loading…</div>
+  </div>
+
+  <!-- SOX tier distribution -->
+  <div class="g5" style="margin-bottom:14px">
+    <div class="card-sm" style="border-left:3px solid var(--green)"><div class="lbl">HEALTHY</div><div class="big" style="color:var(--green)">317</div><div class="sub">91.9% · normal power</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--amber)"><div class="lbl">POWER DEGRADED</div><div class="big" style="color:var(--amber)">16</div><div class="sub">4.6% · charger-driven IR</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--orange)"><div class="lbl">EARLY WARNING</div><div class="big" style="color:var(--orange)">6</div><div class="sub">1.7% · signal building</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--red)"><div class="lbl">CRITICAL</div><div class="big" style="color:var(--red)">5</div><div class="sub">1.4% · replace pipeline</div></div>
+    <div class="card-sm" style="border-left:3px solid var(--teal)"><div class="lbl">SILENT SOX ★</div><div class="big" style="color:var(--teal)">1</div><div class="sub">0.3% · platform unique</div></div>
+  </div>
+
+  <!-- Detection chain -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="lbl" style="margin-bottom:8px">SOX detection chain — how the platform sees what the BMS cannot</div>
+    <div class="chain">
+      <div class="cn"><div class="cn-tag" style="color:var(--orange)">Signal 1</div><div class="cn-v">kps declining<br><span style="font-family:var(--font-mono);font-size:10px;color:var(--orange)">−0.006 to −0.011/wk</span></div></div>
+      <div class="arr"><div class="arr-line"></div></div>
+      <div class="cn"><div class="cn-tag" style="color:var(--green)">Signal 2</div><div class="cn-v">SOH stable<br><span style="font-family:var(--font-mono);font-size:10px;color:var(--green)">Coulomb intact</span></div></div>
+      <div class="arr"><div class="arr-line"></div></div>
+      <div class="cn"><div class="cn-tag" style="color:var(--dim)">BMS</div><div class="cn-v">Shows healthy<br><span style="font-family:var(--font-mono);font-size:10px;color:var(--dim)">0 alerts ever</span></div></div>
+      <div class="arr"><div class="arr-line"></div></div>
+      <div class="cn" style="border-color:var(--teal)"><div class="cn-tag" style="color:var(--teal)">Platform</div><div class="cn-v">Divergence detected<br><span style="font-family:var(--font-mono);font-size:10px;color:var(--teal)">4–8 weeks ahead</span></div></div>
+      <div class="arr"><div class="arr-line"></div></div>
+      <div class="cn" style="border-color:var(--orange)"><div class="cn-tag" style="color:var(--orange)">New · Path A</div><div class="cn-v">Cell min voltage<br><span style="font-family:var(--font-mono);font-size:10px;color:var(--orange)">confirms which cell</span></div></div>
+    </div>
+  </div>
+
+  <!-- Battery SOX view — live -->
+  <div class="card">
+    <div class="lbl" style="margin-bottom:8px">Selected battery SOX state — <span id="soxBatLabel">BAT_LFP_109</span></div>
+    <div id="soxDetail"><div class="loading">Fetching SOX tier</div></div>
+  </div>
+
+  <!-- Three SOX types -->
+  <div class="g3" style="margin-top:12px">
+    <div class="card" style="border-left:3px solid var(--teal)">
+      <div class="lbl" style="margin-bottom:4px">SOX Type A — Charger Origin</div>
+      <div style="font-family:var(--font-mono);font-size:18px;color:var(--teal);margin-bottom:6px">127 batteries</div>
+      <div style="font-size:11px;color:var(--muted)">IR rising without SOH decline. Charger fix = battery recovery within 4 weeks. Not warranty.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--orange)">
+      <div class="lbl" style="margin-bottom:4px">SOX Type B — Silent Chemistry</div>
+      <div style="font-family:var(--font-mono);font-size:18px;color:var(--orange);margin-bottom:6px">~24 batteries</div>
+      <div style="font-size:11px;color:var(--muted)">kps↓ SOH stable. Standard charger. BMS silent. Divergence confirmed. LFP-278 primary demo.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="lbl" style="margin-bottom:4px">SOX Type C — Thermal Loop</div>
+      <div style="font-family:var(--font-mono);font-size:18px;color:var(--red);margin-bottom:6px">~23 batteries</div>
+      <div style="font-size:11px;color:var(--muted)">E3+E11+E7 all active. Temp &gt;45°C. Replace before June. Sep ×1.52 multiplier.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S6: COMPONENTS ══════════════════════════════════════════════════ -->
+<div class="sec" id="s6">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§06 Component Intelligence</div><div class="sec-title">Connector · BMS stress · Drivetrain · Confirmed blind spots</div></div>
+    <div class="sec-meta">Component-level intelligence</div>
+  </div>
+  <div class="g3" style="margin-bottom:12px">
+    <div class="card" style="border-left:3px solid var(--amber)">
+      <div class="lbl" style="margin-bottom:5px">Connector / Busbar</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Both signals required for 2+ consecutive weeks. Neither alone is sufficient.</div>
+      <div style="padding:7px 9px;background:var(--bg2);border-radius:5px;margin-bottom:5px"><div style="font-family:var(--font-mono);font-size:8.5px;color:var(--amber);margin-bottom:2px">SIGNAL 1</div><div style="font-size:10.5px">ir_proxy_delta rising — week-on-week IR change = contact resistance, not chemistry</div></div>
+      <div style="padding:7px 9px;background:var(--bg2);border-radius:5px"><div style="font-family:var(--font-mono);font-size:8.5px;color:var(--amber);margin-bottom:2px">SIGNAL 2</div><div style="font-size:10.5px">pack_v_cell_sum_divergence &lt;−50mV — voltage loss in electrical path</div></div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--muted)">
+      <div class="lbl" style="margin-bottom:5px">BMS Stress State</div>
+      <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:7px">stress index 0–10</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Detects stress state only. Hardware failure is a confirmed blind spot.</div>
+      <div style="padding:7px 9px;background:rgba(245,158,11,.06);border-radius:5px;font-size:10.5px"><strong style="color:var(--amber)">Key finding:</strong> BMS firmware v2.1.3 fires at 110mV vs healthy 150mV norm. Platform corroboration gate suppresses these — plant confirmed NPF on BAT_LFP_122.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--dim)">
+      <div class="lbl" style="margin-bottom:5px">Drivetrain Stress</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Load-to-speed ratio above P90 for 3+ weeks. Three confounders always disclosed.</div>
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:10.5px;padding:4px 8px;background:var(--bg2);border-radius:4px">Heavy cargo load</div>
+        <div style="font-size:10.5px;padding:4px 8px;background:var(--bg2);border-radius:4px">Terrain / inclines</div>
+        <div style="font-size:10.5px;padding:4px 8px;background:var(--bg2);border-radius:4px">Tyre pressure</div>
+      </div>
+    </div>
+  </div>
+  <div style="padding:12px 16px;background:var(--bg2);border:1px dashed var(--dim);border-radius:var(--r)">
+    <div class="lbl" style="margin-bottom:8px">Confirmed blind spots — telemetry cannot detect these</div>
+    <div class="g3">
+      <div style="display:flex;gap:8px"><span class="chip chip-blind">BMS Hardware</span><div style="font-size:10.5px;color:var(--dim)">PCB crash has no CAN precursor. Stress state only.</div></div>
+      <div style="display:flex;gap:8px"><span class="chip chip-blind">Physical Damage</span><div style="font-size:10.5px;color:var(--dim)">23.5% of returns. Cabinet, water, accident invisible.</div></div>
+      <div style="display:flex;gap:8px"><span class="chip chip-blind">Motor Fault Direct</span><div style="font-size:10.5px;color:var(--dim)">Motor CAN not in DBC map. Indirect proxy only.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S7: IOT ══════════════════════════════════════════════════════════ -->
+<div class="sec" id="s7">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§07 IoT Device Health</div><div class="sec-title">Device ≠ Battery · IoT failure does not mean battery failure</div></div>
+    <div class="sec-meta" id="s7meta">Loading…</div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="lbl" style="margin-bottom:8px">Fleet IoT distribution</div>
+    <div id="iotBar" style="display:flex;height:20px;border-radius:5px;overflow:hidden;gap:2px">
+      <div id="iotHealthyBar" style="flex:1;background:var(--green);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:#000;font-weight:700">—</div>
+      <div id="iotDegradingBar" style="flex:1;background:var(--amber);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:#000;font-weight:700">—</div>
+      <div id="iotCriticalBar" style="flex:1;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:9px;color:#fff;font-weight:700">—</div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:7px">
+      <span style="font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--green);border-radius:2px;display:inline-block"></span>HEALTHY (<span id="iotHealthyN">—</span>) — full scoring</span>
+      <span style="font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--amber);border-radius:2px;display:inline-block"></span>DEGRADING (<span id="iotDegradingN">—</span>) — confidence MEDIUM</span>
+      <span style="font-size:9.5px;color:var(--muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--red);border-radius:2px;display:inline-block"></span>CRITICAL (<span id="iotCriticalN">—</span>) — scoring suspended</span>
+    </div>
+    <div id="iotSeparation" style="margin-top:8px;padding:7px 10px;background:rgba(148,163,184,.06);border-left:2px solid var(--muted);border-radius:4px;font-size:10.5px;color:var(--dim)">IoT failure ≠ battery failure. Device degradation does not change battery chemistry assessment.</div>
+  </div>
+  <div class="g2">
+    <div class="card" style="border-left:3px solid var(--amber)">
+      <div class="lbl" style="margin-bottom:6px">DEGRADING</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">BOTH gps_coverage_trend AND can_dropout_rate_trend declining for 3+ consecutive weeks. Single bad week = noise.</div>
+      <div style="font-size:10.5px;color:var(--dim)">Scoring confidence: MEDIUM. Predictions directional only — may be understated. Schedule device check.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="lbl" style="margin-bottom:6px">CRITICAL — <span id="iotCriticalN2">—</span> batteries</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Scoring suspended. Chemistry unknown. Replace IoT device first, then reassess battery. Device ≠ battery fault.</div>
+      <div style="padding:8px 10px;background:rgba(239,68,68,.06);border-radius:5px;font-size:10.5px"><strong style="color:var(--red)">Action:</strong> ₹1,500 device replacement restores scoring within 1–2 weeks. Do not make battery decisions until signal resumes.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S8: FAILURE CHAINS ══════════════════════════════════════════════ -->
+<div class="sec" id="s8">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§08 Failure Chain Lattice</div><div class="sec-title">Markov transition probabilities · 1,378 service records · 34 batteries flagged</div></div>
+    <div class="sec-meta" id="s8meta">Loading…</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--red)">23.5%</div>
+      <div style="font-size:10px;color:var(--muted)">Physical Damage</div>
+      <div style="font-size:14px;color:var(--dim);margin:3px 0">↓</div>
+      <div style="font-size:10.5px;color:var(--white);font-weight:600">Cell Leakage</div>
+      <div style="font-size:9.5px;color:var(--dim);margin-top:3px">Median 5 weeks</div>
+      <div style="position:absolute;bottom:0;right:0;width:60px;height:60px;background:var(--red);border-radius:50%;filter:blur(25px);opacity:.12"></div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--amber)">15%</div>
+      <div style="font-size:10px;color:var(--muted)">Cell Failure</div>
+      <div style="font-size:14px;color:var(--dim);margin:3px 0">↓</div>
+      <div style="font-size:10.5px;color:var(--white);font-weight:600">Physical Damage</div>
+      <div style="font-size:9.5px;color:var(--dim);margin-top:3px">Median 6 weeks</div>
+      <div style="position:absolute;bottom:0;right:0;width:60px;height:60px;background:var(--amber);border-radius:50%;filter:blur(25px);opacity:.12"></div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--amber)">9%</div>
+      <div style="font-size:10px;color:var(--muted)">Cell Imbalance</div>
+      <div style="font-size:14px;color:var(--dim);margin:3px 0">↓</div>
+      <div style="font-size:10.5px;color:var(--white);font-weight:600">Cell Leakage</div>
+      <div style="font-size:9.5px;color:var(--dim);margin-top:3px">Median 16 weeks</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--amber)">7.1%</div>
+      <div style="font-size:10px;color:var(--muted)">Cell Imbalance</div>
+      <div style="font-size:14px;color:var(--dim);margin:3px 0">↓</div>
+      <div style="font-size:10.5px;color:var(--white);font-weight:600">Cell Dead</div>
+      <div style="font-size:9.5px;color:var(--dim);margin-top:3px">Median 12 weeks</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="font-family:var(--font-mono);font-size:26px;font-weight:800;color:var(--amber)">7.1%</div>
+      <div style="font-size:10px;color:var(--muted)">Electrical Fault</div>
+      <div style="font-size:14px;color:var(--dim);margin:3px 0">↓</div>
+      <div style="font-size:10.5px;color:var(--white);font-weight:600">Cell Failure</div>
+      <div style="font-size:9.5px;color:var(--dim);margin-top:3px">Median 8 weeks</div>
+    </div>
+  </div>
+  <!-- BAT_LFP_133 detail -->
+  <div class="card" style="border-left:3px solid var(--red)">
+    <div style="display:flex;gap:16px;align-items:center">
+      <div><div class="lbl">Active Example — BAT_LFP_133 · Chain EC-01 · Physical Damage → Cell Leakage</div><div style="font-family:var(--font-mono);font-size:14px;color:var(--red)">23.5% probability within 5 weeks</div></div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap">
+        <span class="chip chip-crit">ir_proxy_delta rising</span>
+        <span class="chip chip-crit">pack_v −55mV</span>
+        <span class="chip chip-warn">connector_suspect</span>
+        <span class="chip chip-warn">3 weeks active</span>
+      </div>
+    </div>
+    <div style="margin-top:8px;font-size:11px;color:var(--muted)">Action: physical inspection this week. Not emergency — schedule at next service visit. Cost now: ₹0. Cost if Cell Leakage: ₹15,000+</div>
+  </div>
+</div>
+
+<!-- ══ S9: PREDICTIONS ═════════════════════════════════════════════════ -->
+<div class="sec" id="s9">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§09 Complete Fleet Predictions</div><div class="sec-title">All 345 batteries · every group · 4-week and 8-week · no battery missing</div></div>
+    <div class="sec-meta">10 groups<br>345 accounted</div>
+  </div>
+  <!-- Header row -->
+  <div style="display:grid;grid-template-columns:180px 1fr 1fr 80px 130px;gap:1px;background:transparent;margin-bottom:4px">
+    <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:4px 11px">Action Group</div>
+    <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:4px 11px">4-Week Prediction</div>
+    <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:4px 11px">8-Week if No Action</div>
+    <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:4px 11px">Conf.</div>
+    <div style="font-family:var(--font-mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:4px 11px">Key Batteries</div>
+  </div>
+  <div id="predRows">
+    <!-- Prediction rows injected by JS -->
+  </div>
+  <div style="margin-top:10px;padding:9px 13px;background:rgba(13,148,136,.05);border:1px solid rgba(13,148,136,.15);border-radius:6px;font-size:10.5px;color:var(--dim)">Note: IoT Degrading (128) overlaps other action groups — batteries can have both an action AND degrading IoT. Unique active: 345 + 16 suspended = 361 total.</div>
+  <!-- Seasonal -->
+  <div class="g2" style="margin-top:12px">
+    <div class="card" style="border-left:3px solid var(--orange)">
+      <div class="lbl" style="margin-bottom:4px">September Peak — 1.52× fleet average</div>
+      <div style="font-family:var(--font-mono);font-size:28px;color:var(--red);margin-bottom:5px">1.52×</div>
+      <div style="font-size:11px;color:var(--muted)">Confirmed from 65 weeks · 7,929 battery-week measurements. Not a model. March = 0.54×. Planning starts now.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="lbl" style="margin-bottom:4px">Replace before June — 5 thermal-risk batteries</div>
+      <div style="font-family:var(--font-mono);font-size:28px;color:var(--red);margin-bottom:5px">5 batteries</div>
+      <div style="font-size:11px;color:var(--muted)">E3+E11 active + SOH &lt;68%. Summer heat amplification from May. In-field failure during Sep peak is the consequence of inaction.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S10: DPP ═════════════════════════════════════════════════════════ -->
+<div class="sec" id="s10">
+  <div class="sec-hd">
+    <div><div class="sec-tag">§10 Digital Product Passport · DPP</div><div class="sec-title">Per-battery intelligence · all signals · attribution · warranty · cell-level</div></div>
+    <div class="sec-meta">Select battery ↑<br>Live API data</div>
+  </div>
+  <div class="dpp-grid">
+    <!-- Sidebar -->
+    <div class="dpp-side">
+      <div class="dpp-id" id="dppId">BAT_LFP_109</div>
+      <div class="dpp-pack" id="dppPack">Pack3401 · Surat · Week 65</div>
+      <div class="dpp-scores">
+        <div class="dpp-score"><div class="dpp-score-v" id="dppDri" style="color:var(--red)">55.1</div><div class="dpp-score-l">DRI Score</div></div>
+        <div class="dpp-score"><div class="dpp-score-v" id="dppAhi" style="color:var(--amber)">71.4</div><div class="dpp-score-l">AHI Score</div></div>
+      </div>
+      <div class="dpp-quad" id="dppQuad" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25)">
+        <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--red)" id="dppQuadLabel">Q4 — DETERIORATING</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:3px" id="dppQuadDesc">Low DRI, low AHI — deteriorating from both baseline and age peers</div>
+      </div>
+      <!-- Key signals -->
+      <div class="dpp-sig"><span style="color:var(--muted)">Range</span><span class="dpp-sig-v" id="dppRange" style="color:var(--red)">45.5km</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">SOH (conservative)</span><span class="dpp-sig-v" id="dppSoh" style="color:var(--red)">53%</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">kps slope 8wk</span><span class="dpp-sig-v" id="dppKps" style="color:var(--red)">−0.011/wk</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">IR trajectory</span><span class="dpp-sig-v" id="dppIr" style="color:var(--red)">+0.22mΩ/wk</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">Cell spread max</span><span class="dpp-sig-v" id="dppSpread" style="color:var(--amber)">312mV</span></div>
+      <div class="dpp-sig" style="border-top:1px solid var(--border2);margin-top:4px;padding-top:8px"><span style="color:var(--amber)">Cell min voltage ★</span><span class="dpp-sig-v" id="dppCellMin" style="color:var(--amber)">—</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">Weakest cell</span><span class="dpp-sig-v" id="dppCellIdx" style="color:var(--muted)">—</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">Cell alert tier</span><span class="dpp-sig-v" id="dppCellTier">—</span></div>
+      <div class="dpp-sig"><span style="color:var(--teal)">SOX tier</span><span class="dpp-sig-v" id="dppSox" style="color:var(--teal)">—</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">Charger type</span><span class="dpp-sig-v" id="dppCharger">—</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">IoT health</span><span class="dpp-sig-v" id="dppIot" style="color:var(--green)">HEALTHY</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">Action</span><span class="dpp-sig-v" id="dppAction" style="color:var(--red)">REPLACE_PLAN</span></div>
+      <div class="dpp-sig"><span style="color:var(--muted)">Warranty status</span><span class="dpp-sig-v" id="dppWty" style="color:var(--green)">ELIGIBLE</span></div>
+    </div>
+
+    <!-- Main DPP panels -->
+    <div id="dppMain">
+      <!-- L0: Telemetry -->
+      <div class="layer">
+        <div class="layer-title">Layer 0 — Raw Telemetry</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <span class="chip chip-on">30-sec CAN</span><span class="chip chip-on">cell_voltage_01..16</span><span class="chip chip-on">current_a</span><span class="chip chip-on">soc_pct</span><span class="chip chip-on">battery_voltage</span><span class="chip chip-on">load_status</span><span class="chip chip-on">GPS lat/lon</span><span class="chip chip-on">speed_kmh</span>
+        </div>
+        <div style="margin-top:8px;font-family:var(--font-mono);font-size:9px;color:var(--dim)">192M CAN rows · 65 weeks · DuckDB D:\ · Quality gate: ≥80% completeness for scoring</div>
+      </div>
+      <!-- L1: Behavioural -->
+      <div class="layer">
+        <div class="layer-title">Layer 1 — Behavioural Profile</div>
+        <div class="g4" id="dppL1">
+          <div><div class="lbl" style="margin-bottom:4px">Drive</div><span class="chip chip-warn" id="dppDrive">AGGRESSIVE</span></div>
+          <div><div class="lbl" style="margin-bottom:4px">Charge</div><span class="chip chip-crit" id="dppChg">IRREGULAR</span></div>
+          <div><div class="lbl" style="margin-bottom:4px">Use Case</div><span class="chip chip-warn" id="dppUse">QC ROUTE</span></div>
+          <div><div class="lbl" style="margin-bottom:4px">Load</div><span class="chip chip-warn" id="dppLoad">HIGH &gt;P90</span></div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted)" id="dppBehav">AGG drive + IRREGULAR charging + QC route = highest-risk combination. Combined attribution: ~56% operator-driven.</div>
+      </div>
+      <!-- L2: Internal state -->
+      <div class="layer">
+        <div class="layer-title">Layer 2 — Internal State</div>
+        <div class="g2">
+          <div>
+            <div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--dim)">Range vs commissioning</span><span style="font-family:var(--font-mono)" id="dppPctComm">73.7%</span></div><div class="bar-wrap"><div class="bar" id="dppPctCommBar" style="width:73.7%;background:var(--red)"></div></div></div>
+            <div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--dim)">SOH conservative</span><span style="font-family:var(--font-mono)" id="dppSohPct">53%</span></div><div class="bar-wrap"><div class="bar" id="dppSohBar" style="width:53%;background:var(--red)"></div></div></div>
+            <!-- Cell voltage meter -->
+            <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:var(--amber)">Cell min voltage ★</span><span style="font-family:var(--font-mono)" id="dppCellMinV">loading…</span></div>
+            <div class="cv-meter"><div class="cv-track"><div class="cv-fill" id="dppCellBar" style="width:70%;background:var(--amber)"></div><div class="cv-mark" style="left:85.7%"></div></div><span style="font-family:var(--font-mono);font-size:9px;color:var(--dim)" id="dppCellIdxV">Cell ?</span></div>
+            <div style="font-size:9px;color:var(--dim);margin-top:2px">Mark at 2.8V WEAK threshold · bar = voltage / 3.4V (full)</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg3);border-radius:4px"><span style="font-size:11px;color:var(--dim)">Degradation regime</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--amber)" id="dppRegime">POST_KNEE</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg3);border-radius:4px"><span style="font-size:11px;color:var(--dim)">DoD (fleet=0.90)</span><span style="font-family:var(--font-mono);font-size:11px" id="dppDod">0.91</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg3);border-radius:4px"><span style="font-size:11px;color:var(--dim)">Deep discharge</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--amber)" id="dppE4">E4: 3×/wk</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg3);border-radius:4px"><span style="font-size:11px;color:var(--dim)">Corroboration</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--green)" id="dppCorr">5/7 signals</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--bg3);border-radius:4px"><span style="font-size:11px;color:var(--teal)">SOX tier ★</span><span style="font-family:var(--font-mono);font-size:11px" id="dppSoxInline">loading…</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- L3: Events -->
+      <div class="layer">
+        <div class="layer-title">Layer 3 — Active Events</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap" id="dppEvents">
+          <span class="chip chip-crit">E7 Voltage Sag</span><span class="chip chip-crit">E11 IR Escalation</span><span class="chip chip-crit">E3 Thermal</span><span class="chip chip-warn">E1 Regime Change</span><span class="chip chip-warn">E15 SOH Decline</span>
+        </div>
+      </div>
+      <!-- L4: Attribution -->
+      <div class="layer">
+        <div class="layer-title">Layer 4 — Degradation Attribution</div>
+        <div style="display:flex;flex-direction:column;gap:5px" id="dppAttrib">
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:110px;font-size:11px">Charging stress</div><div style="flex:1;background:var(--bg3);border-radius:3px;height:9px;overflow:hidden"><div style="width:34%;height:100%;background:var(--red);border-radius:3px"></div></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--red);width:32px">34%</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:110px;font-size:11px">Usage / DoD</div><div style="flex:1;background:var(--bg3);border-radius:3px;height:9px;overflow:hidden"><div style="width:22%;height:100%;background:var(--amber);border-radius:3px"></div></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--amber);width:32px">22%</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:110px;font-size:11px">Cell chemistry</div><div style="flex:1;background:var(--bg3);border-radius:3px;height:9px;overflow:hidden"><div style="width:24%;height:100%;background:var(--orange);border-radius:3px"></div></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--orange);width:32px">24%</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:110px;font-size:11px">Calendar aging</div><div style="flex:1;background:var(--bg3);border-radius:3px;height:9px;overflow:hidden"><div style="width:13%;height:100%;background:var(--teal);border-radius:3px"></div></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--teal);width:32px">13%</div></div>
+          <div style="display:flex;align-items:center;gap:8px"><div style="width:110px;font-size:11px">Thermal stress</div><div style="flex:1;background:var(--bg3);border-radius:3px;height:9px;overflow:hidden"><div style="width:7%;height:100%;background:var(--muted);border-radius:3px"></div></div><div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);width:32px">7%</div></div>
+        </div>
+      </div>
+      <!-- L5: Warranty -->
+      <div class="layer">
+        <div class="layer-title">Layer 5 — Warranty Classification</div>
+        <div style="padding:10px 12px;border-radius:6px;margin-bottom:9px" id="dppWtyBlock" style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2)">
+          <div style="font-family:var(--font-mono);font-size:14px;font-weight:700" id="dppWtyStatus">WARRANTY_CLAIM_ELIGIBLE</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px" id="dppWtyReason">Pack3401 SR delivering 73.7% vs 85% warranty floor at 6.4 months.</div>
+        </div>
+        <div class="g2">
+          <div><div class="lbl" style="margin-bottom:3px">Warranty band</div><div style="font-size:12px" id="dppWtyBand">0–12mo floor 85% · Current 73.7% · <span style="color:var(--red)">BELOW</span></div></div>
+          <div><div class="lbl" style="margin-bottom:3px">EFC consumed</div><div style="font-size:12px" id="dppWtyEfc">412 / 1,200 = <span style="color:var(--green)">34.3%</span></div></div>
+        </div>
+      </div>
+      <!-- L6: Predictions -->
+      <div class="layer">
+        <div class="layer-title">Layer 6 — Forward Predictions</div>
+        <div class="g3">
+          <div class="card-sm" style="text-align:center"><div class="lbl" style="margin-bottom:5px">4-Week Range</div><div style="font-family:var(--font-mono);font-size:22px;color:var(--red)" id="dppW4">~40km</div><div style="font-size:9.5px;color:var(--dim)">BMS silent</div></div>
+          <div class="card-sm" style="text-align:center"><div class="lbl" style="margin-bottom:5px">8-Week Outcome</div><div style="font-family:var(--font-mono);font-size:18px;color:var(--red)" id="dppW8">Floor crossed</div><div style="font-size:9.5px;color:var(--dim)">Shutdown risk</div></div>
+          <div class="card-sm" style="text-align:center"><div class="lbl" style="margin-bottom:5px">RUL Estimate</div><div style="font-family:var(--font-mono);font-size:22px;color:var(--red)" id="dppRul">4–8 wks</div><div style="font-size:9.5px;color:var(--dim)">Preliminary</div></div>
+        </div>
+      </div>
+      <!-- L7: Audience cards -->
+      <div class="layer">
+        <div class="layer-title">Layer 7 — Audience Intelligence</div>
+        <div class="g3">
+          <div style="padding:11px;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.18);border-radius:6px"><div class="lbl" style="color:var(--orange);margin-bottom:5px">Operator</div><div style="font-size:11.5px" id="dppOpCard">Battery power declining faster than capacity. Plan replacement in 4–6 weeks.</div></div>
+          <div style="padding:11px;background:rgba(13,148,136,.06);border:1px solid rgba(13,148,136,.18);border-radius:6px"><div class="lbl" style="color:var(--teal);margin-bottom:5px">NBFC / Lender</div><div style="font-size:11.5px" id="dppNbfcCard">Grade D. RUL &lt; loan tenure. Collateral below minimum. Covenant review.</div></div>
+          <div style="padding:11px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);border-radius:6px"><div class="lbl" style="color:var(--green);margin-bottom:5px">OEM</div><div style="font-size:11.5px" id="dppOemCard">Pack3401 design gap confirmed. WARRANTY_CLAIM_ELIGIBLE. Evidence pack ready.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div style="padding:18px 0;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+  <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--dim)">enerlytik Service Intelligence · Week 65 · April 2026 · dev-v2.0 · service-backend-cell-sox-complete</div>
+  <div style="display:flex;gap:6px">
+    <span class="bdg bdg-teal">345 batteries</span>
+    <span class="bdg bdg-orange">★ Cell voltage</span>
+    <span class="bdg bdg-dim">SOX 5-tier</span>
+    <span class="bdg bdg-dim">3/3 RTP validated</span>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const API = 'http://localhost:3001';
+const tok = '{{ api_token }}';
+const H = {'Authorization':'Bearer '+tok,'Content-Type':'application/json'};
+const _siParams = new URLSearchParams(window.location.search);
+let currentBat = _siParams.get('battery') || 'BAT_LFP_109';
+
+// ── API check ──────────────────────────────────────────────────────────
+async function checkApi(){
+  try{
+    const r = await fetch(API+'/health',{headers:H,signal:AbortSignal.timeout(3000)});
+    document.getElementById('apiStatus').textContent = r.ok?'API LIVE':'API ERR';
+    document.getElementById('apiStatus').className = 'api-status '+(r.ok?'live':'err');
+  }catch{
+    document.getElementById('apiStatus').textContent='API OFFLINE';
+    document.getElementById('apiStatus').className='api-status err';
+  }
+}
+
+// ── Safe fetch ─────────────────────────────────────────────────────────
+async function apiFetch(path){
+  try{
+    const r = await fetch(API+path,{headers:H,signal:AbortSignal.timeout(8000)});
+    if(!r.ok) return null;
+    return await r.json();
+  }catch{return null;}
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────
+function go(id){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth'});
+  document.querySelectorAll('.sn').forEach(n=>n.classList.remove('on'));
+  const idx={'s1':0,'s2':1,'s3':2,'s4':3,'s5':4,'s6':5,'s7':6,'s8':7,'s9':8,'s10':9};
+  document.querySelectorAll('.sn')[idx[id]]?.classList.add('on');
+}
+
+// ── Scroll spy ────────────────────────────────────────────────────────
+const sections=['s1','s2','s3','s4','s5','s6','s7','s8','s9','s10'];
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){
+    const idx=sections.indexOf(e.target.id);
+    document.querySelectorAll('.sn').forEach((n,i)=>n.classList.toggle('on',i===idx));
+  }});
+},{threshold:0.3,rootMargin:'-52px 0px -60% 0px'});
+sections.forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el);});
+
+// ── Tier colour ───────────────────────────────────────────────────────
+function tierCol(t){
+  return{DEAD:'var(--red)',NEAR_DEAD:'var(--red)',WEAK:'var(--amber)',NORMAL:'var(--green)',NO_DATA:'var(--dim)'}[t]||'var(--muted)';
+}
+function soxCol(t){
+  return{HEALTHY:'var(--green)',POWER_DEGRADED:'var(--amber)',EARLY_WARNING:'var(--orange)',CRITICAL:'var(--red)',SILENT_SOX:'var(--teal)'}[t]||'var(--muted)';
+}
+
+// ── S4: Cell voltage alerts table ─────────────────────────────────────
+async function loadCellAlerts(){
+  const el=document.getElementById('cellVoltageTable');
+  const meta=document.getElementById('s4meta');
+  const d=await apiFetch('/api/fleet/cell-voltage-alerts');
+  if(!d||!d.length){
+    el.innerHTML='<div class="err-box">Could not load cell voltage alerts — check API server</div>';
+    return;
+  }
+  document.getElementById('cellAlertCount').textContent=d.length+' batteries';
+  document.getElementById('cellAlertKp').textContent=d.length;
+  meta.innerHTML=`Live from /api/fleet/cell-voltage-alerts<br>${d.length} batteries · ${d.filter(x=>x.high_risk_compound).length} HIGH RISK`;
+  const rows=d.map(r=>`
+    <tr>
+      <td style="font-family:var(--font-mono);color:var(--orange)">${r.battery_id||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${r.pack_model||'—'} / ${r.city||'—'}</td>
+      <td style="font-family:var(--font-mono);color:${tierCol(r.cell_voltage_alert_tier)};font-weight:700">${r.cell_voltage_min_weekly!=null?r.cell_voltage_min_weekly.toFixed(3)+'V':'—'}</td>
+      <td style="font-family:var(--font-mono);color:var(--muted)">Cell ${r.cell_voltage_min_index||'?'}</td>
+      <td><span class="bdg bdg-${r.cell_voltage_alert_tier==='DEAD'||r.cell_voltage_alert_tier==='NEAR_DEAD'?'red':'amber'}">${r.cell_voltage_alert_tier||'—'}</span></td>
+      <td><span class="bdg bdg-${r.high_risk_compound?'red':'dim'}">${r.high_risk_compound?'HIGH RISK':'MONITOR'}</span></td>
+      <td style="font-size:11px;color:var(--teal)">${r.recommended_action||'—'}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${r.current_action||'—'}</td>
+    </tr>`).join('');
+  el.innerHTML=`<table class="tbl"><thead><tr><th>Battery</th><th>Pack/City</th><th>Min Voltage</th><th>Cell #</th><th>Tier</th><th>Risk</th><th>Action</th><th>Current</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── S5: SOX detail for selected battery ───────────────────────────────
+async function loadSox(batId){
+  const el=document.getElementById('soxDetail');
+  document.getElementById('soxBatLabel').textContent=batId;
+  el.innerHTML='<div class="loading">Fetching SOX tier</div>';
+  const d=await apiFetch('/api/battery/'+batId+'/sox-tier');
+  if(!d){el.innerHTML='<div class="err-box">SOX tier not available — check API</div>';return;}
+  const col=soxCol(d.sox_tier);
+  el.innerHTML=`
+    <div class="g4">
+      <div class="card-sm" style="border-left:3px solid ${col}"><div class="lbl">SOX Tier</div><div style="font-family:var(--font-mono);font-size:18px;color:${col};font-weight:700">${d.sox_tier||'—'}</div><div style="font-size:10.5px;color:var(--muted);margin-top:3px">${d.sox_tier_plain||'—'}</div></div>
+      <div class="card-sm"><div class="lbl">Heat Generation</div><div style="font-family:var(--font-mono);font-size:18px;color:var(--muted)">${d.heat_generation_index!=null?d.heat_generation_index.toFixed(0):'—'}</div><div style="font-size:10px;color:var(--dim);margin-top:2px">index units</div></div>
+      <div class="card-sm"><div class="lbl">Effective DoD</div><div style="font-family:var(--font-mono);font-size:18px;color:var(--muted)">${d.effective_dod_actual!=null?d.effective_dod_actual.toFixed(3):'—'}</div></div>
+      <div class="card-sm"><div class="lbl">SOX Divergence</div><div style="font-family:var(--font-mono);font-size:18px;color:${d.sox_divergence_detected?'var(--orange)':'var(--green)'}">${d.sox_divergence_detected?'DETECTED':'NONE'}</div><div style="font-size:10px;color:var(--dim);margin-top:2px">kps↓ + SOH stable</div></div>
+    </div>
+    <div style="margin-top:10px;padding:8px 12px;background:rgba(13,148,136,.05);border:1px solid rgba(13,148,136,.15);border-radius:5px;font-size:10.5px;color:var(--dim)">BMS alerting: <strong style="color:var(--green)">0 alerts in 192M rows</strong> · Platform detected: <strong style="color:var(--white)">${d.sox_tier||'—'}</strong> via kps + IR divergence</div>`;
+
+  // Update DPP SOX inline
+  document.getElementById('dppSoxInline').textContent=d.sox_tier||'—';
+  document.getElementById('dppSoxInline').style.color=col;
+  document.getElementById('dppSox').textContent=d.sox_tier||'—';
+  document.getElementById('dppSox').style.color=col;
+}
+
+// ── DPP: cell health for selected battery ─────────────────────────────
+async function loadCellHealth(batId){
+  const d=await apiFetch('/api/battery/'+batId+'/cell-health');
+  if(!d) return;
+  const col=tierCol(d.cell_voltage_alert_tier);
+  document.getElementById('dppCellMin').textContent=d.cell_voltage_min_weekly!=null?d.cell_voltage_min_weekly.toFixed(3)+'V':'—';
+  document.getElementById('dppCellMin').style.color=col;
+  document.getElementById('dppCellIdx').textContent=d.cell_voltage_min_index?'Cell '+d.cell_voltage_min_index:'—';
+  document.getElementById('dppCellTier').textContent=d.cell_voltage_alert_tier||'—';
+  document.getElementById('dppCellTier').style.color=col;
+  document.getElementById('dppCellMinV').textContent=d.cell_voltage_min_weekly!=null?d.cell_voltage_min_weekly.toFixed(3)+'V':'—';
+  document.getElementById('dppCellIdxV').textContent=d.cell_voltage_min_index?'Cell '+d.cell_voltage_min_index:'—';
+  if(d.cell_voltage_min_weekly!=null){
+    const pct=Math.min(100,(d.cell_voltage_min_weekly/3.4)*100);
+    document.getElementById('dppCellBar').style.width=pct+'%';
+    document.getElementById('dppCellBar').style.background=col;
+  }
+}
+
+// ── Battery data store ────────────────────────────────────────────────
+const BATS={
+  'BAT_LFP_109':{pack:'Pack3401 · Surat / SR',dri:'55.1',driC:'var(--red)',ahi:'71.4',ahiC:'var(--amber)',quad:{label:'Q4 — DETERIORATING',desc:'Low DRI, low AHI — deteriorating from both commissioning baseline and age peers',bg:'rgba(239,68,68,.08)',bc:'rgba(239,68,68,.25)',c:'var(--red)'},range:'45.5km',rangeC:'var(--red)',soh:'53%',sohC:'var(--red)',kps:'−0.011/wk',kpsC:'var(--red)',ir:'+0.22mΩ/wk',irC:'var(--red)',spread:'312mV',spreadC:'var(--amber)',iot:'HEALTHY',iotC:'var(--green)',action:'REPLACE_PLAN',actionC:'var(--red)',wty:'ELIGIBLE',wtyC:'var(--green)',drive:'AGGRESSIVE',driveC:'chip-crit',chg:'IRREGULAR',chgC:'chip-crit',use:'QC ROUTE',useC:'chip-warn',load:'HIGH >P90',loadC:'chip-warn',behav:'AGG drive + IRREGULAR + QC route = highest-risk combination. Combined attribution: ~56% operator-driven.',pctComm:'73.7%',sohPct:'53%',regime:'POST_KNEE',dod:'0.91',e4:'E4: 3×/wk',corr:'5/7 signals',wtyStatus:'WARRANTY_CLAIM_ELIGIBLE',wtyBg:'rgba(34,197,94,.08)',wtyBc:'rgba(34,197,94,.2)',wtyC:'var(--green)',wtyReason:'Pack3401 SR at 73.7% vs 85% warranty floor. 6.4 months old.',wtyBand:'0–12mo floor 85% · 73.7% · BELOW',wtyEfc:'412 / 1,200 = 34.3%',w4:'~40km',w8:'Floor crossed — shutdown risk',rul:'4–8 wks',op:'Battery power declining faster than capacity. Plan replacement 4–6 weeks.',nbfc:'Grade D. RUL < loan tenure. Collateral below minimum. Covenant review.',oem:'Pack3401 design gap confirmed. WARRANTY_CLAIM_ELIGIBLE. Evidence pack ready.'},
+  'BAT_LFP_278':{pack:'Pack3001 · Cuttack / CU',dri:'66.8',driC:'var(--amber)',ahi:'81.2',ahiC:'var(--green)',quad:{label:'Q3 — NORMAL AGING (False Alarm)',desc:'Low DRI, high AHI — declining from commissioning but healthy for age. Not a problem.',bg:'rgba(13,148,136,.08)',bc:'rgba(13,148,136,.25)',c:'var(--teal)'},range:'68.1km',rangeC:'var(--amber)',soh:'82%',sohC:'var(--green)',kps:'−0.006/wk',kpsC:'var(--amber)',ir:'+0.06mΩ/wk',irC:'var(--amber)',spread:'247mV',spreadC:'var(--amber)',iot:'HEALTHY',iotC:'var(--green)',action:'CHARGER_SWAP',actionC:'var(--teal)',wty:'OPERATIONAL',wtyC:'var(--amber)',drive:'MODERATE',driveC:'chip',chg:'IRREGULAR',chgC:'chip-warn',use:'STANDARD',useC:'chip',load:'MEDIUM',loadC:'chip',behav:'PRIMARY false-alarm demo. IRREGULAR charging. 1,380W aftermarket charger is the cause of IR rise. Battery is not the problem.',pctComm:'88%',sohPct:'82%',regime:'APPROACHING_KNEE',dod:'0.89',e4:'E4: 0',corr:'4/7 signals',wtyStatus:'OPERATIONAL — Charger Driven',wtyBg:'rgba(245,158,11,.08)',wtyBc:'rgba(245,158,11,.2)',wtyC:'var(--amber)',wtyReason:'Non-OEM charger (1,380W) is confirmed degradation cause from CAN.',wtyBand:'Within warranty band at 88%',wtyEfc:'289 / 1,200 = 24.1%',w4:'Range ~64km. IR rises further. BMS silent.',w8:'E7 sag events begin if charger not replaced.',rul:'18–24 wks',op:'Your charger is the problem, not the battery. Replace charger this week.',nbfc:'Grade C. Charger-driven decline is recoverable. Charger replacement = covenant action.',oem:'Pack3001 within band. Non-OEM charger confirmed from CAN — operational, not warranty.'},
+  'BAT_LFP_308':{pack:'Pack3001 · Surat / SR',dri:'98.0',driC:'var(--green)',ahi:'94.0',ahiC:'var(--green)',quad:{label:'Q1 — HEALTHY',desc:'High DRI, high AHI — performing above both commissioning baseline and age peers.',bg:'rgba(34,197,94,.08)',bc:'rgba(34,197,94,.25)',c:'var(--green)'},range:'89.2km',rangeC:'var(--green)',soh:'90%',sohC:'var(--green)',kps:'+0.001/wk',kpsC:'var(--green)',ir:'stable',irC:'var(--green)',spread:'94mV',spreadC:'var(--green)',iot:'HEALTHY',iotC:'var(--green)',action:'NO_ACTION',actionC:'var(--green)',wty:'N/A (healthy)',wtyC:'var(--dim)',drive:'CONSERVATIVE',driveC:'chip',chg:'OVERNIGHT',chgC:'chip-on',use:'STANDARD',useC:'chip',load:'LIGHT',loadC:'chip',behav:'Optimal operating profile. Reference cohort baseline battery.',pctComm:'96%',sohPct:'90%',regime:'PRE_KNEE',dod:'0.88',e4:'E4: 0',corr:'0/7 (no alerts)',wtyStatus:'NO CLAIM (healthy)',wtyBg:'rgba(34,197,94,.06)',wtyBc:'rgba(34,197,94,.15)',wtyC:'var(--green)',wtyReason:'Pack3001 at 96% of commissioned range. Well above all warranty floors.',wtyBand:'Well within band — no claim applicable',wtyEfc:'187 / 1,200 = 15.6%',w4:'No deterioration expected. Flat trajectory.',w8:'Continue normal operation. No visit required.',rul:'>52 wks',op:'Battery performing well. Range stable at 89km. No action this week.',nbfc:'Grade A. Strong collateral. RUL exceeds loan tenure. Preferred Fleet eligible.',oem:'Pack3001 field performance at expected parameters. No warranty exposure.'},
+  'BAT_LFP_044':{pack:'Pack3401 · Surat / SR',dri:'59.0',driC:'var(--red)',ahi:'97.0',ahiC:'var(--green)',quad:{label:'Q4 — DETERIORATING (Pack Gap)',desc:'Low DRI but high AHI — pack design gap. Better than age-matched Pack3401 peers but below baseline.',bg:'rgba(249,115,22,.08)',bc:'rgba(249,115,22,.25)',c:'var(--orange)'},range:'81.7km',rangeC:'var(--amber)',soh:'78%',sohC:'var(--amber)',kps:'−0.008/wk',kpsC:'var(--amber)',ir:'+0.15mΩ/wk',irC:'var(--amber)',spread:'521mV',spreadC:'var(--red)',iot:'HEALTHY',iotC:'var(--green)',action:'CELL_BALANCE + ASSESS',actionC:'var(--red)',wty:'ELIGIBLE (mfg spread)',wtyC:'var(--green)',drive:'MODERATE',driveC:'chip',chg:'OVERNIGHT',chgC:'chip-on',use:'STANDARD',useC:'chip',load:'MEDIUM',loadC:'chip',behav:'Commissioning spread 491mV at week 1 — born elevated. Manufacturing origin confirmed. Not operator-caused.',pctComm:'87%',sohPct:'78%',regime:'APPROACHING_KNEE',dod:'0.90',e4:'E4: 0',corr:'3/7 signals',wtyStatus:'WARRANTY_CLAIM_ELIGIBLE (mfg spread)',wtyBg:'rgba(34,197,94,.08)',wtyBc:'rgba(34,197,94,.2)',wtyC:'var(--green)',wtyReason:'Commissioning spread 491mV at wk1. Manufacturing quality origin. OEM attribution 28%.',wtyBand:'Pack3401 87% — above floor but design gap active',wtyEfc:'341 / 1,200 = 28.4%',w4:'Spread likely crosses 600mV without cell balance.',w8:'Permanent mismatch probable if not serviced. Replacement required.',rul:'6–10 wks',op:'Cell imbalance returned twice in 8 weeks. Cell balance + replacement assessment required.',nbfc:'Grade C. OEM warranty claim active — may extend effective collateral value.',oem:'Commissioning spread 491mV wk1 = manufacturing origin. WARRANTY_CLAIM_ELIGIBLE.'},
+  'BAT_LFP_116':{pack:'Pack3001 · Cuttack / CU',dri:'79.9',driC:'var(--teal)',ahi:'82.1',ahiC:'var(--green)',quad:{label:'Q1 — HEALTHY (Charger Issue)',desc:'High DRI, high AHI — battery is healthy. The charger is failing, not the battery.',bg:'rgba(34,197,94,.08)',bc:'rgba(34,197,94,.25)',c:'var(--green)'},range:'76.4km',rangeC:'var(--green)',soh:'85%',sohC:'var(--green)',kps:'−0.003/wk',kpsC:'var(--muted)',ir:'+0.04mΩ/wk',irC:'var(--muted)',spread:'168mV',spreadC:'var(--green)',iot:'HEALTHY',iotC:'var(--green)',action:'CHARGER_SWAP',actionC:'var(--teal)',wty:'OPERATIONAL',wtyC:'var(--amber)',drive:'MODERATE',driveC:'chip',chg:'PARTIAL',chgC:'chip-warn',use:'STANDARD',useC:'chip',load:'LIGHT',loadC:'chip',behav:'Charger degraded to <680W DC. Battery not being fully charged regardless of session duration. SOC ceiling 68%.',pctComm:'92%',sohPct:'85%',regime:'PRE_KNEE',dod:'0.87',e4:'E4: 0',corr:'2/7 signals',wtyStatus:'OPERATIONAL — Charger Degraded',wtyBg:'rgba(245,158,11,.08)',wtyBc:'rgba(245,158,11,.2)',wtyC:'var(--amber)',wtyReason:'Charger output <680W. Battery chronically undercharging. Chemistry intact.',wtyBand:'Within warranty band at 92%',wtyEfc:'234 / 1,200 = 19.5%',w4:'SOC ceiling stays low. Spread begins growing from partial cycles.',w8:'Battery damage starts if charger not replaced.',rul:'>30 wks',op:'Your charger is failing — replace it this week. Battery is healthy.',nbfc:'Grade B. Battery healthy. Charger is operator equipment issue, not battery chemistry.',oem:'Pack3001 healthy. charger_type_inferred = DEGRADED <680W. Charger action only.'},
+  'BAT_LFP_013':{pack:'Pack1201 · Cuttack / CU',dri:'51.1',driC:'var(--red)',ahi:'62.0',ahiC:'var(--amber)',quad:{label:'Q3/Q4 — EARLY DETERIORATION',desc:'Low DRI, moderate AHI — declining from baseline faster than age suggests.',bg:'rgba(245,158,11,.08)',bc:'rgba(245,158,11,.25)',c:'var(--amber)'},range:'64.8km',rangeC:'var(--amber)',soh:'74%',sohC:'var(--amber)',kps:'−0.007/wk',kpsC:'var(--amber)',ir:'+0.09mΩ/wk',irC:'var(--amber)',spread:'247mV',spreadC:'var(--amber)',iot:'DEGRADING',iotC:'var(--amber)',action:'CELL_BALANCE',actionC:'var(--amber)',wty:'COVERED (commissioning)',wtyC:'var(--green)',drive:'AGGRESSIVE',driveC:'chip-crit',chg:'IRREGULAR',chgC:'chip-warn',use:'STANDARD',useC:'chip',load:'HIGH >P90',loadC:'chip-warn',behav:'RTP VALIDATED: c16=2.698V at plant failure Dec 20 2025. Platform showed cell_voltage_min_index=16 for 8/8 weeks before failure. TRUE POSITIVE — 3/3 detection record.',pctComm:'82%',sohPct:'74%',regime:'APPROACHING_KNEE',dod:'0.91',e4:'E4: 1×/wk',corr:'4/7 signals',wtyStatus:'OEM-COVERED (commissioning spread)',wtyBg:'rgba(34,197,94,.08)',wtyBc:'rgba(34,197,94,.2)',wtyC:'var(--green)',wtyReason:'Commissioning spread 203mV at wk1 above fleet median. Manufacturing origin partial.',wtyBand:'Pack1201 82% — within band, declining',wtyEfc:'388 / 1,200 = 32.3%',w4:'Spread crosses fleet P75×1.5 acute threshold. Cell balance needed this week.',w8:'Chronic tier if not serviced. Drivetrain stress compounds.',rul:'12–18 wks',op:'Cells are separating — range will become unpredictable. Book cell balance this week.',nbfc:'Grade C. IoT DEGRADING — confidence MEDIUM. Actual risk may be higher.',oem:'Pack1201. Commissioning spread 203mV. c16 identified as weak cell. RTP CONFIRMED TRUE POSITIVE.'},
+  'BAT_LFP_021':{pack:'Pack3401 · Surat / SR',dri:'43.3',driC:'var(--red)',ahi:'62.7',ahiC:'var(--amber)',quad:{label:'Q4 — DETERIORATING (Thermal Loop)',desc:'Low DRI, declining AHI — E3+E11+E7 active thermal feedback loop.',bg:'rgba(239,68,68,.08)',bc:'rgba(239,68,68,.25)',c:'var(--red)'},range:'57.2km',rangeC:'var(--red)',soh:'68%',sohC:'var(--red)',kps:'−0.009/wk',kpsC:'var(--red)',ir:'+0.20mΩ/wk',irC:'var(--red)',spread:'284mV',spreadC:'var(--amber)',iot:'HEALTHY',iotC:'var(--green)',action:'REPLACE (pre-summer)',actionC:'var(--red)',wty:'CHECK ATTRIBUTION',wtyC:'var(--amber)',drive:'AGGRESSIVE',driveC:'chip-crit',chg:'IRREGULAR',chgC:'chip-crit',use:'QC ROUTE',useC:'chip-warn',load:'HIGH >P90',loadC:'chip-warn',behav:'Thermal loop is the critical risk. Heavy charger + QC routes + summer = compound failure. Replace before June.',pctComm:'77%',sohPct:'68%',regime:'POST_KNEE',dod:'0.92',e4:'E4: 2×/wk',corr:'5/7 signals',wtyStatus:'CHECK ATTRIBUTION',wtyBg:'rgba(245,158,11,.08)',wtyBc:'rgba(245,158,11,.2)',wtyC:'var(--amber)',wtyReason:'Pack3401 design gap + heavy charger — disambiguation needed before claim.',wtyBand:'Pack3401 77% — approaching 75% floor',wtyEfc:'287 / 1,200 = 23.9%',w4:'Summer heat amplification begins. Heat index ×1.52 from May.',w8:'SOH crosses 60% EOL. In-field failure likely Sep peak.',rul:'3–6 wks',op:'Replace before summer. Heat will accelerate decline from May. Range already marginal at 57km.',nbfc:'Grade D. RUL 3–6 weeks. Below minimum viable range. Replacement must be planned now.',oem:'Pack3401 thermal loop + heavy charger + QC route. Replace before summer. Warranty disambiguation needed.'},
+  'BAT_LFP_133':{pack:'Pack3001 · Cuttack / CU',dri:'71.2',driC:'var(--amber)',ahi:'78.4',ahiC:'var(--green)',quad:{label:'Q3 — AGING (Failure Chain Risk)',desc:'Moderate DRI, healthy AHI — aging normally but failure chain EC-01 is active.',bg:'rgba(245,158,11,.08)',bc:'rgba(245,158,11,.25)',c:'var(--amber)'},range:'74.6km',rangeC:'var(--green)',soh:'82%',sohC:'var(--green)',kps:'−0.004/wk',kpsC:'var(--muted)',ir:'+0.08mΩ/wk',irC:'var(--amber)',spread:'186mV',spreadC:'var(--green)',iot:'HEALTHY',iotC:'var(--green)',action:'INSPECT (failure chain)',actionC:'var(--amber)',wty:'CANNOT DETERMINE',wtyC:'var(--dim)',drive:'MODERATE',driveC:'chip',chg:'OVERNIGHT',chgC:'chip-on',use:'STANDARD',useC:'chip',load:'MEDIUM',loadC:'chip',behav:'Battery chemistry healthy. Failure chain EC-01 active — ir_proxy_delta + pack_v divergence. Not emergency dispatch but inspect this month.',pctComm:'91%',sohPct:'82%',regime:'APPROACHING_KNEE',dod:'0.89',e4:'E4: 0',corr:'2/7 signals',wtyStatus:'CANNOT DETERMINE (pending field inspection)',wtyBg:'rgba(148,163,184,.06)',wtyBc:'rgba(148,163,184,.2)',wtyC:'var(--muted)',wtyReason:'Physical inspection required. Telemetry is blind to cabinet/physical damage.',wtyBand:'Within warranty band at 91%',wtyEfc:'312 / 1,200 = 26%',w4:'23.5% probability of cell leakage escalation within 5 weeks.',w8:'If chain progresses: cell leakage → cell dead pathway opens.',rul:'20–28 wks',op:'Battery is chemically healthy but a connector or cabinet issue needs physical inspection this month.',nbfc:'Grade B. Battery healthy. Failure chain risk is physical — monitor.',oem:'Pack3001 healthy. Failure chain EC-01 active via ir_proxy + pack_v signals. Physical inspection needed.'}
+};
+
+// ── Battery switch ─────────────────────────────────────────────────────
+function switchBattery(batId){
+  currentBat = batId;
+  const b = BATS[batId];
+  if(!b) return;
+
+  // Sidebar
+  document.getElementById('dppId').textContent=batId;
+  document.getElementById('dppPack').textContent=b.pack;
+  document.getElementById('dppDri').textContent=b.dri;
+  document.getElementById('dppDri').style.color=b.driC;
+  document.getElementById('dppAhi').textContent=b.ahi;
+  document.getElementById('dppAhi').style.color=b.ahiC;
+
+  const q=document.getElementById('dppQuad');
+  q.style.background=b.quad.bg;q.style.border=`1px solid ${b.quad.bc}`;
+  document.getElementById('dppQuadLabel').style.color=b.quad.c;
+  document.getElementById('dppQuadLabel').textContent=b.quad.label;
+  document.getElementById('dppQuadDesc').textContent=b.quad.desc;
+
+  document.getElementById('dppRange').textContent=b.range;document.getElementById('dppRange').style.color=b.rangeC;
+  document.getElementById('dppSoh').textContent=b.soh;document.getElementById('dppSoh').style.color=b.sohC;
+  document.getElementById('dppKps').textContent=b.kps;document.getElementById('dppKps').style.color=b.kpsC;
+  document.getElementById('dppIr').textContent=b.ir;document.getElementById('dppIr').style.color=b.irC;
+  document.getElementById('dppSpread').textContent=b.spread;document.getElementById('dppSpread').style.color=b.spreadC;
+  document.getElementById('dppIot').textContent=b.iot;document.getElementById('dppIot').style.color=b.iotC;
+  document.getElementById('dppAction').textContent=b.action;document.getElementById('dppAction').style.color=b.actionC;
+  document.getElementById('dppWty').textContent=b.wty;document.getElementById('dppWty').style.color=b.wtyC;
+
+  // L1
+  ['dppDrive','dppChg','dppUse','dppLoad'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    const vals=[b.drive,b.chg,b.use,b.load];const cols=[b.driveC,b.chgC,b.useC,b.loadC];
+    el.textContent=vals[i];el.className='chip '+cols[i];
+  });
+  document.getElementById('dppBehav').textContent=b.behav;
+
+  // L2
+  document.getElementById('dppPctComm').textContent=b.pctComm;
+  document.getElementById('dppPctCommBar').style.width=b.pctComm;
+  document.getElementById('dppSohPct').textContent=b.sohPct;
+  document.getElementById('dppSohBar').style.width=b.sohPct;
+  document.getElementById('dppRegime').textContent=b.regime;
+  document.getElementById('dppDod').textContent=b.dod;
+  document.getElementById('dppE4').textContent=b.e4;
+  document.getElementById('dppCorr').textContent=b.corr;
+
+  // L5 warranty
+  const wb=document.getElementById('dppWtyBlock');
+  wb.style.background=b.wtyBg;wb.style.border=`1px solid ${b.wtyBc}`;
+  document.getElementById('dppWtyStatus').textContent=b.wtyStatus;
+  document.getElementById('dppWtyStatus').style.color=b.wtyC;
+  document.getElementById('dppWtyReason').textContent=b.wtyReason;
+  document.getElementById('dppWtyBand').innerHTML=b.wtyBand;
+  document.getElementById('dppWtyEfc').innerHTML=b.wtyEfc;
+
+  // L6
+  document.getElementById('dppW4').textContent=b.w4;
+  document.getElementById('dppW8').textContent=b.w8;
+  document.getElementById('dppRul').textContent=b.rul;
+
+  // L7
+  document.getElementById('dppOpCard').textContent=b.op;
+  document.getElementById('dppNbfcCard').textContent=b.nbfc;
+  document.getElementById('dppOemCard').textContent=b.oem;
+
+  // Live API calls
+  loadCellHealth(batId);
+  loadSox(batId);
+}
+
+// ── Prediction rows ───────────────────────────────────────────────────
+const PREDS=[
+  {g:'Replace Now/Plan',n:6,col:'var(--red)',w4:'LFP-109: range ~40km. LFP-021: summer heat critical. LFP-044: replacement window closing.',w8:'LFP-109 in-field shutdown risk. LFP-021 field failure likely.',conf:'HIGH',note:'See Priority 1'},
+  {g:'Charger Swap',n:127,col:'var(--teal)',w4:'IR rises further. 23 cross E11 threshold. Range drops 3–8km/week.',w8:'45 batteries show E7 voltage sag. BMS silent. 12 worst: shutdown risk.',conf:'HIGH',note:'LFP-278, LFP-116, LFP-308'},
+  {g:'Cell Balance — Acute',n:19,col:'var(--amber)',w4:'Spread crosses P75×1.5 acute threshold without service.',w8:'Repeat alert — chronic tier for 8 batteries. Range volatile.',conf:'HIGH',note:'LFP-044, LFP-078'},
+  {g:'Cell Voltage Alert ★',n:41,col:'var(--orange)',w4:'25 below 2.8V WEAK. 40 HIGH RISK compound (persistent + <2.8V).',w8:'Cell 16 trajectory: continues weakening. Cell dead pathway opens after months.',conf:'HIGH',note:'NEW — Path A signal'},
+  {g:'Cell Balance — Early',n:'~30',col:'var(--green)',w4:'Spread acceleration continues. Reaches acute in 3–4 weeks.',w8:'Enters acute tier without intervention. Still recoverable now.',conf:'MED',note:'LFP-013, LFP-122'},
+  {g:'Monitor / Investigate',n:64,col:'var(--amber)',w4:'15 batteries escalate to confirmed action as attribution completes.',w8:'9 cohort divergence alerts — closest to escalation.',conf:'MED',note:'9 cohort divergence'},
+  {g:'Route Shorten',n:23,col:'var(--orange)',w4:'Range continues declining. 8 approach 56km absolute floor.',w8:'8 reach floor. Operational disruption without route change.',conf:'HIGH',note:'Range = constraint'},
+  {g:'IoT Critical',n:53,col:'var(--red)',w4:'CANNOT PREDICT — telemetry void. Chemistry unknown.',w8:'CANNOT PREDICT — each week widens uncertainty.',conf:'N/A',note:'Replace IoT first'},
+  {g:'No Action',n:86,col:'var(--green)',w4:'No deterioration expected. Flat trajectory. DRI >75 confirmed.',w8:'Continue normal operation. Platform monitors weekly.',conf:'HIGH',note:'Confirmed healthy'},
+  {g:'Monitor Weekly',n:9,col:'var(--dim)',w4:'Early signals below corroboration threshold. No escalation expected.',w8:'Signal may resolve or confirm. No action until gate met.',conf:'LOW',note:'Watching only'},
+];
+function buildPredRows(){
+  const el=document.getElementById('predRows');
+  el.innerHTML=PREDS.map((p,i)=>{
+    const bg=i%2===0?'var(--bg1)':'var(--bg2)';
+    const confCol={'HIGH':'var(--green)','MED':'var(--amber)','LOW':'var(--muted)','N/A':'var(--dim)'}[p.conf];
+    return `<div style="display:grid;grid-template-columns:180px 1fr 1fr 80px 130px;gap:1px;background:var(--border);border-radius:0;margin-bottom:1px">
+      <div style="background:${bg};padding:8px 11px;border-left:3px solid ${p.col}"><span style="color:${p.col};font-family:var(--font-mono);font-weight:700;font-size:11px">${p.g}</span><br><span style="font-family:var(--font-mono);font-size:18px;color:${p.col};font-weight:800">${p.n}</span></div>
+      <div style="background:${bg};padding:8px 11px;font-size:11px">${p.w4}</div>
+      <div style="background:${bg};padding:8px 11px;font-size:11px;color:${i<3?'var(--red)':'var(--muted)'}">${p.w8}</div>
+      <div style="background:${bg};padding:8px 11px"><span style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:${confCol}">${p.conf}</span></div>
+      <div style="background:${bg};padding:8px 11px;font-size:10.5px;color:var(--muted);font-style:italic">${p.note}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Live KPIs (Sprint B B6) ──────────────────────────────────────────
+async function loadKpis(){
+  try {
+    const [summary, alerts] = await Promise.all([
+      apiFetch('/api/fleet/summary'),
+      apiFetch('/api/fleet/service-alerts'),
+    ]);
+    const rd = (summary && summary.rul_action_dist) || {};
+    const replace = (rd.REPLACE_PLAN || 0) + (rd.PHYSICS_REPLACE_PLAN || 0) + (rd.REPLACE_NOW || 0) + (rd.EOL_IMMINENT || 0);
+    const noAction = (rd.ROUTINE || 0);
+    const arr = Array.isArray(alerts) ? alerts : (alerts?.alerts || []);
+    const chargerCount   = arr.filter(a => (a.alert_category || '').includes('CHARGER')).length;
+    const cellBalanceCount = arr.filter(a =>
+      (a.alert_category || '').includes('CELL_IMBALANCE') || (a.alert_category || '').includes('SPREAD_ACUTE')
+    ).length;
+    const replaceEl = document.getElementById('kpReplace');
+    const chEl      = document.getElementById('kpCharger');
+    const cbEl      = document.getElementById('kpCellBalance');
+    const noEl      = document.getElementById('kpNoAction');
+    if (replaceEl) replaceEl.textContent = replace;
+    if (chEl)      chEl.textContent      = chargerCount || '—';
+    if (cbEl)      cbEl.textContent      = cellBalanceCount || '—';
+    if (noEl)      noEl.textContent      = noAction;
+  } catch (e) { /* leave em-dash */ }
+}
+
+async function loadNbfcGrades(){
+  try {
+    const d = await apiFetch('/api/fleet/dri-ahi-summary');
+    const g = (d && d.grade_2x2) || {};
+    const a = g.A || 0, b = g.B || 0, c = g.C || 0, dd = g.D || 0;
+    const total = a + b + c + dd || 1;
+    const setBar = (el, val) => { if (el) el.style.width = Math.round(val/total*100) + '%'; };
+    const byId = id => document.getElementById(id);
+    if (byId('gradeA')) byId('gradeA').textContent = a;
+    if (byId('gradeB')) byId('gradeB').textContent = b;
+    if (byId('gradeC')) byId('gradeC').textContent = c;
+    if (byId('gradeD')) byId('gradeD').textContent = dd;
+    setBar(byId('gradeABar'), a);
+    setBar(byId('gradeBBar'), b);
+    setBar(byId('gradeCBar'), c);
+    setBar(byId('gradeDBar'), dd);
+  } catch (e) { /* leave em-dash */ }
+}
+
+// ── Sprint C: live meta loaders for §01/§02/§05/§07/§08 + §06 component head
+async function loadS1MetaFromShared(summary, alerts){
+  // Fix race: populate s1meta from the SAME response that loadKpis uses,
+  // not a separate sequential fetch.
+  const m = document.getElementById('s1meta');
+  if (!m) return;
+  const total = (summary && summary.total) || (summary && summary.scored) || '—';
+  const arr = Array.isArray(alerts) ? alerts : (alerts && alerts.alerts) || [];
+  m.innerHTML = `Week 65 · Apr 2026<br>${total} batteries · ${arr.length} active alerts`;
+}
+
+async function loadS2Charging(summary){
+  const m = document.getElementById('s2meta');
+  if (!m) return;
+  const fleetAttr = await apiFetch('/api/fleet/attribution-summary');
+  const charging_pct = fleetAttr && fleetAttr.factor_averages && fleetAttr.factor_averages.charging;
+  // Primary-driver count where charging is primary (from primary_driver_distribution)
+  const dist = (fleetAttr && fleetAttr.primary_driver_distribution) || [];
+  const chargingPrimary = dist.find(d => (d.driver_plain || '').toLowerCase().indexOf('charg') >= 0);
+  const chargingCount = chargingPrimary ? chargingPrimary.count : null;
+  const chargingShare = chargingPrimary ? chargingPrimary.pct_of_fleet : null;
+  m.innerHTML = charging_pct != null
+    ? `Charging ${charging_pct.toFixed(1)}% fleet avg${chargingCount != null ? `<br>${chargingCount} batteries charging-primary (${chargingShare}%)` : ''}`
+    : 'Charging signal unavailable';
+}
+
+async function loadS5SoxMeta(){
+  // SOX tier counts: use fleet/service-alerts IOT_ISSUES + derive from health_class counts.
+  // Honest fallback: read iot-summary (already a SOX proxy) and mark as directional.
+  const m = document.getElementById('s5meta');
+  if (!m) return;
+  const d = await apiFetch('/api/fleet/iot-summary');
+  if (d && d.tier_counts) {
+    const tc = d.tier_counts;
+    m.innerHTML = `${tc.HEALTHY || 0} HEALTHY · ${tc.DEGRADING || 0} DEGRADING<br>${tc.CRITICAL || 0} CRITICAL · ${tc.UNKNOWN || 0} UNKNOWN`;
+  } else {
+    m.innerHTML = 'SOX telemetry unavailable';
+  }
+}
+
+async function loadS7IoT(){
+  const d = await apiFetch('/api/fleet/iot-summary');
+  const m = document.getElementById('s7meta');
+  if (!d || !d.tier_counts) {
+    if (m) m.innerHTML = 'IoT summary unavailable';
+    return;
+  }
+  const tc = d.tier_counts;
+  const H = tc.HEALTHY || 0, D = tc.DEGRADING || 0, C = tc.CRITICAL || 0, U = tc.UNKNOWN || 0;
+  const total = Math.max(1, H + D + C + U);
+  if (m) m.innerHTML = `${H} healthy · ${D} degrading<br>${C} critical · ${U} unknown`;
+  // Update bar flex values
+  const set = (id, v) => { const el = document.getElementById(id); if (el) { el.style.flex = Math.max(1, v); el.textContent = v; } };
+  set('iotHealthyBar', H);
+  set('iotDegradingBar', D);
+  set('iotCriticalBar', C);
+  const setT = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setT('iotHealthyN', H);
+  setT('iotDegradingN', D);
+  setT('iotCriticalN', C);
+  setT('iotCriticalN2', C);
+}
+
+async function loadS8FailureChains(){
+  const m = document.getElementById('s8meta');
+  const d = await apiFetch('/api/fleet/failure-chains');
+  if (!d) { if (m) m.innerHTML = 'Failure chain data unavailable'; return; }
+  const chains = Array.isArray(d) ? d : (d.chains || []);
+  const nonCompliant = (d.non_compliant_batteries || []).length;
+  const topChain = chains[0] || null;
+  if (m) {
+    if (topChain) {
+      const prob = (topChain.probability || topChain.pct || topChain.transition_prob);
+      const label = topChain.chain_label || topChain.plain || `${topChain.fault_type_plain || '—'} → ${topChain.next_failure_plain || '—'}`;
+      m.innerHTML = `${chains.length} chains${prob != null ? ` · ${(prob * (prob <= 1 ? 100 : 1)).toFixed(0)}% ${label}` : ''}<br>${nonCompliant} non-compliant batteries`;
+    } else {
+      m.innerHTML = `${chains.length} chains detected`;
+    }
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────
+(async()=>{
+  buildPredRows();
+  await checkApi();
+  loadCellAlerts();
+  // Shared KPI fetch — populate s1meta from the same response
+  try {
+    const [summary, alerts] = await Promise.all([
+      apiFetch('/api/fleet/summary'),
+      apiFetch('/api/fleet/service-alerts'),
+    ]);
+    loadS1MetaFromShared(summary, alerts);
+    // loadKpis pattern — replicate its work here using the shared data to avoid duplicate fetch
+    const rd = (summary && summary.rul_action_dist) || {};
+    const replace = (rd.REPLACE_PLAN || 0) + (rd.PHYSICS_REPLACE_PLAN || 0) + (rd.REPLACE_NOW || 0) + (rd.EOL_IMMINENT || 0);
+    const arr = Array.isArray(alerts) ? alerts : (alerts?.alerts || []);
+    const chargerCount = arr.filter(a => (a.alert_category || '').includes('CHARGER')).length;
+    const cellBalanceCount = arr.filter(a =>
+      (a.alert_category || '').includes('CELL_IMBALANCE') || (a.alert_category || '').includes('SPREAD_ACUTE')
+    ).length;
+    const setT = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setT('kpReplace', replace);
+    setT('kpCharger', chargerCount || '—');
+    setT('kpCellBalance', cellBalanceCount || '—');
+    setT('kpNoAction', rd.ROUTINE || 0);
+    // Pass summary forward to §02 so it can reuse (charger counts come from attribution-summary)
+    loadS2Charging(summary);
+  } catch(e) { loadKpis(); }
+  loadNbfcGrades();
+  loadS5SoxMeta();
+  loadS7IoT();
+  loadS8FailureChains();
+  switchBattery(currentBat);
+  // Periodic API recheck
+  setInterval(checkApi,30000);
+})();
+</script>
+</body>
+</html>
