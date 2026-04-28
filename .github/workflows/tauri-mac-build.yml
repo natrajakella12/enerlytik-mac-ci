@@ -18,17 +18,17 @@ permissions:
 jobs:
   build-mac-intel:
     name: Build Tauri DMG (x86_64-apple-darwin)
-    # macos-13 = Intel runner. macos-14 is Apple Silicon — wrong arch for the
-    # target MacBook Air 2020 (Intel Core i3).
-    runs-on: macos-13
-    timeout-minutes: 180
+    # Self-hosted Intel Mac runner. Register one via Settings -> Actions ->
+    # Runners on this repo (see SETUP_MAC_RUNNER.md). The host must be
+    # x86_64 macOS — the target MacBook Air 2020 (Intel Core i3) is fine.
+    runs-on: [self-hosted, macOS, X64]
+    timeout-minutes: 360
 
     env:
       TARGET: x86_64-apple-darwin
       PYTHON_VERSION: '3.12'
       RUST_BACKTRACE: '1'
-      # Embedded Groq keys for the offline demo build. Per user-authorised
-      # demo only; rotate before any external deployment.
+      # Groq keys flow in from repo secrets at runtime; never hardcoded.
       GROQ_KEY_1: ${{ secrets.GROQ_KEY_1 }}
       GROQ_KEY_2: ${{ secrets.GROQ_KEY_2 }}
       GROQ_KEY_3: ${{ secrets.GROQ_KEY_3 }}
@@ -80,24 +80,23 @@ jobs:
             'tokenizers>=0.19' \
             'torch>=2.2'
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin
+      - name: Verify Rust + target toolchain present
+        run: |
+          rustc --version
+          cargo --version
+          rustup target list --installed | grep -q x86_64-apple-darwin || \
+            rustup target add x86_64-apple-darwin
 
-      - name: Cache Cargo registry + target
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            tauri_bundle/enerlytik-app/src-tauri/target
-          key: cargo-${{ runner.os }}-${{ env.TARGET }}-${{ hashFiles('tauri_bundle/enerlytik-app/src-tauri/Cargo.lock', 'tauri_bundle/enerlytik-app/src-tauri/Cargo.toml') }}
-          restore-keys: |
-            cargo-${{ runner.os }}-${{ env.TARGET }}-
+      - name: Verify Tauri CLI present
+        run: |
+          if ! command -v cargo-tauri >/dev/null 2>&1; then
+            cargo install tauri-cli --version '^2' --locked
+          fi
+          cargo tauri --version
 
-      - name: Install Tauri CLI
-        run: cargo install tauri-cli --version '^2' --locked
+      # On self-hosted runners, src-tauri/target/ persists naturally on disk
+      # between runs, so the actions/cache step from the GitHub-hosted variant
+      # is unnecessary and would just add upload/download overhead.
 
       - name: Stage bundled resources
         run: |
